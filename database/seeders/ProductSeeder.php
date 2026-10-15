@@ -15,16 +15,16 @@ class ProductSeeder extends Seeder
         $categories = [
             ['name' => 'Dresses',     'slug' => 'dresses',     'description' => 'Elegant dresses for every occasion'],
             ['name' => 'Sets',        'slug' => 'sets',        'description' => 'Co-ord sets and matching pieces'],
-            ['name' => 'Tops',        'slug' => 'tops',        'description' => 'Chic tops and blouses'],
+            ['name' => 'Tops',        'slug' => 'tops',        'description' => 'Chic tops and blouses', 'is_active' => false],
             ['name' => 'Accessories', 'slug' => 'accessories', 'description' => 'Statement accessories'],
-            ['name' => 'Launch 001',   'slug' => 'new-arrivals','description' => 'The latest activewear from Formé Lagos'],
+            ['name' => 'Debut Collection', 'slug' => 'new-arrivals','description' => 'The latest activewear from Formé Lagos'],
         ];
 
         foreach ($categories as $i => $cat) {
             Category::create([
-                ...$cat,
-                'is_active'  => true,
+                'is_active'  => $cat['is_active'] ?? true,
                 'sort_order' => $i,
+                ...$cat,
             ]);
         }
 

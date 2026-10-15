@@ -16,6 +16,9 @@ Route::middleware('throttle:storefront')->group(function () {
     Route::get('/policy', [StoreController::class, 'policy'])->name('policy');
     Route::get('/about', [StoreController::class, 'about'])->name('about');
     Route::get('/connect', [StoreController::class, 'connect'])->name('connect');
+    Route::post('/waitlist', [StoreController::class, 'waitlist'])->middleware('throttle:15,1')->name('waitlist.store');
+    Route::post('/store/unlock', [StoreController::class, 'unlock'])->middleware('throttle:10,1')->name('store.unlock');
+    Route::get('/store/lock', [StoreController::class, 'lock'])->name('store.lock');
 });
 
 // ─── Cart (Rate Limited: Max 30 req/min) ──────────────────────────────────────

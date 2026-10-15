@@ -114,7 +114,7 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
     return (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', fontFamily: "'DM Sans', sans-serif", backgroundColor: C.bg, color: C.text, overflowX: 'hidden' }}>
             <style>{`
-                @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Syne:wght@700;800&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&family=Syne:wght@700;800&family=Manrope:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap');
                 *{box-sizing:border-box;margin:0;padding:0;}
                 @media(max-width:768px){
                     .hide-mob{display:none!important;}
@@ -216,13 +216,7 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                             ))}
                         </div>
                         <div>
-                            <p style={{ fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: '20px', color: C.accentLight || C.accent, fontWeight: 600 }}>Help &amp; Brand</p>
-                            <Link
-                                href="/about"
-                                style={{ display: 'block', fontSize: '14px', color: C.text, fontWeight: 400, textDecoration: 'none', marginBottom: '12px', transition: 'opacity .2s' }}
-                                onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
-                                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-                            >About Formé</Link>
+                            <p style={{ fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: '20px', color: C.accentLight || C.accent, fontWeight: 600 }}>Help</p>
                             {['FAQ', 'Size Guide', 'Contact Us'].map(t => (
                                 <p key={t} style={{ fontSize: '14px', color: C.text, fontWeight: 400, marginBottom: '12px', cursor: 'pointer', transition: 'opacity .2s' }}
                                     onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')} onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>{t}</p>
@@ -288,15 +282,15 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                 </Link>
                 {nav.map(item => (
                     <Link key={item.href} href={item.href} onClick={() => setNavOpen(false)}
-                        style={{ display: 'block', fontFamily: "'Playfair Display', serif", fontSize: '24px', color: C.text, textDecoration: 'none', marginBottom: '18px', opacity: 0.85, transition: 'color .2s, opacity .2s' }}
+                        style={{ display: 'block', fontFamily: "'Manrope', 'Inter', sans-serif", fontSize: '20px', fontWeight: 600, color: C.text, textDecoration: 'none', marginBottom: '20px', letterSpacing: '-0.2px', opacity: 0.9, transition: 'color .2s, opacity .2s' }}
                         onMouseEnter={e => { e.currentTarget.style.color = C.accent; e.currentTarget.style.opacity = '1'; }}
-                        onMouseLeave={e => { e.currentTarget.style.color = C.text; e.currentTarget.style.opacity = '0.85'; }}>
+                        onMouseLeave={e => { e.currentTarget.style.color = C.text; e.currentTarget.style.opacity = '0.9'; }}>
                         {item.label}
                     </Link>
                 ))}
                 <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '24px', marginTop: '12px' }}>
-                    <Link href="/account" onClick={() => setNavOpen(false)} style={{ display: 'block', fontSize: '13px', color: C.muted, textDecoration: 'none', marginBottom: '14px' }}>My Account</Link>
-                    <Link href="/account/orders" onClick={() => setNavOpen(false)} style={{ display: 'block', fontSize: '13px', color: C.muted, textDecoration: 'none' }}>My Orders</Link>
+                    <Link href="/account" onClick={() => setNavOpen(false)} style={{ display: 'block', fontFamily: "'Manrope', 'Inter', sans-serif", fontSize: '14px', fontWeight: 500, color: C.muted, textDecoration: 'none', marginBottom: '14px' }}>My Account</Link>
+                    <Link href="/account/orders" onClick={() => setNavOpen(false)} style={{ display: 'block', fontFamily: "'Manrope', 'Inter', sans-serif", fontSize: '14px', fontWeight: 500, color: C.muted, textDecoration: 'none' }}>My Orders</Link>
                 </div>
             </div>
 

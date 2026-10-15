@@ -32,7 +32,7 @@ export default function Connect() {
             ),
         },
         {
-            name: 'FORMÉ X account',
+            name: 'FORMÉ X (Twitter) account',
             url: 'https://x.com/thisis__forme?s=21&t=Z6g7e-fMkC6dFLqG4HxwVw',
             icon: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
@@ -63,7 +63,7 @@ export default function Connect() {
                     SPOTTED IN FORMÉ?
                 </h2>
                 <p style={{ fontSize: '15px', fontWeight: 400, margin: '0 0 40px 0', color: C.text }}>
-                    Find us. Tag us. Show us how you wear yours.
+                    Find us. Tag us. Show us how you wear FORMÉ.
                 </p>
 
                 {/* Social Links */}

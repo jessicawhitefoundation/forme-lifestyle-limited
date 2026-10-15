@@ -83,7 +83,7 @@ function ProductCard({ product }: { product: Product }) {
 
 // Marquee ticker
 function Ticker() {
-    const items = ['Made for Every Form of Movement', 'Move · Perform · Live 🌿', 'Attainable Luxury Activewear', 'Designed in Lagos', 'Activewear for Everyone'];
+    const items = ['Made for Every Form of Movement', 'Move · Perform · Live', 'Attainable Luxury Activewear', 'Designed in Lagos', 'Activewear for Everyone'];
     return (
         <div style={{ overflow: 'hidden', background: C.surface, borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, padding: '14px 0' }}>
             <style>{`
@@ -177,6 +177,14 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                         grid-template-columns: repeat(2, 1fr);
                         gap: 14px;
                     }
+                    .hero-cta-container {
+                        width: 100%;
+                    }
+                    .hero-cta-container a {
+                        width: 100%;
+                        max-width: 280px;
+                        box-sizing: border-box;
+                    }
                 }
             `}</style>
 
@@ -200,16 +208,16 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                             Move. Perform. Live. In your own form.
                         </p>
                     </div>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', opacity: heroVisible ? 1 : 0, transition: 'all 0.8s ease 0.55s' }}>
-                        <Link href="/shop" className="shimmer-button" style={{ background: C.accent, color: '#fff', padding: '14px 32px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 500, display: 'inline-block', transition: 'background .3s' }}
+                    <div className="hero-cta-container" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start', opacity: heroVisible ? 1 : 0, transition: 'all 0.8s ease 0.55s' }}>
+                        <Link href="/shop" className="shimmer-button" style={{ background: C.accent, color: '#fff', padding: '14px 32px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 500, display: 'inline-block', transition: 'background .3s', textAlign: 'center' }}
                             onMouseEnter={e => (e.currentTarget.style.background = '#B86878')}
                             onMouseLeave={e => (e.currentTarget.style.background = C.accent)}>
                             Shop Now
                         </Link>
-                        <Link href="/collections/new-arrivals" style={{ border: `1px solid ${C.border}`, color: C.muted, padding: '14px 24px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', display: 'inline-block', transition: 'all .3s' }}
+                        <Link href="/collections/new-arrivals" style={{ border: `1px solid ${C.border}`, color: C.muted, padding: '14px 32px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', display: 'inline-block', transition: 'all .3s', textAlign: 'center' }}
                             onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}>
-                            Launch 001
+                            Debut Collection
                         </Link>
                     </div>
                 </div>
@@ -309,7 +317,7 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                     </div>
                     </ScrollReveal>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
-                        {categories.map(cat => (
+                        {categories.filter(cat => !['new-arrivals', 'tops'].includes(cat.slug)).map(cat => (
                             <Link key={cat.id} href={`/collections/${cat.slug}`} style={{ textDecoration: 'none', display: 'block', position: 'relative', aspectRatio: '4/5', overflow: 'hidden', background: C.surface }}>
                                 <div style={{ position: 'absolute', inset: 0 }}>
                                     {cat.image_path ? (
@@ -370,7 +378,7 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                         Made for every form of movement.
                     </h2>
                     <p style={{ fontFamily: "'Syne', sans-serif", fontSize: '18px', color: C.accentLight || C.accent, fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: '24px' }}>
-                        MOVE. PERFORM. LIVE. 🌿
+                        MOVE. PERFORM. LIVE.
                     </p>
                     <p style={{ fontSize: '16px', color: C.text, lineHeight: '1.85', marginBottom: '40px', maxWidth: '680px', margin: '0 auto 40px', fontWeight: 400, opacity: 0.95 }}>
                         Movement is part of taking care of ourselves. We created FORMÉ to bridge beautiful design, quality, function, inclusivity, and attainable pricing — because affordable should never mean forgettable.
@@ -395,7 +403,7 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '56px', flexWrap: 'wrap', gap: '16px' }}>
                         <div>
                             <p style={{ fontSize: '9px', letterSpacing: '4px', textTransform: 'uppercase', color: C.accent, marginBottom: '12px' }}>Just In</p>
-                            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(28px,3.5vw,48px)', fontWeight: 400, color: C.text }}>Launch 001</h2>
+                            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(28px,3.5vw,48px)', fontWeight: 400, color: C.text }}>Debut Collection</h2>
                         </div>
                         <Link href="/collections/new-arrivals" style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: C.muted, textDecoration: 'none', borderBottom: `1px solid ${C.border}`, paddingBottom: '4px', transition: 'color .2s, border-color .2s' }}
                             onMouseEnter={e => { e.currentTarget.style.color = C.accent; e.currentTarget.style.borderColor = C.accent; }}

@@ -326,7 +326,7 @@ export default function About() {
                                     marginBottom: '32px'
                                 }}>
                                     <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 'clamp(20px, 3vw, 28px)', color: C.text, letterSpacing: '4px', textTransform: 'uppercase', fontWeight: 700 }}>
-                                        MOVE. PERFORM. LIVE. 🌿
+                                        MOVE. PERFORM. LIVE.
                                     </h3>
                                 </div>
 

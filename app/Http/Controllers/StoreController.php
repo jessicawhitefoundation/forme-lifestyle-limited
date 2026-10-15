@@ -5,13 +5,25 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\HeroSlide;
 use App\Models\Product;
+use App\Models\WaitlistEntry;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class StoreController extends Controller
 {
-    public function home(): Response
+    public function home(Request $request): Response
     {
+        $password = env('STORE_PASSWORD', 'forme2026');
+
+        if ($request->query('preview') === $password) {
+            session(['store_unlocked' => true]);
+        }
+
+        if (!session('store_unlocked')) {
+            return Inertia::render('Store/ComingSoon');
+        }
         $featuredProducts = Product::with(['images', 'category'])
             ->where('is_active', true)
             ->where('is_featured', true)
@@ -21,6 +33,7 @@ class StoreController extends Controller
             ->map(fn ($p) => $this->formatProduct($p));
 
         $categories = Category::where('is_active', true)
+            ->whereNotIn('slug', ['new-arrivals', 'tops'])
             ->withCount('products')
             ->orderBy('sort_order')
             ->get();
@@ -178,5 +191,52 @@ class StoreController extends Controller
             'hover_image'   => $secondImg  ? asset('storage/'.$secondImg->image_path)  : null,
             'is_featured'   => $p->is_featured,
         ];
+    }
+
+    public function waitlist(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email|max:255',
+        ]);
+
+        $email = strtolower(trim($request->email));
+
+        WaitlistEntry::firstOrCreate(
+            ['email' => $email],
+            [
+                'ip_address' => $request->ip(),
+                'user_agent' => substr((string) $request->userAgent(), 0, 500),
+            ]
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => "You're on the list! We will notify you as soon as we launch.",
+        ]);
+    }
+
+    public function unlock(Request $request): JsonResponse
+    {
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        $correctPassword = env('STORE_PASSWORD', 'forme2026');
+
+        if ($request->password === $correctPassword) {
+            session(['store_unlocked' => true]);
+            return response()->json(['success' => true]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Incorrect password.',
+        ], 422);
+    }
+
+    public function lock()
+    {
+        session()->forget('store_unlocked');
+        return redirect()->route('home');
     }
 }
