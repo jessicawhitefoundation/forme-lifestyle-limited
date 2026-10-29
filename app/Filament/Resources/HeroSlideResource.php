@@ -38,72 +38,78 @@ class HeroSlideResource extends Resource
                         ->live()
                         ->columnSpanFull(),
 
-                    // IMAGE tab
+                    // IMAGE source
                     Forms\Components\Fieldset::make('Image Source')
                         ->schema([
-                            Forms\Components\Tabs::make('Image Input')
-                                ->tabs([
-                                    Forms\Components\Tabs\Tab::make('Upload File')
-                                        ->icon('heroicon-o-arrow-up-tray')
-                                        ->schema([
-                                            Forms\Components\FileUpload::make('src')
-                                                ->label('Upload Image')
-                                                ->image()
-                                                ->imageEditor()
-                                                ->directory('hero-slides')
-                                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
-                                                ->maxSize(5120)
-                                                ->helperText('Max 5MB · JPG, PNG, WebP'),
-                                        ]),
-                                    Forms\Components\Tabs\Tab::make('External URL')
-                                        ->icon('heroicon-o-link')
-                                        ->schema([
-                                            Forms\Components\TextInput::make('src')
-                                                ->label('Image URL')
-                                                ->url()
-                                                ->placeholder('https://images.unsplash.com/...')
-                                                ->helperText('Paste any public image URL (Unsplash, CDN, etc.)'),
-                                        ]),
+                            Forms\Components\Radio::make('source_type')
+                                ->label('How would you like to provide the image?')
+                                ->options([
+                                    'upload' => 'Upload image file from device',
+                                    'url'    => 'Paste external web image URL',
                                 ])
+                                ->default('upload')
+                                ->live()
+                                ->columnSpanFull(),
+
+                            Forms\Components\FileUpload::make('src_file')
+                                ->label('Upload Image')
+                                ->image()
+                                ->imageEditor()
+                                ->directory('hero-slides')
+                                ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                ->maxSize(5120)
+                                ->helperText('Max 5MB · JPG, PNG, WebP')
+                                ->formatStateUsing(fn ($state) => is_string($state) ? [$state] : ($state ?? []))
+                                ->visible(fn (Get $get) => ($get('source_type') ?? 'upload') === 'upload')
+                                ->columnSpanFull(),
+
+                            Forms\Components\TextInput::make('src_url')
+                                ->label('Image Web URL')
+                                ->url()
+                                ->placeholder('https://images.unsplash.com/photo-...')
+                                ->helperText('Direct public image link (Unsplash, Cloudinary, etc.)')
+                                ->visible(fn (Get $get) => $get('source_type') === 'url')
                                 ->columnSpanFull(),
                         ])
                         ->visible(fn (Get $get) => $get('type') === 'image')
                         ->columnSpanFull(),
 
-                    // VIDEO section
+                    // VIDEO source
                     Forms\Components\Fieldset::make('Video Source')
                         ->schema([
-                            Forms\Components\TextInput::make('src')
+                            Forms\Components\TextInput::make('video_url')
                                 ->label('Video URL (.mp4)')
                                 ->url()
                                 ->placeholder('https://assets.mixkit.co/videos/... or /storage/hero-slides/video.mp4')
-                                ->helperText('Direct MP4 video URL. Use Mixkit, Coverr, or upload to storage.')
-                                ->required()
+                                ->helperText('Direct MP4 video URL.')
                                 ->columnSpanFull(),
 
-                            Forms\Components\Fieldset::make('Poster / Thumbnail')
-                                ->description('Shown before the video loads')
+                            Forms\Components\Fieldset::make('Poster / Thumbnail (Optional — shown before video loads)')
                                 ->schema([
-                                    Forms\Components\Tabs::make('Poster Input')
-                                        ->tabs([
-                                            Forms\Components\Tabs\Tab::make('Upload Poster')
-                                                ->icon('heroicon-o-arrow-up-tray')
-                                                ->schema([
-                                                    Forms\Components\FileUpload::make('poster')
-                                                        ->label('Upload Poster Image')
-                                                        ->image()
-                                                        ->directory('hero-slides/posters')
-                                                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp']),
-                                                ]),
-                                            Forms\Components\Tabs\Tab::make('Poster URL')
-                                                ->icon('heroicon-o-link')
-                                                ->schema([
-                                                    Forms\Components\TextInput::make('poster')
-                                                        ->label('Poster Image URL')
-                                                        ->url()
-                                                        ->placeholder('https://images.unsplash.com/...'),
-                                                ]),
+                                    Forms\Components\Radio::make('poster_source_type')
+                                        ->label('Poster Method')
+                                        ->options([
+                                            'upload' => 'Upload thumbnail image',
+                                            'url'    => 'Paste thumbnail URL',
                                         ])
+                                        ->default('upload')
+                                        ->live()
+                                        ->columnSpanFull(),
+
+                                    Forms\Components\FileUpload::make('poster_file')
+                                        ->label('Upload Poster Image')
+                                        ->image()
+                                        ->directory('hero-slides/posters')
+                                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
+                                        ->formatStateUsing(fn ($state) => is_string($state) ? [$state] : ($state ?? []))
+                                        ->visible(fn (Get $get) => ($get('poster_source_type') ?? 'upload') === 'upload')
+                                        ->columnSpanFull(),
+
+                                    Forms\Components\TextInput::make('poster_url')
+                                        ->label('Poster Image URL')
+                                        ->url()
+                                        ->placeholder('https://images.unsplash.com/photo-...')
+                                        ->visible(fn (Get $get) => $get('poster_source_type') === 'url')
                                         ->columnSpanFull(),
                                 ])
                                 ->columnSpanFull(),
