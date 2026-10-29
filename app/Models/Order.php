@@ -14,12 +14,15 @@ class Order extends Model
         'customer_name', 'customer_email', 'customer_phone',
         'shipping_address', 'shipping_city', 'shipping_state', 'shipping_country',
         'notes',
+        'routely_shipment_id', 'routely_tracking_number', 'routely_status', 'routely_fee', 'routely_response',
     ];
 
     protected $casts = [
-        'subtotal'      => 'decimal:2',
-        'shipping_fee'  => 'decimal:2',
-        'total_amount'  => 'decimal:2',
+        'subtotal'         => 'decimal:2',
+        'shipping_fee'     => 'decimal:2',
+        'total_amount'     => 'decimal:2',
+        'routely_fee'      => 'decimal:2',
+        'routely_response' => 'array',
     ];
 
     public function user(): BelongsTo
@@ -34,6 +37,6 @@ class Order extends Model
 
     public static function generateOrderNumber(): string
     {
-        return 'PL-'.strtoupper(uniqid());
+        return 'FORME-'.strtoupper(uniqid());
     }
 }

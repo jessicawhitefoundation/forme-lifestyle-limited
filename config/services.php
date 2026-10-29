@@ -40,4 +40,19 @@ return [
         'public_key' => env('PAYSTACK_PUBLIC_KEY'),
     ],
 
+    'routely' => [
+        'base_url' => env('ROUTELY_BASE_URL', 'https://server.routely.co/api'),
+        'api_key' => env('ROUTELY_API_KEY', env('ROUTELY_TEST_KEY')),
+        'env' => env('ROUTELY_ENV', 'test'),
+        'sender' => [
+            'name' => env('ROUTELY_SENDER_NAME', 'FORMÉ Lagos'),
+            'phone' => env('ROUTELY_SENDER_PHONE', '07026126265'),
+            'email' => env('ROUTELY_SENDER_EMAIL', 'hello@forme.ng'),
+            'address' => env('ROUTELY_SENDER_ADDRESS', 'Lekki Phase 1, Lagos'),
+            'city' => env('ROUTELY_SENDER_CITY', 'Lekki'),
+            'state' => env('ROUTELY_SENDER_STATE', 'Lagos'),
+            'coordinates' => env('ROUTELY_SENDER_COORDINATES', '6.4426,3.4833'),
+        ],
+    ],
+
 ];

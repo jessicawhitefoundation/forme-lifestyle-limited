@@ -16,8 +16,8 @@ use Illuminate\Support\Str;
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
-    protected static ?string $navigationGroup = 'Catalogue';
+    protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+    protected static ?string $navigationGroup = 'Shop';
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -130,7 +130,10 @@ class ProductResource extends Resource
                 ->label('Category'),
         ])
         ->defaultGroup('category.name')
-        ->actions([Tables\Actions\EditAction::make()])
+        ->actions([
+            Tables\Actions\EditAction::make(),
+            Tables\Actions\DeleteAction::make(),
+        ])
         ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
     }
 

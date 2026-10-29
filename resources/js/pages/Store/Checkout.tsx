@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
+import axios from 'axios';
 
 interface CartItem {
     product_name: string;
@@ -27,24 +28,74 @@ interface CheckoutProps {
     cartItems: CartItem[];
     subtotal: number;
     shippingFee: number;
+    carrierInfo?: string;
+    deliveryTime?: string | null;
     total: number;
     user: User | null;
     savedCard?: SavedCard | null;
 }
 
-export default function Checkout({ cartItems, subtotal, shippingFee, total, user, savedCard }: CheckoutProps) {
+export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo: initialCarrier, deliveryTime: initialEta, total, user, savedCard }: CheckoutProps) {
     const [form, setForm] = useState({
         customer_name: user?.name ?? '',
         customer_email: user?.email ?? '',
         customer_phone: user?.phone ?? '',
         shipping_address: user?.shipping_address ?? '',
-        shipping_city: user?.shipping_city ?? '',
-        shipping_state: user?.shipping_state ?? '',
+        shipping_city: user?.shipping_city ?? 'Lekki',
+        shipping_state: user?.shipping_state ?? 'Lagos',
         notes: '',
     });
     const [useSavedCard, setUseSavedCard] = useState(!!savedCard);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [submitting, setSubmitting] = useState(false);
+
+    // Dynamic shipping rate via Routely
+    const [liveShippingFee, setLiveShippingFee] = useState<number>(shippingFee);
+    const [carrierInfo, setCarrierInfo] = useState<string>(initialCarrier ?? 'Routely Delivery');
+    const [deliveryEta, setDeliveryEta] = useState<string | null>(initialEta ?? '4 to 8 working hours');
+    const [calculatingRate, setCalculatingRate] = useState<boolean>(false);
+    const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        if (!form.shipping_state) {
+            return;
+        }
+
+        if (debounceTimer.current) {
+            clearTimeout(debounceTimer.current);
+        }
+
+        debounceTimer.current = setTimeout(async () => {
+            setCalculatingRate(true);
+            try {
+                const response = await axios.post('/checkout/shipping-rate', {
+                    address: form.shipping_address,
+                    city: form.shipping_city,
+                    state: form.shipping_state,
+                });
+
+                if (response.data && response.data.success) {
+                    setLiveShippingFee(Number(response.data.shipping_fee));
+                    if (response.data.carrier) {
+                        setCarrierInfo(response.data.carrier);
+                    }
+                    if (response.data.delivery_time) {
+                        setDeliveryEta(response.data.delivery_time);
+                    }
+                }
+            } catch (err) {
+                console.warn('Failed to calculate live Routely rate, retaining fallback', err);
+            } finally {
+                setCalculatingRate(false);
+            }
+        }, 500);
+
+        return () => {
+            if (debounceTimer.current) clearTimeout(debounceTimer.current);
+        };
+    }, [form.shipping_state, form.shipping_city, form.shipping_address]);
+
+    const finalTotal = subtotal + liveShippingFee;
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -193,18 +244,32 @@ export default function Checkout({ cartItems, subtotal, shippingFee, total, user
                             </div>
                         )}
 
-                        {/* Payment note */}
-                        <div style={{ background: 'var(--forme-surface)', padding: '16px', borderRadius: '4px', marginBottom: '24px', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                            <span style={{ fontSize: '18px', color: 'var(--forme-accent)', flexShrink: 0 }}>🔒</span>
-                            <div>
-                                <p style={{ fontSize: '13px', color: 'var(--forme-text)', fontWeight: 500, marginBottom: '4px' }}>Secure Payment via Paystack</p>
-                                <p style={{ fontSize: '12px', color: 'var(--forme-muted)' }}>You will be redirected to Paystack to complete your payment securely. We accept all major cards and bank transfers.</p>
+                        {/* Secure Payment Guarantee */}
+                        <div style={{ background: 'var(--forme-surface)', border: '1px solid var(--forme-border)', padding: '18px 20px', borderRadius: '4px', marginBottom: '24px' }}>
+                            <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '14px' }}>
+                                <span style={{ fontSize: '18px', color: 'var(--forme-accent)', flexShrink: 0, marginTop: '2px' }}>🔒</span>
+                                <div>
+                                    <p style={{ fontSize: '13px', color: 'var(--forme-text)', fontWeight: 600, letterSpacing: '0.3px', marginBottom: '4px' }}>
+                                        Bank-Grade 256-Bit SSL Encrypted Checkout
+                                    </p>
+                                    <p style={{ fontSize: '12px', color: 'var(--forme-muted)', lineHeight: '1.6' }}>
+                                        Your payment information is processed through an encrypted, PCI-DSS compliant gateway. Your card details are never stored on our servers.
+                                    </p>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid var(--forme-border)' }}>
+                                <span style={{ fontSize: '11px', color: 'var(--forme-muted)', marginRight: '4px' }}>Accepted:</span>
+                                {['Mastercard', 'Visa', 'Verve', 'Bank Transfer', 'USSD'].map(method => (
+                                    <span key={method} style={{ fontSize: '11px', fontWeight: 500, color: 'var(--forme-text)', background: 'var(--forme-bg)', border: '1px solid var(--forme-border)', padding: '4px 10px', borderRadius: '3px', letterSpacing: '0.3px' }}>
+                                        {method}
+                                    </span>
+                                ))}
                             </div>
                         </div>
 
-                        <button type="submit" disabled={submitting}
-                            style={{ width: '100%', background: 'var(--forme-accent)', color: '#fff', border: 'none', padding: '18px', fontSize: '12px', letterSpacing: '3px', textTransform: 'uppercase', cursor: submitting ? 'wait' : 'pointer', opacity: submitting ? 0.7 : 1, transition: 'opacity 0.2s' }}>
-                            {submitting ? 'Redirecting to Payment...' : `Pay ₦${total.toLocaleString()}`}
+                        <button type="submit" disabled={submitting || calculatingRate}
+                            style={{ width: '100%', background: 'var(--forme-accent)', color: '#fff', border: 'none', padding: '18px', fontSize: '12px', letterSpacing: '3px', textTransform: 'uppercase', cursor: (submitting || calculatingRate) ? 'wait' : 'pointer', opacity: (submitting || calculatingRate) ? 0.7 : 1, transition: 'opacity 0.2s' }}>
+                            {submitting ? 'Connecting to Secure Checkout...' : calculatingRate ? 'Calculating Shipping...' : `Pay ₦${finalTotal.toLocaleString()}`}
                         </button>
                     </form>
 
@@ -233,13 +298,20 @@ export default function Checkout({ cartItems, subtotal, shippingFee, total, user
                                 <span style={{ fontSize: '13px', color: 'var(--forme-muted)' }}>Subtotal</span>
                                 <span style={{ fontSize: '13px', color: 'var(--forme-text)' }}>₦{subtotal.toLocaleString()}</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-                                <span style={{ fontSize: '13px', color: 'var(--forme-muted)' }}>Shipping</span>
-                                <span style={{ fontSize: '13px', color: shippingFee === 0 ? 'var(--forme-accent-light)' : 'var(--forme-text)' }}>{shippingFee === 0 ? 'FREE' : `₦${shippingFee.toLocaleString()}`}</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                                <div>
+                                    <span style={{ fontSize: '13px', color: 'var(--forme-muted)', display: 'block' }}>Delivery (Routely)</span>
+                                    <span style={{ fontSize: '11px', color: 'var(--forme-muted)', display: 'block', marginTop: '2px' }}>
+                                        {carrierInfo} {deliveryEta ? `· ${deliveryEta}` : ''}
+                                    </span>
+                                </div>
+                                <span style={{ fontSize: '13px', color: 'var(--forme-text)', fontWeight: 500 }}>
+                                    {calculatingRate ? 'Calculating...' : `₦${liveShippingFee.toLocaleString()}`}
+                                </span>
                             </div>
                             <div style={{ borderTop: '1px solid var(--forme-border)', paddingTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: 'var(--forme-text)' }}>Total</span>
-                                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: 'var(--forme-accent)' }}>₦{total.toLocaleString()}</span>
+                                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: 'var(--forme-accent)' }}>₦{finalTotal.toLocaleString()}</span>
                             </div>
                         </div>
                     </div>

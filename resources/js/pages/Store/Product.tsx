@@ -1,6 +1,7 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import axios from 'axios';
+import SizeGuideModal from '@/components/SizeGuideModal';
 
 interface Variant {
     id: number;
@@ -19,6 +20,7 @@ interface Product {
     id: number;
     name: string;
     slug: string;
+    gender?: string | null;
     description: string | null;
     short_description: string | null;
     base_price: number;
@@ -61,7 +63,16 @@ export default function ProductPage({ product, related }: ProductPageProps) {
     const [adding, setAdding] = useState(false);
     const [addedMsg, setAddedMsg] = useState('');
     const [error, setError] = useState('');
-    const [activeTab, setActiveTab] = useState<'details' | 'care' | 'shipping'>('details');
+    const [activeTab, setActiveTab] = useState<'details' | 'sizing' | 'care' | 'shipping' | null>('details');
+    const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+
+    const genderKey = (product.gender === 'male' || product.gender === 'men') 
+        ? 'men' 
+        : (product.gender === 'kids' || (product.category && product.category.toLowerCase().includes('kid'))) 
+            ? 'kids' 
+            : 'women';
+    const sizeChartImg = `/images/size-charts/size-chart-${genderKey}.png`;
+    const sizeChartTitle = genderKey === 'men' ? "Men's Size Guide" : genderKey === 'kids' ? "Kids' Size Guide" : "Women's Size Guide";
 
     // Zoom state
     const [zoomed, setZoomed] = useState(false);
@@ -262,7 +273,13 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                             <div style={{ marginBottom: '24px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                                     <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: C.muted }}>Size</p>
-                                    <button style={{ fontSize: '12px', color: C.accent, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>Size Guide</button>
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setSizeGuideOpen(true)}
+                                        style={{ fontSize: '12px', color: C.accent, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                                    >
+                                        Size Guide
+                                    </button>
                                 </div>
                                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                                     {sizes.map(size => {
@@ -311,18 +328,101 @@ export default function ProductPage({ product, related }: ProductPageProps) {
 
                         {/* Accordion tabs */}
                         {[
-                            { key: 'details' as const, label: 'Details', content: product.description || 'No additional details.' },
-                            { key: 'care' as const, label: 'Care Instructions', content: product.care_instructions || 'Handle with care. Dry clean recommended.' },
-                            { key: 'shipping' as const, label: 'Shipping & Returns', content: 'Standard delivery within Lagos: 2-3 business days. Nigeria-wide: 3-7 business days. Free returns within 14 days.' },
+                            { key: 'details' as const, label: 'Details', isSizing: false, content: product.description || 'No additional details.' },
+                            { key: 'sizing' as const, label: 'Size & Fit Guide', isSizing: true, content: '' },
+                            { key: 'care' as const, label: 'Care Instructions', isSizing: false, content: product.care_instructions || 'Handle with care. Dry clean recommended.' },
+                            { key: 'shipping' as const, label: 'Shipping & Returns', isSizing: false, content: 'Standard delivery within Lagos: 2-3 business days. Nigeria-wide: 3-7 business days. Free returns within 14 days.' },
                         ].map(tab => (
                             <div key={tab.key} style={{ borderBottom: `1px solid ${C.border}` }}>
-                                <button onClick={() => setActiveTab(activeTab === tab.key ? 'details' : tab.key)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', background: 'none', border: 'none', cursor: 'pointer' }}>
+                                <button onClick={() => setActiveTab(activeTab === tab.key ? null : tab.key)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', background: 'none', border: 'none', cursor: 'pointer' }}>
                                     <span style={{ fontSize: '12px', letterSpacing: '1.5px', textTransform: 'uppercase', color: C.text, fontWeight: 500 }}>{tab.label}</span>
                                     <span style={{ fontSize: '18px', color: C.muted, transition: 'transform 0.2s', transform: activeTab === tab.key ? 'rotate(45deg)' : 'rotate(0)' }}>+</span>
                                 </button>
                                 {activeTab === tab.key && (
-                                    <div style={{ paddingBottom: '16px' }}>
-                                        <p style={{ fontSize: '13px', color: C.muted, lineHeight: '1.8' }} dangerouslySetInnerHTML={{ __html: tab.content }} />
+                                    <div style={{ paddingBottom: '20px' }}>
+                                        {tab.isSizing ? (
+                                            <div>
+                                                <p style={{ fontSize: '13px', color: C.muted, lineHeight: '1.7', marginBottom: '14px' }}>
+                                                    Formé garments are engineered for true-to-fit athletic performance and comfort. Tap below to enlarge the official brand chart or open our interactive measurement table.
+                                                </p>
+                                                
+                                                {/* Embedded Authentic Picture */}
+                                                <div 
+                                                    onClick={() => setSizeGuideOpen(true)}
+                                                    style={{ 
+                                                        position: 'relative', 
+                                                        cursor: 'zoom-in', 
+                                                        borderRadius: '8px', 
+                                                        overflow: 'hidden', 
+                                                        border: `1px solid ${C.border}`,
+                                                        background: C.surface,
+                                                        boxShadow: '0 4px 18px rgba(0,0,0,0.06)',
+                                                        maxWidth: '480px',
+                                                        marginBottom: '14px',
+                                                    }}
+                                                >
+                                                    <img 
+                                                        src={sizeChartImg} 
+                                                        alt={sizeChartTitle} 
+                                                        style={{ width: '100%', height: 'auto', display: 'block' }} 
+                                                    />
+                                                    <div style={{
+                                                        position: 'absolute',
+                                                        bottom: '12px',
+                                                        right: '12px',
+                                                        background: 'rgba(0,0,0,0.75)',
+                                                        color: '#fff',
+                                                        padding: '6px 14px',
+                                                        borderRadius: '20px',
+                                                        fontSize: '11px',
+                                                        fontWeight: 600,
+                                                        backdropFilter: 'blur(4px)',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                    }}>
+                                                        <span>🔍</span> Tap to Enlarge / Full Table
+                                                    </div>
+                                                </div>
+
+                                                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSizeGuideOpen(true)}
+                                                        style={{
+                                                            background: C.accent,
+                                                            color: '#fff',
+                                                            border: 'none',
+                                                            padding: '10px 18px',
+                                                            fontSize: '11px',
+                                                            letterSpacing: '1px',
+                                                            textTransform: 'uppercase',
+                                                            fontWeight: 700,
+                                                            borderRadius: '24px',
+                                                            cursor: 'pointer',
+                                                            transition: 'opacity 0.2s',
+                                                        }}
+                                                    >
+                                                        📋 Open Interactive Size Guide
+                                                    </button>
+                                                    <a
+                                                        href={sizeChartImg}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        style={{
+                                                            fontSize: '12px',
+                                                            color: C.accent,
+                                                            textDecoration: 'underline',
+                                                            fontWeight: 600,
+                                                        }}
+                                                    >
+                                                        View Raw High-Res Poster ↗
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <p style={{ fontSize: '13px', color: C.muted, lineHeight: '1.8' }} dangerouslySetInnerHTML={{ __html: tab.content }} />
+                                        )}
                                     </div>
                                 )}
                             </div>
@@ -353,6 +453,12 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                     </div>
                 )}
             </div>
+
+            <SizeGuideModal 
+                isOpen={sizeGuideOpen} 
+                onClose={() => setSizeGuideOpen(false)} 
+                defaultTab={product.gender === 'male' ? 'men' : product.gender === 'kids' ? 'kids' : 'women'} 
+            />
         </>
     );
 }

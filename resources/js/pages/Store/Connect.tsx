@@ -13,7 +13,7 @@ export default function Connect() {
     const socialLinks = [
         {
             name: 'FORMÉ Instagram',
-            url: 'https://www.instagram.com/thisis__forme?stkn=cXN0M3FxMzR6bmFq&utm_source=qr',
+            url: 'https://instagram.com/thisisforme_official?obrf=dHJtamZneDQ0NDhw',
             icon: (
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -32,7 +32,7 @@ export default function Connect() {
             ),
         },
         {
-            name: 'FORMÉ X (Twitter) account',
+            name: 'FORMÉ X (Twitter)',
             url: 'https://x.com/thisis__forme?s=21&t=Z6g7e-fMkC6dFLqG4HxwVw',
             icon: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">

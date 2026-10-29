@@ -14,10 +14,14 @@ interface Order {
     status: string;
     payment_status: string;
     total_amount: number;
+    shipping_fee?: number;
     customer_name: string;
     customer_email: string;
+    shipping_address?: string;
     shipping_city: string;
     shipping_state: string;
+    routely_tracking_number?: string | null;
+    routely_status?: string | null;
     items: OrderItem[];
 }
 
@@ -45,7 +49,7 @@ export default function OrderConfirmation({ order }: { order: Order }) {
                 </p>
 
                 {/* Order reference */}
-                <div style={{ background: 'var(--forme-surface)', border: '1px solid var(--forme-border)', padding: '24px', borderRadius: '4px', marginBottom: '40px' }}>
+                <div style={{ background: 'var(--forme-surface)', border: '1px solid var(--forme-border)', padding: '24px', borderRadius: '4px', marginBottom: '32px' }}>
                     <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--forme-muted)', marginBottom: '8px' }}>Order Reference</p>
                     <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '28px', color: 'var(--forme-text)', letterSpacing: '2px' }}>{order.order_number}</p>
                 </div>
@@ -68,11 +72,45 @@ export default function OrderConfirmation({ order }: { order: Order }) {
                     </div>
                 </div>
 
-                {/* Delivery info */}
-                <div style={{ background: 'var(--forme-surface)', padding: '20px', borderRadius: '4px', textAlign: 'left', marginBottom: '40px' }}>
-                    <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--forme-muted)', marginBottom: '12px' }}>Delivery To</p>
-                    <p style={{ fontSize: '14px', color: 'var(--forme-text)' }}>{order.shipping_city}, {order.shipping_state}</p>
-                    <p style={{ fontSize: '12px', color: 'var(--forme-muted)', marginTop: '8px' }}>Estimated delivery: 2-7 business days</p>
+                {/* Routely Logistics & Delivery Info */}
+                <div style={{ background: 'var(--forme-surface)', border: '1px solid var(--forme-border)', padding: '24px', borderRadius: '4px', textAlign: 'left', marginBottom: '40px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '20px' }}>🚚</span>
+                            <div>
+                                <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--forme-muted)' }}>Fulfillment Partner</p>
+                                <p style={{ fontSize: '14px', fontWeight: 500, color: 'var(--forme-text)' }}>Routely Logistics</p>
+                            </div>
+                        </div>
+                        {order.routely_status && (
+                            <span style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '20px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', textTransform: 'capitalize' }}>
+                                {order.routely_status}
+                            </span>
+                        )}
+                    </div>
+
+                    {order.routely_tracking_number ? (
+                        <div style={{ background: 'rgba(0,0,0,0.03)', padding: '16px', borderRadius: '4px', marginBottom: '16px' }}>
+                            <p style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--forme-muted)', marginBottom: '4px' }}>Routely Tracking ID</p>
+                            <p style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 600, color: 'var(--forme-accent)', letterSpacing: '1px' }}>
+                                {order.routely_tracking_number}
+                            </p>
+                        </div>
+                    ) : (
+                        <p style={{ fontSize: '12px', color: 'var(--forme-muted)', marginBottom: '16px', fontStyle: 'italic' }}>
+                            Your parcel is being packaged. Once handed over to our Routely courier, live tracking updates will appear here.
+                        </p>
+                    )}
+
+                    <div style={{ borderTop: '1px solid var(--forme-border)', paddingTop: '16px' }}>
+                        <p style={{ fontSize: '11px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--forme-muted)', marginBottom: '6px' }}>Destination</p>
+                        <p style={{ fontSize: '14px', color: 'var(--forme-text)' }}>
+                            {order.shipping_address ? `${order.shipping_address}, ` : ''}{order.shipping_city}, {order.shipping_state}
+                        </p>
+                        <p style={{ fontSize: '12px', color: 'var(--forme-muted)', marginTop: '6px' }}>
+                            Estimated delivery: {order.shipping_state?.toLowerCase() === 'lagos' ? '1 - 2 business days' : '2 - 5 business days'}
+                        </p>
+                    </div>
                 </div>
 
                 {/* Actions */}

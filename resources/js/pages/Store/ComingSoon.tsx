@@ -400,7 +400,7 @@ export default function ComingSoon() {
                 <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                     {/* Instagram */}
                     <a
-                        href="https://www.instagram.com/thisis__forme?stkn=cXN0M3FxMzR6bmFq&utm_source=qr"
+                        href="https://instagram.com/thisisforme_official?obrf=dHJtamZneDQ0NDhw"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="social-icon-btn"

@@ -31,9 +31,22 @@ class CheckoutController extends Controller
         }
 
         $subtotal = $items->sum(fn($i) => $i->variant->final_price * $i->quantity);
-        $shippingFee = $subtotal >= 50000 ? 0 : 3000;
-
         $user = auth()->user();
+
+        $initialState = $user?->shipping_state ?? 'Lagos';
+        $initialCity  = $user?->shipping_city ?? 'Lekki';
+        $initialAddr  = $user?->shipping_address ?? 'Lekki';
+
+        $quote = app(\App\Services\RoutelyService::class)->getFee([
+            'address' => $initialAddr,
+            'city'    => $initialCity,
+            'state'   => $initialState,
+            'item_value' => $subtotal,
+        ]);
+
+        $shippingFee  = (float) ($quote['rate'] ?? 3000);
+        $carrierInfo  = $quote['carrier'] ?? 'Routely Delivery';
+        $deliveryTime = $quote['delivery_time'] ?? '4 to 8 working hours';
 
         return Inertia::render('Store/Checkout', [
             'cartItems' => $items->map(fn($item) => [
@@ -47,6 +60,8 @@ class CheckoutController extends Controller
             ]),
             'subtotal' => $subtotal,
             'shippingFee' => $shippingFee,
+            'carrierInfo' => $carrierInfo,
+            'deliveryTime' => $deliveryTime,
             'total' => $subtotal + $shippingFee,
             'user' => $user,
             // Pass saved card info so frontend can show "Pay with saved card" toggle
@@ -77,7 +92,15 @@ class CheckoutController extends Controller
         }
 
         $subtotal = $items->sum(fn($i) => $i->variant->final_price * $i->quantity);
-        $shippingFee = $subtotal >= 50000 ? 0 : 3000;
+
+        $quote = app(\App\Services\RoutelyService::class)->getFee([
+            'address' => $request->shipping_address,
+            'city' => $request->shipping_city,
+            'state' => $request->shipping_state,
+            'item_value' => $subtotal,
+        ]);
+        $shippingFee = (float) ($quote['rate'] ?? 3000);
+
         $total = $subtotal + $shippingFee;
 
         // ── Idempotency Check: Reuse recent unpaid pending order if duplicate request ──
@@ -268,6 +291,39 @@ class CheckoutController extends Controller
         ];
     }
 
+    public function calculateShippingRate(Request $request, \App\Services\RoutelyService $routely)
+    {
+        $request->validate([
+            'address' => 'nullable|string',
+            'city' => 'nullable|string',
+            'state' => 'required|string',
+        ]);
+
+        $cart = $this->getCart();
+        $items = $cart->items()->with(['variant.product'])->get();
+        $subtotal = $items->sum(fn($i) => $i->variant->final_price * $i->quantity);
+
+        $quote = $routely->getFee([
+            'address' => $request->address ?: ($request->city ?: $request->state),
+            'city' => $request->city ?: 'Lagos',
+            'state' => $request->state,
+            'item_value' => $subtotal,
+        ]);
+
+        $rate = (float) ($quote['rate'] ?? 3000);
+        $carrier = $quote['carrier'] ?? ('Routely ' . ucfirst($quote['type'] ?? 'Standard'));
+        $deliveryTime = $quote['delivery_time'] ?? null;
+
+        return response()->json([
+            'success' => true,
+            'shipping_fee' => $rate,
+            'carrier' => $carrier,
+            'delivery_time' => $deliveryTime,
+            'type' => $quote['type'] ?? 'standard',
+            'source' => $quote['source'] ?? 'routely',
+        ]);
+    }
+
     public function confirmation(string $orderNumber): Response
     {
         $order = Order::with('items')->where('order_number', $orderNumber)->firstOrFail();
@@ -282,6 +338,10 @@ class CheckoutController extends Controller
                 'customer_email' => $order->customer_email,
                 'shipping_city' => $order->shipping_city,
                 'shipping_state' => $order->shipping_state,
+                'shipping_address' => $order->shipping_address,
+                'shipping_fee' => $order->shipping_fee,
+                'routely_tracking_number' => $order->routely_tracking_number,
+                'routely_status' => $order->routely_status,
                 'items' => $order->items->map(fn($i) => [
                     'product_name' => $i->product_name,
                     'variant_description' => $i->variant_description,

@@ -16,6 +16,7 @@ Route::middleware('throttle:storefront')->group(function () {
     Route::get('/policy', [StoreController::class, 'policy'])->name('policy');
     Route::get('/about', [StoreController::class, 'about'])->name('about');
     Route::get('/connect', [StoreController::class, 'connect'])->name('connect');
+    Route::get('/size-guide', [StoreController::class, 'sizeGuide'])->name('size-guide');
     Route::post('/waitlist', [StoreController::class, 'waitlist'])->middleware('throttle:15,1')->name('waitlist.store');
     Route::post('/store/unlock', [StoreController::class, 'unlock'])->middleware('throttle:10,1')->name('store.unlock');
     Route::get('/store/lock', [StoreController::class, 'lock'])->name('store.lock');
@@ -32,6 +33,7 @@ Route::middleware('throttle:30,1')->group(function () {
 
 // ─── Checkout & Paystack (Rate Limited) ───────────────────────────────────────
 Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
+Route::post('/checkout/shipping-rate', [CheckoutController::class, 'calculateShippingRate'])->name('checkout.shipping-rate');
 Route::post('/checkout/initiate', [CheckoutController::class, 'initiate'])
     ->middleware('throttle:checkout')
     ->name('checkout.initiate');

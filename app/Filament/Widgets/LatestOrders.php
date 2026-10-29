@@ -47,9 +47,10 @@ class LatestOrders extends BaseWidget
                 Tables\Columns\TextColumn::make('payment_status')
                     ->badge()
                     ->color(fn (string $state): string => match ($state) {
+                        'paid', 'success' => 'success',
+                        'unpaid', 'failed' => 'danger',
                         'pending' => 'warning',
-                        'success' => 'success',
-                        'failed' => 'danger',
+                        'refunded' => 'warning',
                         default => 'gray',
                     }),
                 Tables\Columns\TextColumn::make('created_at')

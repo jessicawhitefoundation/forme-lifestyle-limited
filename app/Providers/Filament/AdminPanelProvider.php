@@ -42,6 +42,15 @@ class AdminPanelProvider extends PanelProvider
                 '),
             )
             ->favicon(asset('favicon.svg'))
+            ->sidebarCollapsibleOnDesktop()
+            ->navigationGroups([
+                \Filament\Navigation\NavigationGroup::make('Shop')
+                    ->icon('heroicon-o-shopping-bag'),
+                \Filament\Navigation\NavigationGroup::make('Storefront')
+                    ->icon('heroicon-o-sparkles'),
+                \Filament\Navigation\NavigationGroup::make('Administration')
+                    ->icon('heroicon-o-shield-check'),
+            ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
             ->pages([

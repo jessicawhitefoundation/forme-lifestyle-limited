@@ -8,6 +8,8 @@ interface Order {
     payment_status: string;
     total_amount: number;
     items_count: number;
+    routely_tracking_number?: string | null;
+    routely_status?: string | null;
     created_at: string;
 }
 
@@ -66,13 +68,18 @@ export default function Orders({ orders }: OrdersProps) {
                                     <div>
                                         <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '20px', color: '#1a1a1a', marginBottom: '6px', letterSpacing: '1px' }}>{order.order_number}</p>
                                         <p style={{ fontSize: '12px', color: '#888', marginBottom: '12px' }}>{order.created_at} · {order.items_count} {order.items_count === 1 ? 'item' : 'items'}</p>
-                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
                                             <span style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '20px', background: sc.bg, color: sc.color, letterSpacing: '0.5px', textTransform: 'capitalize' }}>
                                                 {order.status}
                                             </span>
                                             <span style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '20px', background: pc.bg, color: pc.color, letterSpacing: '0.5px', textTransform: 'capitalize' }}>
                                                 {order.payment_status}
                                             </span>
+                                            {order.routely_tracking_number && (
+                                                <span style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '20px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', letterSpacing: '0.5px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                                    🚚 Routely: {order.routely_tracking_number}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                     <div style={{ textAlign: 'right' }}>

@@ -15,7 +15,8 @@ class StoreSettings extends Page implements HasForms
     use InteractsWithForms;
 
     protected static ?string $navigationIcon = 'heroicon-o-megaphone';
-    protected static ?string $navigationGroup = 'System';
+    protected static ?string $navigationGroup = 'Storefront';
+    protected static ?int $navigationSort = 2;
     protected static ?string $title = 'Store Settings';
 
     protected static string $view = 'filament.pages.store-settings';

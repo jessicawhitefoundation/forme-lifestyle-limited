@@ -157,7 +157,7 @@ export default function Cart({ cartItems: initialItems, total: initialTotal }: C
                             </Link>
 
                             <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                                {['Paystack', 'Visa', 'Mastercard'].map(b => (
+                                {['Visa', 'Mastercard', 'Verve', 'Bank Transfer'].map(b => (
                                     <span key={b} style={{ fontSize: '10px', color: '#888', background: '#fff', border: '1px solid #ddd', padding: '4px 8px', borderRadius: '3px' }}>{b}</span>
                                 ))}
                             </div>

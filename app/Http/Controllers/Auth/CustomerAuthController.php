@@ -87,6 +87,8 @@ class CustomerAuthController extends Controller
                 'payment_status' => $o->payment_status,
                 'total_amount'   => $o->total_amount,
                 'items_count'    => $o->items->count(),
+                'routely_tracking_number' => $o->routely_tracking_number,
+                'routely_status' => $o->routely_status,
                 'created_at'     => $o->created_at->format('M d, Y'),
             ]);
 

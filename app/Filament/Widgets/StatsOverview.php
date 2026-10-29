@@ -14,7 +14,7 @@ class StatsOverview extends BaseWidget
 
     protected function getStats(): array
     {
-        $revenue = Order::where('payment_status', 'success')->sum('total_amount');
+        $revenue = Order::whereIn('payment_status', ['paid', 'success'])->sum('total_amount');
         
         // Let's generate a mock chart array for visuals
         $revenueChart = [10, 20, 15, 30, 25, 40, 50, 45, 60, 55, 70];

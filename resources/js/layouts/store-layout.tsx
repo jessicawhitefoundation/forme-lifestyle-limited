@@ -217,7 +217,13 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                         </div>
                         <div>
                             <p style={{ fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: '20px', color: C.accentLight || C.accent, fontWeight: 600 }}>Help</p>
-                            {['FAQ', 'Size Guide', 'Contact Us'].map(t => (
+                            <Link
+                                href="/size-guide"
+                                style={{ display: 'block', fontSize: '14px', color: C.text, fontWeight: 400, textDecoration: 'none', marginBottom: '12px', transition: 'opacity .2s' }}
+                                onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
+                                onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                            >Size Guide</Link>
+                            {['FAQ', 'Contact Us'].map(t => (
                                 <p key={t} style={{ fontSize: '14px', color: C.text, fontWeight: 400, marginBottom: '12px', cursor: 'pointer', transition: 'opacity .2s' }}
                                     onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')} onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>{t}</p>
                             ))}
@@ -232,12 +238,28 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                             <p style={{ fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: '20px', color: C.accentLight || C.accent, fontWeight: 600 }}>Connect</p>
                             <p style={{ fontSize: '14px', color: C.text, fontWeight: 400, marginBottom: '8px' }}>hello@forme.ng</p>
                             <p style={{ fontSize: '14px', color: C.text, fontWeight: 400, marginBottom: '16px' }}>WhatsApp: 07026126265</p>
-                            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '16px' }}>
+                                <a 
+                                    href="https://instagram.com/thisisforme_official?obrf=dHJtamZneDQ0NDhw"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="FORMÉ on Instagram"
+                                    title="FORMÉ on Instagram"
+                                    style={{ color: C.text, display: 'flex', alignItems: 'center', transition: 'color 0.2s', textDecoration: 'none' }}
+                                    onMouseEnter={e => (e.currentTarget.style.color = C.accent)}
+                                    onMouseLeave={e => (e.currentTarget.style.color = C.text)}
+                                >
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+                                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                                    </svg>
+                                </a>
                                 <Link 
                                     href="/connect"
                                     style={{ 
                                         display: 'inline-block',
-                                        fontSize: '14px', 
+                                        fontSize: '13px', 
                                         color: C.text, 
                                         fontWeight: 500, 
                                         textDecoration: 'none', 

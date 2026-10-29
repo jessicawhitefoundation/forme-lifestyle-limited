@@ -13,8 +13,20 @@ use Filament\Tables\Table;
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
-    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $navigationGroup = 'Sales';
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+    protected static ?string $navigationGroup = 'Shop';
+    protected static ?int $navigationSort = 1;
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = static::getModel()::whereIn('status', ['pending', 'processing'])->count();
+        return $count > 0 ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
 
     public static function form(Form $form): Form
     {
@@ -48,6 +60,22 @@ class OrderResource extends Resource
                 Forms\Components\TextInput::make('shipping_fee')->disabled()->prefix('₦'),
                 Forms\Components\TextInput::make('total_amount')->disabled()->prefix('₦'),
             ])->columns(3),
+
+            Forms\Components\Section::make('Routely Logistics & Dispatch')->schema([
+                Forms\Components\TextInput::make('routely_tracking_number')
+                    ->label('Tracking Number')
+                    ->disabled(),
+                Forms\Components\TextInput::make('routely_status')
+                    ->label('Routely Status')
+                    ->disabled(),
+                Forms\Components\TextInput::make('routely_shipment_id')
+                    ->label('Routely Shipment ID')
+                    ->disabled(),
+                Forms\Components\TextInput::make('routely_fee')
+                    ->label('Logistics Cost')
+                    ->prefix('₦')
+                    ->disabled(),
+            ])->columns(4),
 
             Forms\Components\Section::make('Notes')->schema([
                 Forms\Components\Textarea::make('notes')->disabled()->columnSpanFull(),
@@ -94,6 +122,11 @@ class OrderResource extends Resource
                 ->colors(['warning' => 'pending', 'primary' => 'processing', 'info' => 'shipped', 'success' => 'delivered', 'danger' => 'cancelled']),
             Tables\Columns\BadgeColumn::make('payment_status')
                 ->colors(['danger' => 'unpaid', 'success' => 'paid', 'warning' => 'refunded']),
+            Tables\Columns\TextColumn::make('routely_tracking_number')
+                ->label('Routely Tracking')
+                ->searchable()
+                ->copyable()
+                ->placeholder('Not dispatched'),
             Tables\Columns\TextColumn::make('total_amount')->money('NGN')->sortable(),
             Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
         ])
@@ -104,7 +137,36 @@ class OrderResource extends Resource
             Tables\Filters\SelectFilter::make('payment_status')
                 ->options(['unpaid' => 'Unpaid', 'paid' => 'Paid', 'refunded' => 'Refunded']),
         ])
-        ->actions([Tables\Actions\ViewAction::make(), Tables\Actions\EditAction::make()]);
+        ->actions([
+            Tables\Actions\Action::make('dispatch_routely')
+                ->label('Dispatch Routely')
+                ->icon('heroicon-o-truck')
+                ->color('success')
+                ->visible(fn (Order $record) => empty($record->routely_tracking_number) && $record->payment_status === 'paid')
+                ->requiresConfirmation()
+                ->modalHeading('Book Shipment with Routely')
+                ->modalDescription(fn (Order $record) => "Are you sure you want to book a courier to deliver Order #{$record->order_number} to {$record->shipping_address}, {$record->shipping_city}, {$record->shipping_state}?")
+                ->action(function (Order $record) {
+                    $service = app(\App\Services\RoutelyService::class);
+                    $result = $service->createShipment($record);
+                    if ($result['success'] ?? false) {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Dispatched on Routely')
+                            ->body('Tracking ID: ' . ($result['tracking_number'] ?? 'Created'))
+                            ->success()
+                            ->send();
+                        $record->update(['status' => 'shipped']);
+                    } else {
+                        \Filament\Notifications\Notification::make()
+                            ->title('Routely Dispatch Failed')
+                            ->body($result['message'] ?? 'Could not create shipment on Routely. Check your wallet balance.')
+                            ->danger()
+                            ->send();
+                    }
+                }),
+            Tables\Actions\ViewAction::make(),
+            Tables\Actions\EditAction::make(),
+        ]);
     }
 
     public static function getPages(): array
