@@ -15,6 +15,16 @@ class StoreController extends Controller
 {
     public function home(Request $request): Response
     {
+        $password = env('STORE_PASSWORD', 'forme2026');
+
+        if ($request->query('preview') === $password) {
+            session(['store_unlocked' => true]);
+        }
+
+        if (!session('store_unlocked')) {
+            return Inertia::render('Store/ComingSoon');
+        }
+
         $featuredProducts = Product::with(['images', 'category'])
             ->where('is_active', true)
             ->where('is_featured', true)
