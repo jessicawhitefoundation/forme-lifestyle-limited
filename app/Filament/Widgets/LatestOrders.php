@@ -12,8 +12,8 @@ use Illuminate\Support\Number;
 class LatestOrders extends BaseWidget
 {
     protected static ?int $sort = 2;
-    
-    protected int | string | array $columnSpan = 'full';
+
+    protected int|string|array $columnSpan = 'full';
 
     public function table(Table $table): Table
     {
@@ -32,7 +32,7 @@ class LatestOrders extends BaseWidget
                     ->searchable(),
                 Tables\Columns\TextColumn::make('total_amount')
                     ->label('Total')
-                    ->formatStateUsing(fn (string $state): string => '₦' . Number::format($state, 2))
+                    ->formatStateUsing(fn ($state): string => '₦'.Number::format((float) $state, 2))
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status')
                     ->badge()

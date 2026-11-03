@@ -5,8 +5,12 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaystackWebhookController;
 use App\Http\Controllers\StoreController;
+use App\Http\Middleware\HandleAppearance;
+use App\Http\Middleware\HandleInertiaRequests;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 // ─── Store Front (Rate Limited: Max 60 req/min) ────────────────────────────────
 Route::middleware('throttle:storefront')->group(function () {
@@ -74,10 +78,10 @@ Route::get('/storage/{path}', function (string $path) {
     return response()->file($fullPath);
 })->where('path', '.*')
     ->withoutMiddleware([
-        \Illuminate\Session\Middleware\StartSession::class,
-        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-        \App\Http\Middleware\HandleInertiaRequests::class,
-        \App\Http\Middleware\HandleAppearance::class,
+        StartSession::class,
+        ShareErrorsFromSession::class,
+        HandleInertiaRequests::class,
+        HandleAppearance::class,
     ]);
 
 require __DIR__.'/settings.php';

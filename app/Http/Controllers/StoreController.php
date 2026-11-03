@@ -7,6 +7,7 @@ use App\Models\HeroSlide;
 use App\Models\Product;
 use App\Models\WaitlistEntry;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -15,7 +16,7 @@ class StoreController extends Controller
 {
     public function home(Request $request): Response
     {
-        $featuredProducts = Product::with(['images', 'category'])
+        $featuredProducts = Product::with(['images', 'category', 'variants'])
             ->where('is_active', true)
             ->where('is_featured', true)
             ->latest()
@@ -29,7 +30,7 @@ class StoreController extends Controller
             ->orderBy('sort_order')
             ->get();
 
-        $newArrivals = Product::with(['images', 'category'])
+        $newArrivals = Product::with(['images', 'category', 'variants'])
             ->where('is_active', true)
             ->latest()
             ->take(4)
@@ -41,12 +42,12 @@ class StoreController extends Controller
 
         $heroSlides = $dbSlides->isNotEmpty()
             ? $dbSlides->map(fn ($s) => [
-                'type'   => $s->type,
-                'src'    => $s->src_url,
+                'type' => $s->type,
+                'src' => $s->src_url,
                 'poster' => $s->poster_url,
-                'label'  => $s->label,
-                'sub'    => $s->sub,
-              ])->values()->all()
+                'label' => $s->label,
+                'sub' => $s->sub,
+            ])->values()->all()
             : [
                 ['type' => 'image', 'src' => 'https://images.unsplash.com/photo-1509631179647-0177331693ae?auto=format&fit=crop&w=900&q=85', 'poster' => null, 'label' => 'The Bloom Edit',     'sub' => 'New Season Arrivals'],
                 ['type' => 'image', 'src' => 'https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=900&q=85', 'poster' => null, 'label' => 'Menswear Essentials',  'sub' => 'Resort Collection'],
@@ -56,9 +57,9 @@ class StoreController extends Controller
 
         return Inertia::render('Store/Home', [
             'featuredProducts' => $featuredProducts,
-            'categories'       => $categories,
-            'newArrivals'      => $newArrivals,
-            'heroSlides'       => $heroSlides,
+            'categories' => $categories,
+            'newArrivals' => $newArrivals,
+            'heroSlides' => $heroSlides,
         ]);
     }
 
@@ -116,10 +117,10 @@ class StoreController extends Controller
         $categories = Category::where('is_active', true)->orderBy('sort_order')->get();
 
         return Inertia::render('Store/Collection', [
-            'products'        => $products,
-            'categories'      => $categories,
+            'products' => $products,
+            'categories' => $categories,
             'currentCategory' => $currentCategory,
-            'filters'         => request()->only(['size', 'min_price', 'max_price', 'in_stock', 'gender']),
+            'filters' => request()->only(['size', 'min_price', 'max_price', 'in_stock', 'gender']),
         ]);
     }
 
@@ -130,7 +131,7 @@ class StoreController extends Controller
             ->where('is_active', true)
             ->firstOrFail();
 
-        $related = Product::with(['images'])
+        $related = Product::with(['images', 'variants'])
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->where('is_active', true)
@@ -138,54 +139,73 @@ class StoreController extends Controller
             ->get()
             ->map(fn ($p) => $this->formatProduct($p));
 
+        $basePrice = (float) $product->base_price;
+        if ($basePrice <= 0 && $product->variants->isNotEmpty()) {
+            $variantPrice = $product->variants->where('is_active', true)->min(fn ($v) => (float) $v->final_price > 0 ? (float) $v->final_price : (float) $v->price_modifier);
+            if ($variantPrice && $variantPrice > 0) {
+                $basePrice = (float) $variantPrice;
+            }
+        }
+
         return Inertia::render('Store/Product', [
             'product' => [
-                'id'               => $product->id,
-                'name'             => $product->name,
-                'slug'             => $product->slug,
-                'description'      => $product->description,
-                'short_description'=> $product->short_description,
-                'base_price'       => $product->base_price,
-                'compare_price'    => $product->compare_price,
-                'material'         => $product->material,
-                'care_instructions'=> $product->care_instructions,
-                'category'         => $product->category?->name,
-                'images'           => $product->images->map(fn ($img) => [
-                    'id'         => $img->id,
-                    'url'        => asset('storage/'.$img->image_path),
-                    'alt'        => $img->alt_text ?? $product->name,
+                'id' => $product->id,
+                'name' => $product->name,
+                'slug' => $product->slug,
+                'description' => $product->description,
+                'short_description' => $product->short_description,
+                'base_price' => $basePrice,
+                'compare_price' => $product->compare_price,
+                'material' => $product->material,
+                'care_instructions' => $product->care_instructions,
+                'category' => $product->category?->name,
+                'images' => $product->images->map(fn ($img) => [
+                    'id' => $img->id,
+                    'url' => asset('storage/'.$img->image_path),
+                    'alt' => $img->alt_text ?? $product->name,
                     'is_primary' => $img->is_primary,
                 ]),
-                'variants'         => $product->variants->where('is_active', true)->values()->map(fn ($v) => [
-                    'id'             => $v->id,
-                    'color'          => $v->color,
-                    'color_hex'      => $v->color_hex,
-                    'size'           => $v->size,
+                'variants' => $product->variants->where('is_active', true)->values()->map(fn ($v) => [
+                    'id' => $v->id,
+                    'color' => $v->color,
+                    'color_hex' => $v->color_hex,
+                    'size' => $v->size,
                     'price_modifier' => $v->price_modifier,
-                    'final_price'    => $v->final_price,
-                    'stock'          => $v->stock_quantity,
-                    'sku'            => $v->sku,
+                    'final_price' => $v->final_price,
+                    'stock' => $v->stock_quantity,
+                    'sku' => $v->sku,
                 ]),
             ],
             'related' => $related,
         ]);
     }
 
+    /**
+     * @return array<string, mixed>
+     */
     private function formatProduct(Product $p): array
     {
         $primaryImg = $p->images->firstWhere('is_primary', true) ?? $p->images->first();
-        $secondImg  = $p->images->whereNotIn('id', [$primaryImg?->id])->first();
+        $secondImg = $p->images->whereNotIn('id', [$primaryImg?->id])->first();
+
+        $price = (float) $p->base_price;
+        if ($price <= 0 && $p->variants->isNotEmpty()) {
+            $variantPrice = $p->variants->where('is_active', true)->min(fn ($v) => (float) $v->final_price > 0 ? (float) $v->final_price : (float) $v->price_modifier);
+            if ($variantPrice && $variantPrice > 0) {
+                $price = (float) $variantPrice;
+            }
+        }
 
         return [
-            'id'            => $p->id,
-            'name'          => $p->name,
-            'slug'          => $p->slug,
-            'base_price'    => $p->base_price,
+            'id' => $p->id,
+            'name' => $p->name,
+            'slug' => $p->slug,
+            'base_price' => $price,
             'compare_price' => $p->compare_price,
-            'category'      => $p->category?->name,
+            'category' => $p->category?->name,
             'primary_image' => $primaryImg ? asset('storage/'.$primaryImg->image_path) : null,
-            'hover_image'   => $secondImg  ? asset('storage/'.$secondImg->image_path)  : null,
-            'is_featured'   => $p->is_featured,
+            'hover_image' => $secondImg ? asset('storage/'.$secondImg->image_path) : null,
+            'is_featured' => $p->is_featured,
         ];
     }
 
@@ -217,10 +237,11 @@ class StoreController extends Controller
             'password' => 'required|string',
         ]);
 
-        $correctPassword = env('STORE_PASSWORD', 'forme2026');
+        $correctPassword = (string) config('app.store_password', 'forme2026');
 
         if ($request->password === $correctPassword) {
             session(['store_unlocked' => true]);
+
             return response()->json(['success' => true]);
         }
 
@@ -230,9 +251,10 @@ class StoreController extends Controller
         ], 422);
     }
 
-    public function lock()
+    public function lock(): RedirectResponse
     {
         session()->forget('store_unlocked');
+
         return redirect()->route('home');
     }
 }

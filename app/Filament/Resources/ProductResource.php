@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 
@@ -60,7 +61,11 @@ class ProductResource extends Resource
                             Forms\Components\ColorPicker::make('color_hex')->label('Hex'),
                             Forms\Components\TextInput::make('size'),
                             Forms\Components\TextInput::make('sku'),
-                            Forms\Components\TextInput::make('price_modifier')->numeric()->prefix('₦')->default(0),
+                            Forms\Components\TextInput::make('price_modifier')
+                                ->numeric()
+                                ->prefix('₦')
+                                ->default(0)
+                                ->helperText('Extra cost added to Base Price (+₦0 if standard)'),
                             Forms\Components\TextInput::make('stock_quantity')->numeric()->default(0),
                             Forms\Components\Toggle::make('is_active')->default(true),
                         ])->columns(3),
@@ -94,7 +99,11 @@ class ProductResource extends Resource
                 ]),
 
                 Forms\Components\Section::make('Pricing')->schema([
-                    Forms\Components\TextInput::make('base_price')->required()->numeric()->prefix('₦'),
+                    Forms\Components\TextInput::make('base_price')
+                        ->required()
+                        ->numeric()
+                        ->prefix('₦')
+                        ->helperText('Main selling price for this product'),
                     Forms\Components\TextInput::make('compare_price')->numeric()->prefix('₦')
                         ->helperText('Original price (for sale display)'),
                 ]),
@@ -131,7 +140,35 @@ class ProductResource extends Resource
             }),
             Tables\Columns\TextColumn::make('base_price')
                 ->label('Price')
-                ->formatStateUsing(fn ($state) => filled($state) ? '₦'.Number::format((float) $state, 2) : '—')
+                ->formatStateUsing(function ($state, Product $record): string {
+                    $base = (float) $state;
+                    $variants = $record->variants;
+
+                    if ($base > 0) {
+                        if ($variants->isNotEmpty()) {
+                            $prices = $variants->map(fn ($v) => $base + (float) $v->price_modifier)->unique();
+                            if ($prices->count() > 1) {
+                                return '₦'.Number::format($prices->min(), 2).' – ₦'.Number::format($prices->max(), 2);
+                            }
+                        }
+
+                        return '₦'.Number::format($base, 2);
+                    }
+
+                    if ($variants->isNotEmpty()) {
+                        $variantPrices = $variants->map(fn ($v) => (float) $v->price_modifier)->filter(fn ($p) => $p > 0);
+                        if ($variantPrices->isNotEmpty()) {
+                            $min = (float) $variantPrices->min();
+                            $max = (float) $variantPrices->max();
+
+                            return $min === $max
+                                ? '₦'.Number::format($min, 2)
+                                : '₦'.Number::format($min, 2).' – ₦'.Number::format($max, 2);
+                        }
+                    }
+
+                    return '₦'.Number::format($base, 2);
+                })
                 ->sortable(),
             Tables\Columns\TextColumn::make('variants_count')->counts('variants')->label('Variants'),
             Tables\Columns\IconColumn::make('is_featured')->boolean()->label('Featured'),
@@ -165,6 +202,14 @@ class ProductResource extends Resource
                     }),
             ])
             ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
+    }
+
+    /**
+     * @return Builder<Product>
+     */
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['variants', 'images', 'category']);
     }
 
     public static function getPages(): array
