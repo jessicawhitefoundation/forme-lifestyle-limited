@@ -159,12 +159,39 @@ class StoreController extends Controller
                 'material' => $product->material,
                 'care_instructions' => $product->care_instructions,
                 'category' => $product->category?->name,
-                'images' => $product->images->map(fn ($img) => [
-                    'id' => $img->id,
-                    'url' => asset('storage/'.$img->image_path),
-                    'alt' => $img->alt_text ?? $product->name,
-                    'is_primary' => $img->is_primary,
-                ]),
+                'images' => $product->images->map(function ($img, $index) use ($product) {
+                    $color = $img->color;
+
+                    // Fallback 1: check alt_text for variant colors if color is empty
+                    if (! $color && $img->alt_text) {
+                        foreach ($product->variants as $variant) {
+                            if ($variant->color && stripos($img->alt_text, $variant->color) !== false) {
+                                $color = $variant->color;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Fallback 2: if still no color, map sequential images to sequential distinct colors
+                    if (! $color) {
+                        $distinctColors = $product->variants->pluck('color')->filter()->unique()->values();
+                        if ($distinctColors->isNotEmpty()) {
+                            if (! $img->is_primary && $distinctColors->has($index - 1)) {
+                                $color = $distinctColors->get($index - 1);
+                            } elseif ($distinctColors->has($index)) {
+                                $color = $distinctColors->get($index);
+                            }
+                        }
+                    }
+
+                    return [
+                        'id' => $img->id,
+                        'url' => asset('storage/'.$img->image_path),
+                        'alt' => $img->alt_text ?? ($color ? "{$product->name} - {$color}" : $product->name),
+                        'color' => $color,
+                        'is_primary' => $img->is_primary,
+                    ];
+                }),
                 'variants' => $product->variants->where('is_active', true)->values()->map(fn ($v) => [
                     'id' => $v->id,
                     'color' => $v->color,

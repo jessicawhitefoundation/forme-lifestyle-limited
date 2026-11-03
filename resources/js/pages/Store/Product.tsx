@@ -14,7 +14,13 @@ interface Variant {
     sku: string | null;
 }
 
-interface ProductImage { id: number; url: string; alt: string; is_primary: boolean; }
+interface ProductImage {
+    id: number;
+    url: string;
+    alt: string;
+    color?: string | null;
+    is_primary: boolean;
+}
 
 interface Product {
     id: number;
@@ -56,9 +62,27 @@ const C = {
 };
 
 export default function ProductPage({ product, related }: ProductPageProps) {
-    const [selectedImage, setSelectedImage] = useState(0);
-    const [selectedColor, setSelectedColor] = useState<string | null>(null);
+    const colors = [...new Set(product.variants.filter(v => v.color).map(v => v.color!))];
+    const sizes  = [...new Set(product.variants.filter(v => v.size).map(v => v.size!))];
+
+    const [selectedColor, setSelectedColor] = useState<string | null>(() => {
+        return colors.length > 0 ? colors[0] : null;
+    });
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
+
+    const [selectedImage, setSelectedImage] = useState<number>(() => {
+        if (colors.length > 0) {
+            const firstColor = colors[0].toLowerCase().trim();
+            const idx = product.images.findIndex(img => 
+                (img.color && img.color.toLowerCase().trim() === firstColor) ||
+                (img.alt && img.alt.toLowerCase().includes(firstColor))
+            );
+            if (idx !== -1) return idx;
+        }
+        const primaryIdx = product.images.findIndex(img => img.is_primary);
+        return primaryIdx !== -1 ? primaryIdx : 0;
+    });
+
     const [quantity, setQuantity] = useState(1);
     const [adding, setAdding] = useState(false);
     const [addedMsg, setAddedMsg] = useState('');
@@ -87,9 +111,6 @@ export default function ProductPage({ product, related }: ProductPageProps) {
         setZoomPos({ x: Math.min(100, Math.max(0, x)), y: Math.min(100, Math.max(0, y)) });
     }, []);
 
-    const colors = [...new Set(product.variants.filter(v => v.color).map(v => v.color!))];
-    const sizes  = [...new Set(product.variants.filter(v => v.size).map(v => v.size!))];
-
     const selectedVariant = product.variants.find(v => {
         if (colors.length && sizes.length) return v.color === selectedColor && v.size === selectedSize;
         if (colors.length) return v.color === selectedColor;
@@ -108,9 +129,30 @@ export default function ProductPage({ product, related }: ProductPageProps) {
     const handleColorSelect = (color: string | null) => {
         setSelectedColor(color);
         if (color) {
-            const idx = product.images.findIndex(img =>
-                img.alt && img.alt.toLowerCase().includes(color.toLowerCase())
+            const normalized = color.toLowerCase().trim();
+
+            // 1. Exact match on image.color
+            let idx = product.images.findIndex(img =>
+                img.color && img.color.toLowerCase().trim() === normalized
             );
+
+            // 2. Partial match on image.color
+            if (idx === -1) {
+                idx = product.images.findIndex(img =>
+                    img.color && (
+                        img.color.toLowerCase().includes(normalized) ||
+                        normalized.includes(img.color.toLowerCase())
+                    )
+                );
+            }
+
+            // 3. Fallback: match on image.alt
+            if (idx === -1) {
+                idx = product.images.findIndex(img =>
+                    img.alt && img.alt.toLowerCase().includes(normalized)
+                );
+            }
+
             if (idx !== -1) {
                 setSelectedImage(idx);
             }
@@ -120,9 +162,25 @@ export default function ProductPage({ product, related }: ProductPageProps) {
     const handleImageSelect = (index: number) => {
         setSelectedImage(index);
         const img = product.images[index];
-        if (img?.alt) {
+        if (!img) return;
+
+        // 1. Direct match on image.color
+        if (img.color) {
+            const targetColor = img.color.toLowerCase().trim();
+            const matchingColor = colors.find(c => {
+                const norm = c.toLowerCase().trim();
+                return norm === targetColor || norm.includes(targetColor) || targetColor.includes(norm);
+            });
+            if (matchingColor) {
+                setSelectedColor(matchingColor);
+                return;
+            }
+        }
+
+        // 2. Fallback: match image.alt against available colors
+        if (img.alt) {
             const matchingColor = colors.find(c =>
-                img.alt.toLowerCase().includes(c.toLowerCase())
+                img.alt.toLowerCase().includes(c.toLowerCase().trim())
             );
             if (matchingColor) {
                 setSelectedColor(matchingColor);
@@ -213,8 +271,13 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                         {product.images.length > 1 && (
                             <div className="product-thumbnails-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '80px', flexShrink: 0 }}>
                                 {product.images.map((img, i) => (
-                                    <button key={img.id} onClick={() => handleImageSelect(i)} style={{ padding: 0, border: `2px solid ${selectedImage === i ? C.text : 'transparent'}`, cursor: 'pointer', aspectRatio: '3/4', overflow: 'hidden', borderRadius: '2px' }}>
-                                        <img src={img.url} alt={img.alt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                    <button
+                                        key={img.id}
+                                        onClick={() => handleImageSelect(i)}
+                                        title={img.color ? `Color: ${img.color}` : (img.alt || product.name)}
+                                        style={{ padding: 0, border: `2px solid ${selectedImage === i ? C.text : 'transparent'}`, cursor: 'pointer', aspectRatio: '3/4', overflow: 'hidden', borderRadius: '2px' }}
+                                    >
+                                        <img src={img.url} alt={img.alt || product.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     </button>
                                 ))}
                             </div>

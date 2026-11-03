@@ -38,38 +38,52 @@ class ProductResource extends Resource
                     Forms\Components\RichEditor::make('description')->columnSpanFull(),
                 ])->columns(2),
 
-                Forms\Components\Section::make('Images')->schema([
-                    Forms\Components\Repeater::make('images')
-                        ->relationship()
-                        ->schema([
-                            Forms\Components\FileUpload::make('image_path')
-                                ->image()
-                                ->required()
-                                ->disk('public')
-                                ->directory('products'),
-                            Forms\Components\TextInput::make('alt_text'),
-                            Forms\Components\Toggle::make('is_primary')->label('Primary Image'),
-                            Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
-                        ])->columns(2),
-                ]),
+                Forms\Components\Section::make('Images')
+                    ->description('Upload product photos. Assign a Color to an image so when a customer picks that color on the store, this photo displays automatically.')
+                    ->schema([
+                        Forms\Components\Repeater::make('images')
+                            ->relationship()
+                            ->schema([
+                                Forms\Components\FileUpload::make('image_path')
+                                    ->image()
+                                    ->required()
+                                    ->disk('public')
+                                    ->directory('products')
+                                    ->columnSpan(2),
+                                Forms\Components\TextInput::make('color')
+                                    ->label('Associated Color')
+                                    ->placeholder('e.g. Burgundy, Navy, Black, Green')
+                                    ->helperText('Type the color shown in this photo (e.g. Burgundy). Matches the color buttons on the store.')
+                                    ->columnSpan(1),
+                                Forms\Components\TextInput::make('alt_text')
+                                    ->placeholder('e.g. Front view of dress')
+                                    ->columnSpan(1),
+                                Forms\Components\Toggle::make('is_primary')->label('Primary / Cover Image'),
+                                Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
+                            ])->columns(2),
+                    ]),
 
-                Forms\Components\Section::make('Variants')->schema([
-                    Forms\Components\Repeater::make('variants')
-                        ->relationship()
-                        ->schema([
-                            Forms\Components\TextInput::make('color'),
-                            Forms\Components\ColorPicker::make('color_hex')->label('Hex'),
-                            Forms\Components\TextInput::make('size'),
-                            Forms\Components\TextInput::make('sku'),
-                            Forms\Components\TextInput::make('price_modifier')
-                                ->numeric()
-                                ->prefix('₦')
-                                ->default(0)
-                                ->helperText('Extra cost added to Base Price (+₦0 if standard)'),
-                            Forms\Components\TextInput::make('stock_quantity')->numeric()->default(0),
-                            Forms\Components\Toggle::make('is_active')->default(true),
-                        ])->columns(3),
-                ]),
+                Forms\Components\Section::make('Variants')
+                    ->description('Define available sizes and colors. Give variants matching color names to photos uploaded above.')
+                    ->schema([
+                        Forms\Components\Repeater::make('variants')
+                            ->relationship()
+                            ->schema([
+                                Forms\Components\TextInput::make('color')
+                                    ->placeholder('e.g. Burgundy, Navy, Black')
+                                    ->helperText('Color name matching the image above.'),
+                                Forms\Components\ColorPicker::make('color_hex')->label('Swatch Color (Hex)'),
+                                Forms\Components\TextInput::make('size'),
+                                Forms\Components\TextInput::make('sku'),
+                                Forms\Components\TextInput::make('price_modifier')
+                                    ->numeric()
+                                    ->prefix('₦')
+                                    ->default(0)
+                                    ->helperText('Extra cost added to Base Price (+₦0 if standard)'),
+                                Forms\Components\TextInput::make('stock_quantity')->numeric()->default(0),
+                                Forms\Components\Toggle::make('is_active')->default(true),
+                            ])->columns(3),
+                    ]),
 
                 Forms\Components\Section::make('Additional Info')->schema([
                     Forms\Components\TextInput::make('material'),
