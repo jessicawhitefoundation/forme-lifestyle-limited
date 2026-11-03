@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => \Filament\Support\Colors\Color::hex('#6B7230'),
             ])
-            ->brandLogo(asset('images/forme-logo.png'))
+            ->brandLogo(fn () => asset('images/forme-logo.png'))
             ->brandLogoHeight('4rem')
             ->renderHook(
                 \Filament\View\PanelsRenderHook::HEAD_END,
@@ -41,7 +41,7 @@ class AdminPanelProvider extends PanelProvider
                     </style>
                 '),
             )
-            ->favicon(asset('favicon.svg'))
+            ->favicon(fn () => asset('favicon.svg'))
             ->sidebarCollapsibleOnDesktop()
             ->navigationGroups([
                 \Filament\Navigation\NavigationGroup::make('Shop')

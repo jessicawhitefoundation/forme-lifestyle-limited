@@ -4,22 +4,29 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Models\Order;
+use App\Services\RoutelyService;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Number;
 
 class OrderResource extends Resource
 {
     protected static ?string $model = Order::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
+
     protected static ?string $navigationGroup = 'Shop';
+
     protected static ?int $navigationSort = 1;
 
     public static function getNavigationBadge(): ?string
     {
         $count = static::getModel()::whereIn('status', ['pending', 'processing'])->count();
+
         return $count > 0 ? (string) $count : null;
     }
 
@@ -127,54 +134,57 @@ class OrderResource extends Resource
                 ->searchable()
                 ->copyable()
                 ->placeholder('Not dispatched'),
-            Tables\Columns\TextColumn::make('total_amount')->money('NGN')->sortable(),
+            Tables\Columns\TextColumn::make('total_amount')
+                ->label('Total')
+                ->formatStateUsing(fn ($state) => filled($state) ? '₦'.Number::format((float) $state, 2) : '—')
+                ->sortable(),
             Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
         ])
-        ->defaultSort('created_at', 'desc')
-        ->filters([
-            Tables\Filters\SelectFilter::make('status')
-                ->options(['pending' => 'Pending', 'processing' => 'Processing', 'shipped' => 'Shipped', 'delivered' => 'Delivered', 'cancelled' => 'Cancelled']),
-            Tables\Filters\SelectFilter::make('payment_status')
-                ->options(['unpaid' => 'Unpaid', 'paid' => 'Paid', 'refunded' => 'Refunded']),
-        ])
-        ->actions([
-            Tables\Actions\Action::make('dispatch_routely')
-                ->label('Dispatch Routely')
-                ->icon('heroicon-o-truck')
-                ->color('success')
-                ->visible(fn (Order $record) => empty($record->routely_tracking_number) && $record->payment_status === 'paid')
-                ->requiresConfirmation()
-                ->modalHeading('Book Shipment with Routely')
-                ->modalDescription(fn (Order $record) => "Are you sure you want to book a courier to deliver Order #{$record->order_number} to {$record->shipping_address}, {$record->shipping_city}, {$record->shipping_state}?")
-                ->action(function (Order $record) {
-                    $service = app(\App\Services\RoutelyService::class);
-                    $result = $service->createShipment($record);
-                    if ($result['success'] ?? false) {
-                        \Filament\Notifications\Notification::make()
-                            ->title('Dispatched on Routely')
-                            ->body('Tracking ID: ' . ($result['tracking_number'] ?? 'Created'))
-                            ->success()
-                            ->send();
-                        $record->update(['status' => 'shipped']);
-                    } else {
-                        \Filament\Notifications\Notification::make()
-                            ->title('Routely Dispatch Failed')
-                            ->body($result['message'] ?? 'Could not create shipment on Routely. Check your wallet balance.')
-                            ->danger()
-                            ->send();
-                    }
-                }),
-            Tables\Actions\ViewAction::make(),
-            Tables\Actions\EditAction::make(),
-        ]);
+            ->defaultSort('created_at', 'desc')
+            ->filters([
+                Tables\Filters\SelectFilter::make('status')
+                    ->options(['pending' => 'Pending', 'processing' => 'Processing', 'shipped' => 'Shipped', 'delivered' => 'Delivered', 'cancelled' => 'Cancelled']),
+                Tables\Filters\SelectFilter::make('payment_status')
+                    ->options(['unpaid' => 'Unpaid', 'paid' => 'Paid', 'refunded' => 'Refunded']),
+            ])
+            ->actions([
+                Tables\Actions\Action::make('dispatch_routely')
+                    ->label('Dispatch Routely')
+                    ->icon('heroicon-o-truck')
+                    ->color('success')
+                    ->visible(fn (Order $record) => empty($record->routely_tracking_number) && $record->payment_status === 'paid')
+                    ->requiresConfirmation()
+                    ->modalHeading('Book Shipment with Routely')
+                    ->modalDescription(fn (Order $record) => "Are you sure you want to book a courier to deliver Order #{$record->order_number} to {$record->shipping_address}, {$record->shipping_city}, {$record->shipping_state}?")
+                    ->action(function (Order $record) {
+                        $service = app(RoutelyService::class);
+                        $result = $service->createShipment($record);
+                        if ($result['success'] ?? false) {
+                            Notification::make()
+                                ->title('Dispatched on Routely')
+                                ->body('Tracking ID: '.($result['tracking_number'] ?? 'Created'))
+                                ->success()
+                                ->send();
+                            $record->update(['status' => 'shipped']);
+                        } else {
+                            Notification::make()
+                                ->title('Routely Dispatch Failed')
+                                ->body($result['message'] ?? 'Could not create shipment on Routely. Check your wallet balance.')
+                                ->danger()
+                                ->send();
+                        }
+                    }),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+            ]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListOrders::route('/'),
-            'view'   => Pages\ViewOrder::route('/{record}'),
-            'edit'   => Pages\EditOrder::route('/{record}/edit'),
+            'index' => Pages\ListOrders::route('/'),
+            'view' => Pages\ViewOrder::route('/{record}'),
+            'edit' => Pages\EditOrder::route('/{record}/edit'),
         ];
     }
 }

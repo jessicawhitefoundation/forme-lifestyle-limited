@@ -10,6 +10,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 
 class ProductResource extends Resource
@@ -41,7 +42,10 @@ class ProductResource extends Resource
                         ->relationship()
                         ->schema([
                             Forms\Components\FileUpload::make('image_path')
-                                ->image()->required()->directory('products'),
+                                ->image()
+                                ->required()
+                                ->disk('public')
+                                ->directory('products'),
                             Forms\Components\TextInput::make('alt_text'),
                             Forms\Components\Toggle::make('is_primary')->label('Primary Image'),
                             Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
@@ -101,7 +105,21 @@ class ProductResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            Tables\Columns\ImageColumn::make('primary_image')->state(fn ($record) => $record->primaryImage()?->image_path)->disk('public')->label(''),
+            Tables\Columns\ImageColumn::make('primary_image')
+                ->label('')
+                ->getStateUsing(function (Product $record): ?string {
+                    $path = $record->primaryImage()?->image_path;
+                    if (! $path) {
+                        return null;
+                    }
+
+                    return str_starts_with($path, 'http') ? $path : asset('storage/'.ltrim($path, '/'));
+                })
+                ->extraImgAttributes([
+                    'onerror' => "this.style.display='none'",
+                    'alt' => 'Product',
+                ])
+                ->square(),
             Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
             Tables\Columns\TextColumn::make('category.name')->sortable(),
             Tables\Columns\TextColumn::make('gender')->sortable()->badge()->color(fn (string $state): string => match ($state) {
@@ -111,7 +129,10 @@ class ProductResource extends Resource
                 'unisex' => 'gray',
                 default => 'gray',
             }),
-            Tables\Columns\TextColumn::make('base_price')->money('NGN')->sortable(),
+            Tables\Columns\TextColumn::make('base_price')
+                ->label('Price')
+                ->formatStateUsing(fn ($state) => filled($state) ? '₦'.Number::format((float) $state, 2) : '—')
+                ->sortable(),
             Tables\Columns\TextColumn::make('variants_count')->counts('variants')->label('Variants'),
             Tables\Columns\IconColumn::make('is_featured')->boolean()->label('Featured'),
             Tables\Columns\IconColumn::make('is_active')->boolean()->label('Active'),

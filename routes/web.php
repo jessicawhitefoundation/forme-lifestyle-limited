@@ -5,6 +5,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\PaystackWebhookController;
 use App\Http\Controllers\StoreController;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Support\Facades\Route;
 
 // ─── Store Front (Rate Limited: Max 60 req/min) ────────────────────────────────
@@ -44,7 +45,7 @@ Route::get('/order/{orderNumber}/confirmation', [CheckoutController::class, 'con
 Route::post('/webhooks/paystack', [PaystackWebhookController::class, 'handle'])
     ->middleware('throttle:60,1')
     ->name('webhook.paystack')
-    ->withoutMiddleware(\Illuminate\Foundation\Http\Middleware\VerifyCsrfToken::class);
+    ->withoutMiddleware(VerifyCsrfToken::class);
 
 // ─── Customer Auth (Rate Limited: Max 6 req/min) ──────────────────────────────
 Route::middleware(['guest', 'throttle:auth'])->group(function () {
@@ -61,4 +62,22 @@ Route::middleware('auth')->group(function () {
     Route::patch('/account/profile', [CustomerAuthController::class, 'updateProfile'])->name('account.update');
 });
 
-require __DIR__ . '/settings.php';
+// ─── Storage Fallback (Serves uploads if symlink is missing in production) ────
+Route::get('/storage/{path}', function (string $path) {
+    $publicDir = realpath(storage_path('app/public'));
+    $fullPath = realpath(storage_path('app/public/'.$path));
+
+    if (! $fullPath || ! $publicDir || ! str_starts_with($fullPath, $publicDir) || ! is_file($fullPath)) {
+        abort(404);
+    }
+
+    return response()->file($fullPath);
+})->where('path', '.*')
+    ->withoutMiddleware([
+        \Illuminate\Session\Middleware\StartSession::class,
+        \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+        \App\Http\Middleware\HandleInertiaRequests::class,
+        \App\Http\Middleware\HandleAppearance::class,
+    ]);
+
+require __DIR__.'/settings.php';

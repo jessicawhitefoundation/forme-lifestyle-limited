@@ -14,8 +14,11 @@ use Illuminate\Support\Str;
 class CategoryResource extends Resource
 {
     protected static ?string $model = Category::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-tag';
+
     protected static ?string $navigationGroup = 'Shop';
+
     protected static ?int $navigationSort = 3;
 
     public static function form(Form $form): Form
@@ -31,6 +34,7 @@ class CategoryResource extends Resource
                 Forms\Components\FileUpload::make('image_path')
                     ->label('Category Image')
                     ->image()
+                    ->disk('public')
                     ->directory('categories')
                     ->columnSpanFull(),
                 Forms\Components\Toggle::make('is_active')->default(true),
@@ -42,25 +46,35 @@ class CategoryResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->columns([
-            Tables\Columns\ImageColumn::make('image_path')->disk('public')->label('Image'),
+            Tables\Columns\ImageColumn::make('image_path')
+                ->label('Image')
+                ->getStateUsing(function (Category $record): ?string {
+                    $path = $record->image_path;
+                    if (! $path) {
+                        return null;
+                    }
+
+                    return str_starts_with($path, 'http') ? $path : asset('storage/'.ltrim($path, '/'));
+                })
+                ->square(),
             Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
             Tables\Columns\TextColumn::make('slug'),
             Tables\Columns\TextColumn::make('products_count')->counts('products')->label('Products'),
             Tables\Columns\IconColumn::make('is_active')->boolean(),
             Tables\Columns\TextColumn::make('sort_order')->sortable(),
         ])
-        ->defaultSort('sort_order')
-        ->filters([])
-        ->actions([Tables\Actions\EditAction::make()])
-        ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
+            ->defaultSort('sort_order')
+            ->filters([])
+            ->actions([Tables\Actions\EditAction::make()])
+            ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListCategories::route('/'),
+            'index' => Pages\ListCategories::route('/'),
             'create' => Pages\CreateCategory::route('/create'),
-            'edit'   => Pages\EditCategory::route('/{record}/edit'),
+            'edit' => Pages\EditCategory::route('/{record}/edit'),
         ];
     }
 }

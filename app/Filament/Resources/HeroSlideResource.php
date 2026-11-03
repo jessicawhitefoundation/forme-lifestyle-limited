@@ -14,9 +14,13 @@ use Filament\Tables\Table;
 class HeroSlideResource extends Resource
 {
     protected static ?string $model = HeroSlide::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-photo';
+
     protected static ?string $navigationLabel = 'Hero Slides';
+
     protected static ?string $navigationGroup = 'Storefront';
+
     protected static ?int $navigationSort = 1;
 
     public static function form(Form $form): Form
@@ -45,7 +49,7 @@ class HeroSlideResource extends Resource
                                 ->label('How would you like to provide the image?')
                                 ->options([
                                     'upload' => 'Upload image file from device',
-                                    'url'    => 'Paste external web image URL',
+                                    'url' => 'Paste external web image URL',
                                 ])
                                 ->default('upload')
                                 ->live()
@@ -55,6 +59,7 @@ class HeroSlideResource extends Resource
                                 ->label('Upload Image')
                                 ->image()
                                 ->imageEditor()
+                                ->disk('public')
                                 ->directory('hero-slides')
                                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                 ->maxSize(5120)
@@ -90,7 +95,7 @@ class HeroSlideResource extends Resource
                                         ->label('Poster Method')
                                         ->options([
                                             'upload' => 'Upload thumbnail image',
-                                            'url'    => 'Paste thumbnail URL',
+                                            'url' => 'Paste thumbnail URL',
                                         ])
                                         ->default('upload')
                                         ->live()
@@ -99,6 +104,7 @@ class HeroSlideResource extends Resource
                                     Forms\Components\FileUpload::make('poster_file')
                                         ->label('Upload Poster Image')
                                         ->image()
+                                        ->disk('public')
                                         ->directory('hero-slides/posters')
                                         ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp'])
                                         ->formatStateUsing(fn ($state) => is_string($state) ? [$state] : ($state ?? []))
@@ -162,7 +168,7 @@ class HeroSlideResource extends Resource
                     ->height(60)
                     ->width(80)
                     ->defaultImageUrl(fn (HeroSlide $r) => $r->type === 'video' ? null : null)
-                    ->getStateUsing(fn (HeroSlide $r) => str_starts_with($r->src, 'http') ? $r->src : asset('storage/' . $r->src))
+                    ->getStateUsing(fn (HeroSlide $r) => str_starts_with($r->src, 'http') ? $r->src : asset('storage/'.$r->src))
                     ->visible(fn (HeroSlide $r) => $r->type === 'image'),
 
                 Tables\Columns\TextColumn::make('type')
@@ -221,9 +227,9 @@ class HeroSlideResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListHeroSlides::route('/'),
+            'index' => Pages\ListHeroSlides::route('/'),
             'create' => Pages\CreateHeroSlide::route('/create'),
-            'edit'   => Pages\EditHeroSlide::route('/{record}/edit'),
+            'edit' => Pages\EditHeroSlide::route('/{record}/edit'),
         ];
     }
 }
