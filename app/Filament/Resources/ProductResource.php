@@ -3,7 +3,6 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ProductResource\Pages;
-use App\Filament\Resources\ProductResource\RelationManagers;
 use App\Models\Category;
 use App\Models\Product;
 use Filament\Forms;
@@ -16,8 +15,11 @@ use Illuminate\Support\Str;
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
+
     protected static ?string $navigationIcon = 'heroicon-o-archive-box';
+
     protected static ?string $navigationGroup = 'Shop';
+
     protected static ?int $navigationSort = 2;
 
     public static function form(Form $form): Form
@@ -114,35 +116,42 @@ class ProductResource extends Resource
             Tables\Columns\IconColumn::make('is_featured')->boolean()->label('Featured'),
             Tables\Columns\IconColumn::make('is_active')->boolean()->label('Active'),
         ])
-        ->filters([
-            Tables\Filters\SelectFilter::make('category')->relationship('category', 'name'),
-            Tables\Filters\SelectFilter::make('gender')->options([
-                'female' => 'Female',
-                'male' => 'Male',
-                'kids' => 'Kids',
-                'unisex' => 'Unisex',
-            ]),
-            Tables\Filters\TernaryFilter::make('is_featured'),
-            Tables\Filters\TernaryFilter::make('is_active'),
-        ])
-        ->groups([
-            Tables\Grouping\Group::make('category.name')
-                ->label('Category'),
-        ])
-        ->defaultGroup('category.name')
-        ->actions([
-            Tables\Actions\EditAction::make(),
-            Tables\Actions\DeleteAction::make(),
-        ])
-        ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
+            ->filters([
+                Tables\Filters\SelectFilter::make('category')->relationship('category', 'name'),
+                Tables\Filters\SelectFilter::make('gender')->options([
+                    'female' => 'Female',
+                    'male' => 'Male',
+                    'kids' => 'Kids',
+                    'unisex' => 'Unisex',
+                ]),
+                Tables\Filters\TernaryFilter::make('is_featured'),
+                Tables\Filters\TernaryFilter::make('is_active'),
+            ])
+            ->groups([
+                Tables\Grouping\Group::make('category.name')
+                    ->label('Category'),
+            ])
+            ->defaultGroup('category.name')
+            ->actions([
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()
+                    ->modalDescription(function (Product $record) {
+                        if ($record->orderItems()->exists()) {
+                            return 'Warning: This product is linked to existing customer orders. Deleting it will keep historical order records intact, but will permanently remove this product and its variants. Are you sure you want to proceed?';
+                        }
+
+                        return 'Are you sure you want to delete this product? This action cannot be undone.';
+                    }),
+            ])
+            ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListProducts::route('/'),
+            'index' => Pages\ListProducts::route('/'),
             'create' => Pages\CreateProduct::route('/create'),
-            'edit'   => Pages\EditProduct::route('/{record}/edit'),
+            'edit' => Pages\EditProduct::route('/{record}/edit'),
         ];
     }
 }
