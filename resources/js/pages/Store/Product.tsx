@@ -105,6 +105,31 @@ export default function ProductPage({ product, related }: ProductPageProps) {
         );
     };
 
+    const handleColorSelect = (color: string | null) => {
+        setSelectedColor(color);
+        if (color) {
+            const idx = product.images.findIndex(img =>
+                img.alt && img.alt.toLowerCase().includes(color.toLowerCase())
+            );
+            if (idx !== -1) {
+                setSelectedImage(idx);
+            }
+        }
+    };
+
+    const handleImageSelect = (index: number) => {
+        setSelectedImage(index);
+        const img = product.images[index];
+        if (img?.alt) {
+            const matchingColor = colors.find(c =>
+                img.alt.toLowerCase().includes(c.toLowerCase())
+            );
+            if (matchingColor) {
+                setSelectedColor(matchingColor);
+            }
+        }
+    };
+
     const currentPrice = selectedVariant ? selectedVariant.final_price : product.base_price;
 
     const handleAddToCart = async () => {
@@ -188,7 +213,7 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                         {product.images.length > 1 && (
                             <div className="product-thumbnails-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px', width: '80px', flexShrink: 0 }}>
                                 {product.images.map((img, i) => (
-                                    <button key={img.id} onClick={() => setSelectedImage(i)} style={{ padding: 0, border: `2px solid ${selectedImage === i ? C.text : 'transparent'}`, cursor: 'pointer', aspectRatio: '3/4', overflow: 'hidden', borderRadius: '2px' }}>
+                                    <button key={img.id} onClick={() => handleImageSelect(i)} style={{ padding: 0, border: `2px solid ${selectedImage === i ? C.text : 'transparent'}`, cursor: 'pointer', aspectRatio: '3/4', overflow: 'hidden', borderRadius: '2px' }}>
                                         <img src={img.url} alt={img.alt} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                     </button>
                                 ))}
@@ -260,7 +285,7 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                                 </p>
                                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                                     {product.variants.filter((v, i, arr) => arr.findIndex(x => x.color === v.color) === i).map(v => (
-                                        <button key={v.id} onClick={() => setSelectedColor(v.color)}
+                                        <button key={v.id} onClick={() => handleColorSelect(v.color)}
                                             title={v.color ?? ''}
                                             style={{ width: '36px', height: '36px', borderRadius: '50%', background: v.color_hex || C.dim, border: `3px solid ${selectedColor === v.color ? C.text : 'transparent'}`, outline: `1px solid ${v.color_hex ? 'rgba(0,0,0,0.15)' : C.dim}`, cursor: 'pointer', transition: 'border-color 0.2s', boxSizing: 'border-box' }} />
                                     ))}
@@ -314,16 +339,6 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                             <button onClick={handleAddToCart} disabled={adding} style={{ flex: 1, background: C.text, color: C.bg, border: 'none', padding: '18px', fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase', cursor: 'pointer', transition: 'opacity 0.2s', opacity: adding ? 0.7 : 1 }}>
                                 {adding ? 'Adding...' : selectedVariant?.stock === 0 ? 'Out of Stock' : 'Add to Bag'}
                             </button>
-                        </div>
-
-                        {/* Trust badges */}
-                        <div style={{ display: 'flex', gap: '24px', padding: '16px 0', borderTop: `1px solid ${C.border}`, borderBottom: `1px solid ${C.border}`, marginBottom: '32px', flexWrap: 'wrap' }}>
-                            {['Free shipping over ₦50k', 'Easy returns', 'Secure checkout'].map(t => (
-                                <div key={t} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span style={{ fontSize: '14px', color: C.accent }}>✓</span>
-                                    <span style={{ fontSize: '12px', color: C.muted }}>{t}</span>
-                                </div>
-                            ))}
                         </div>
 
                         {/* Accordion tabs */}
