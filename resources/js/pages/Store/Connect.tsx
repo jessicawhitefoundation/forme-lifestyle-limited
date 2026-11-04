@@ -13,7 +13,7 @@ export default function Connect() {
     const socialLinks = [
         {
             name: 'FORMÉ Instagram',
-            url: 'https://instagram.com/thisisforme_official?obrf=dHJtamZneDQ0NDhw',
+            url: 'https://www.instagram.com/4me_lifestyle?rpxt=YnByamwzdWg0MXc3',
             icon: (
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                     <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
@@ -24,7 +24,7 @@ export default function Connect() {
         },
         {
             name: 'FORMÉ TikTok',
-            url: 'https://www.tiktok.com/@thisis__forme?_r=1&_t=ZS-99muq41jeU8',
+            url: 'https://www.tiktok.com/@4me_lifestyle?_r=1&_t=ZS-9B5wDZJFarN',
             icon: (
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V5.86a6.32 6.32 0 0 0-1-.08A6.34 6.34 0 0 0 3 12a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.71a8.31 8.31 0 0 0 4.67 1.44V6.7a4.86 4.86 0 0 1-3.76-.01z" />
@@ -33,7 +33,7 @@ export default function Connect() {
         },
         {
             name: 'FORMÉ X (Twitter)',
-            url: 'https://x.com/thisis__forme?s=21&t=Z6g7e-fMkC6dFLqG4HxwVw',
+            url: 'https://x.com/4me_lifestyle?s=11&t=Z6g7e-fMkC6dFLqG4HxwVw',
             icon: (
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />

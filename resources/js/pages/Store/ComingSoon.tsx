@@ -400,7 +400,7 @@ export default function ComingSoon() {
                 <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
                     {/* Instagram */}
                     <a
-                        href="https://instagram.com/thisisforme_official?obrf=dHJtamZneDQ0NDhw"
+                        href="https://www.instagram.com/4me_lifestyle?rpxt=YnByamwzdWg0MXc3"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="social-icon-btn"
@@ -415,7 +415,7 @@ export default function ComingSoon() {
 
                     {/* TikTok */}
                     <a
-                        href="https://www.tiktok.com/@thisis__forme?_r=1&_t=ZS-99muq41jeU8"
+                        href="https://www.tiktok.com/@4me_lifestyle?_r=1&_t=ZS-9B5wDZJFarN"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="social-icon-btn"
@@ -428,7 +428,7 @@ export default function ComingSoon() {
 
                     {/* X (Twitter) */}
                     <a
-                        href="https://x.com/thisis__forme?s=21&t=Z6g7e-fMkC6dFLqG4HxwVw"
+                        href="https://x.com/4me_lifestyle?s=11&t=Z6g7e-fMkC6dFLqG4HxwVw"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="social-icon-btn"

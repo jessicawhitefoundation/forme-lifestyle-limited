@@ -240,7 +240,7 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                             <p style={{ fontSize: '14px', color: C.text, fontWeight: 400, marginBottom: '16px' }}>WhatsApp: 07026126265</p>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '16px' }}>
                                 <a 
-                                    href="https://instagram.com/thisisforme_official?obrf=dHJtamZneDQ0NDhw"
+                                    href="https://www.instagram.com/4me_lifestyle?rpxt=YnByamwzdWg0MXc3"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     aria-label="FORMÉ on Instagram"
@@ -253,6 +253,34 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                                         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
                                         <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                                         <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+                                    </svg>
+                                </a>
+                                <a 
+                                    href="https://www.tiktok.com/@4me_lifestyle?_r=1&_t=ZS-9B5wDZJFarN"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="FORMÉ on TikTok"
+                                    title="FORMÉ on TikTok"
+                                    style={{ color: C.text, display: 'flex', alignItems: 'center', transition: 'color 0.2s', textDecoration: 'none' }}
+                                    onMouseEnter={e => (e.currentTarget.style.color = C.accent)}
+                                    onMouseLeave={e => (e.currentTarget.style.color = C.text)}
+                                >
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V5.86a6.32 6.32 0 0 0-1-.08A6.34 6.34 0 0 0 3 12a6.34 6.34 0 0 0 6.34-6.34V8.71a8.31 8.31 0 0 0 4.67 1.44V6.7a4.86 4.86 0 0 1-3.76-.01z" />
+                                    </svg>
+                                </a>
+                                <a 
+                                    href="https://x.com/4me_lifestyle?s=11&t=Z6g7e-fMkC6dFLqG4HxwVw"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    aria-label="FORMÉ on X"
+                                    title="FORMÉ on X"
+                                    style={{ color: C.text, display: 'flex', alignItems: 'center', transition: 'color 0.2s', textDecoration: 'none' }}
+                                    onMouseEnter={e => (e.currentTarget.style.color = C.accent)}
+                                    onMouseLeave={e => (e.currentTarget.style.color = C.text)}
+                                >
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
                                     </svg>
                                 </a>
                                 <Link 
