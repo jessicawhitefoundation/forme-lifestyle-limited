@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\User;
+use App\Services\RoutelyService;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -18,10 +21,11 @@ class CheckoutController extends Controller
         if (auth()->check()) {
             return Cart::firstOrCreate(['user_id' => auth()->id()]);
         }
+
         return Cart::firstOrCreate(['session_id' => session()->getId()]);
     }
 
-    public function show(): Response
+    public function show(): Response|RedirectResponse
     {
         $cart = $this->getCart();
         $items = $cart->items()->with(['variant.product.images'])->get();
@@ -30,32 +34,32 @@ class CheckoutController extends Controller
             return redirect()->route('cart.show');
         }
 
-        $subtotal = $items->sum(fn($i) => $i->variant->final_price * $i->quantity);
+        $subtotal = $items->sum(fn ($i) => $i->variant->final_price * $i->quantity);
         $user = auth()->user();
 
         $initialState = $user?->shipping_state ?? 'Lagos';
-        $initialCity  = $user?->shipping_city ?? 'Lekki';
-        $initialAddr  = $user?->shipping_address ?? 'Lekki';
+        $initialCity = $user?->shipping_city ?? 'Lekki';
+        $initialAddr = $user?->shipping_address ?? 'Lekki';
 
-        $quote = app(\App\Services\RoutelyService::class)->getFee([
+        $quote = app(RoutelyService::class)->getFee([
             'address' => $initialAddr,
-            'city'    => $initialCity,
-            'state'   => $initialState,
+            'city' => $initialCity,
+            'state' => $initialState,
             'item_value' => $subtotal,
         ]);
 
-        $shippingFee  = (float) ($quote['rate'] ?? 3000);
-        $carrierInfo  = $quote['carrier'] ?? 'Routely Delivery';
+        $shippingFee = (float) ($quote['rate'] ?? 3000);
+        $carrierInfo = $quote['carrier'] ?? 'Routely Delivery';
         $deliveryTime = $quote['delivery_time'] ?? '4 to 8 working hours';
 
         return Inertia::render('Store/Checkout', [
-            'cartItems' => $items->map(fn($item) => [
+            'cartItems' => $items->map(fn ($item) => [
                 'product_name' => $item->variant->product->name,
                 'variant_description' => $item->variant->description,
                 'quantity' => $item->quantity,
                 'unit_price' => $item->variant->final_price,
                 'image' => $item->variant->product->images->first()
-                    ? asset('storage/' . $item->variant->product->images->first()->image_path)
+                    ? asset('storage/'.$item->variant->product->images->first()->image_path)
                     : null,
             ]),
             'subtotal' => $subtotal,
@@ -91,9 +95,9 @@ class CheckoutController extends Controller
             return back()->withErrors(['cart' => 'Your cart is empty']);
         }
 
-        $subtotal = $items->sum(fn($i) => $i->variant->final_price * $i->quantity);
+        $subtotal = $items->sum(fn ($i) => $i->variant->final_price * $i->quantity);
 
-        $quote = app(\App\Services\RoutelyService::class)->getFee([
+        $quote = app(RoutelyService::class)->getFee([
             'address' => $request->shipping_address,
             'city' => $request->shipping_city,
             'state' => $request->shipping_state,
@@ -147,8 +151,9 @@ class CheckoutController extends Controller
 
         $paystackKey = config('services.paystack.secret_key');
 
-        if (!$paystackKey || str_contains($paystackKey, 'your_secret_key_here')) {
+        if (! $paystackKey || str_contains($paystackKey, 'your_secret_key_here')) {
             Log::error('Paystack initialization failed: Placeholder or missing PAYSTACK_SECRET_KEY in .env');
+
             return back()->withErrors(['payment' => 'Payment failed: Paystack API key is not configured in .env. Please set PAYSTACK_SECRET_KEY.']);
         }
 
@@ -170,7 +175,7 @@ class CheckoutController extends Controller
             }
 
             // Charge failed — fall through to standard redirect checkout
-            Log::warning('Saved-card charge failed for order ' . $order->order_number, [
+            Log::warning('Saved-card charge failed for order '.$order->order_number, [
                 'status' => $chargeResponse->status(),
                 'response' => $chargeResponse->json() ?? $chargeResponse->body(),
             ]);
@@ -188,14 +193,15 @@ class CheckoutController extends Controller
                 'callback_url' => route('checkout.callback'),
             ]);
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             $errorMsg = $response->json('message') ?? 'Payment initialization failed. Please try again.';
-            Log::error('Paystack transaction/initialize error for order ' . $order->order_number, [
+            Log::error('Paystack transaction/initialize error for order '.$order->order_number, [
                 'http_status' => $response->status(),
                 'response' => $response->json() ?? $response->body(),
             ]);
             $order->delete();
-            return back()->withErrors(['payment' => 'Paystack Error: ' . $errorMsg]);
+
+            return back()->withErrors(['payment' => 'Paystack Error: '.$errorMsg]);
         }
 
         return Inertia::location($response->json('data.authorization_url'));
@@ -204,7 +210,7 @@ class CheckoutController extends Controller
     public function callback(Request $request)
     {
         $reference = $request->reference;
-        if (!$reference) {
+        if (! $reference) {
             return redirect()->route('home')->withErrors(['payment' => 'Invalid payment reference']);
         }
 
@@ -212,14 +218,14 @@ class CheckoutController extends Controller
         $response = Http::withToken($paystackKey)
             ->get("https://api.paystack.co/transaction/verify/{$reference}");
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             return redirect()->route('checkout.show')->withErrors(['payment' => 'Payment verification failed']);
         }
 
         $data = $response->json('data');
         $order = Order::where('order_number', $reference)->first();
 
-        if (!$order) {
+        if (! $order) {
             return redirect()->route('home');
         }
 
@@ -247,9 +253,9 @@ class CheckoutController extends Controller
         ]);
 
         // Save card token for future one-click checkout
-        $user = auth()->user() ?? \App\Models\User::find($order->user_id);
+        $user = auth()->user() ?? User::find($order->user_id);
         if (
-            $user && !empty($paystackData['authorization']['reusable'])
+            $user && ! empty($paystackData['authorization']['reusable'])
             && $paystackData['authorization']['reusable']
         ) {
             $user->update([
@@ -276,12 +282,12 @@ class CheckoutController extends Controller
      */
     private function buildMetadata(Order $order, $items): array
     {
-        $customFields = $items->map(fn($item) => [
+        $customFields = $items->map(fn ($item) => [
             'display_name' => $item->variant->product->name,
-            'variable_name' => 'item_' . $item->variant->id,
+            'variable_name' => 'item_'.$item->variant->id,
             'value' => $item->variant->description
-                ? $item->variant->description . ' × ' . $item->quantity
-                : 'Qty: ' . $item->quantity,
+                ? $item->variant->description.' × '.$item->quantity
+                : 'Qty: '.$item->quantity,
         ])->toArray();
 
         return [
@@ -291,7 +297,7 @@ class CheckoutController extends Controller
         ];
     }
 
-    public function calculateShippingRate(Request $request, \App\Services\RoutelyService $routely)
+    public function calculateShippingRate(Request $request, RoutelyService $routely)
     {
         $request->validate([
             'address' => 'nullable|string',
@@ -301,7 +307,7 @@ class CheckoutController extends Controller
 
         $cart = $this->getCart();
         $items = $cart->items()->with(['variant.product'])->get();
-        $subtotal = $items->sum(fn($i) => $i->variant->final_price * $i->quantity);
+        $subtotal = $items->sum(fn ($i) => $i->variant->final_price * $i->quantity);
 
         $quote = $routely->getFee([
             'address' => $request->address ?: ($request->city ?: $request->state),
@@ -311,7 +317,7 @@ class CheckoutController extends Controller
         ]);
 
         $rate = (float) ($quote['rate'] ?? 3000);
-        $carrier = $quote['carrier'] ?? ('Routely ' . ucfirst($quote['type'] ?? 'Standard'));
+        $carrier = $quote['carrier'] ?? ('Routely '.ucfirst($quote['type'] ?? 'Standard'));
         $deliveryTime = $quote['delivery_time'] ?? null;
 
         return response()->json([
@@ -342,7 +348,7 @@ class CheckoutController extends Controller
                 'shipping_fee' => $order->shipping_fee,
                 'routely_tracking_number' => $order->routely_tracking_number,
                 'routely_status' => $order->routely_status,
-                'items' => $order->items->map(fn($i) => [
+                'items' => $order->items->map(fn ($i) => [
                     'product_name' => $i->product_name,
                     'variant_description' => $i->variant_description,
                     'quantity' => $i->quantity,
