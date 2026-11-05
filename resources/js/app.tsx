@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { initializeTheme } from '@/hooks/use-appearance';
 import StoreLayout from '@/layouts/store-layout';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Forme';
 
@@ -19,7 +20,7 @@ createInertiaApp({
             import.meta.glob('./pages/**/*.tsx'),
         ) as any,
     layout: (name) => {
-        if (name.startsWith('Store/') || name.startsWith('Auth/')) {
+        if (name.startsWith('Store/') || name.startsWith('Auth/') || name === 'Error') {
             return StoreLayout;
         }
         return null;
@@ -27,10 +28,12 @@ createInertiaApp({
     setup({ el, App, props }) {
         const root = createRoot(el);
         root.render(
-            <TooltipProvider delayDuration={0}>
-                <App {...props} />
-                <Toaster />
-            </TooltipProvider>,
+            <ErrorBoundary>
+                <TooltipProvider delayDuration={0}>
+                    <App {...props} />
+                    <Toaster />
+                </TooltipProvider>
+            </ErrorBoundary>,
         );
     },
     progress: {

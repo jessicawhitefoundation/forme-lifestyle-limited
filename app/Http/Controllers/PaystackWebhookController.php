@@ -44,6 +44,17 @@ class PaystackWebhookController extends Controller
                 return response('OK', 200);
             }
 
+            // ── Financial Security: Strict Amount & Currency Validation ───────────
+            $expectedKobo = (int) round($order->total_amount * 100);
+            $paidKobo = (int) ($data['amount'] ?? 0);
+            $currency = $data['currency'] ?? '';
+
+            if ($paidKobo !== $expectedKobo || $currency !== 'NGN') {
+                Log::critical("Paystack webhook amount/currency mismatch on Order #{$order->order_number}: Expected {$expectedKobo} NGN, received {$paidKobo} {$currency}");
+
+                return response('Mismatch', 400);
+            }
+
             $order->update([
                 'payment_status' => 'paid',
                 'payment_reference' => $data['reference'],

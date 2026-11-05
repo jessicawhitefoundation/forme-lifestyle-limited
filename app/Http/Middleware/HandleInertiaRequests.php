@@ -2,7 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\StoreSetting;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -35,11 +37,13 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $storeSetting = \App\Models\StoreSetting::firstOrCreate(['id' => 1], [
-            'announcement_text' => 'Free Shipping on Orders Over ₦50,000',
-            'announcement_link' => '/shop',
-            'announcement_is_active' => true,
-        ]);
+        $storeSetting = Cache::remember('store_setting_global', 86400, function () {
+            return StoreSetting::firstOrCreate(['id' => 1], [
+                'announcement_text' => 'Free Shipping on Orders Over ₦50,000',
+                'announcement_link' => '/shop',
+                'announcement_is_active' => true,
+            ]);
+        });
 
         return [
             ...parent::share($request),

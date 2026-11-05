@@ -10,6 +10,8 @@ use App\Services\OrderMailService;
 use App\Services\RoutelyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
@@ -96,6 +98,14 @@ class CheckoutController extends Controller
             return back()->withErrors(['cart' => 'Your cart is empty']);
         }
 
+        // ── Concurrency & Idempotency: Atomic lock per user/session ───────────
+        $lockKey = 'checkout_lock_'.(auth()->id() ?: session()->getId());
+        $lock = Cache::lock($lockKey, 10);
+
+        if (! $lock->get()) {
+            return back()->withErrors(['checkout' => 'A checkout request is already processing. Please wait a moment.']);
+        }
+
         $subtotal = $items->sum(fn ($i) => $i->variant->final_price * $i->quantity);
 
         $quote = app(RoutelyService::class)->getFee([
@@ -149,6 +159,9 @@ class CheckoutController extends Controller
                 ]);
             }
         }
+
+        // Remember order ID in session for authorization access on confirmation page
+        session(['recent_order_id' => $order->id]);
 
         $paystackKey = config('services.paystack.secret_key');
 
@@ -230,6 +243,17 @@ class CheckoutController extends Controller
             return redirect()->route('home');
         }
 
+        // ── Financial Security: Strict Amount & Currency Validation ───────────
+        $expectedKobo = (int) round($order->total_amount * 100);
+        $paidKobo = (int) ($data['amount'] ?? 0);
+        $currency = $data['currency'] ?? '';
+
+        if ($paidKobo !== $expectedKobo || $currency !== 'NGN') {
+            Log::critical("Paystack payment verification amount/currency mismatch on Order #{$order->order_number}: Expected {$expectedKobo} NGN, received {$paidKobo} {$currency}");
+
+            return redirect()->route('checkout.show')->withErrors(['payment' => 'Payment verification mismatch. Please contact support.']);
+        }
+
         if ($data['status'] === 'success') {
             return $this->markOrderPaid($order, $data);
         }
@@ -238,47 +262,51 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Shared "mark order paid" logic, reused by callback & saved-card charge.
+     * Shared "mark order paid" logic with pessimistic row-locking & database transaction.
      */
     private function markOrderPaid(Order $order, array $paystackData)
     {
-        if ($order->payment_status === 'paid') {
-            // Already processed (e.g., webhook arrived first)
-            return redirect()->route('order.confirmation', $order->order_number);
-        }
+        return DB::transaction(function () use ($order, $paystackData) {
+            $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
 
-        $order->update([
-            'payment_status' => 'paid',
-            'payment_reference' => $paystackData['reference'],
-            'status' => 'processing',
-        ]);
+            if (! $lockedOrder || $lockedOrder->payment_status === 'paid') {
+                // Already processed (e.g. webhook arrived first)
+                return redirect()->route('order.confirmation', $order->order_number);
+            }
 
-        // Save card token for future one-click checkout
-        $user = auth()->user() ?? User::find($order->user_id);
-        if (
-            $user && ! empty($paystackData['authorization']['reusable'])
-            && $paystackData['authorization']['reusable']
-        ) {
-            $user->update([
-                'paystack_auth_code' => $paystackData['authorization']['authorization_code'],
-                'card_last_four' => $paystackData['authorization']['last4'],
-                'card_brand' => $paystackData['authorization']['brand'],
+            $lockedOrder->update([
+                'payment_status' => 'paid',
+                'payment_reference' => $paystackData['reference'],
+                'status' => 'processing',
             ]);
-        }
 
-        // Deduct stock
-        foreach ($order->items as $item) {
-            optional($item->variant)->decrement('stock_quantity', $item->quantity);
-        }
+            // Save card token for future one-click checkout
+            $user = auth()->user() ?? User::find($lockedOrder->user_id);
+            if (
+                $user && ! empty($paystackData['authorization']['reusable'])
+                && $paystackData['authorization']['reusable']
+            ) {
+                $user->update([
+                    'paystack_auth_code' => $paystackData['authorization']['authorization_code'],
+                    'card_last_four' => $paystackData['authorization']['last4'],
+                    'card_brand' => $paystackData['authorization']['brand'],
+                ]);
+            }
 
-        // Clear the cart
-        $cart = $this->getCart();
-        $cart->items()->delete();
+            // Deduct stock
+            foreach ($lockedOrder->items as $item) {
+                optional($item->variant)->decrement('stock_quantity', $item->quantity);
+            }
 
-        // Send order confirmation to customer and notification to store owner
-        OrderMailService::sendOrderPaidNotifications($order);
+            // Clear the cart
+            $cart = $this->getCart();
+            $cart->items()->delete();
 
-        return redirect()->route('order.confirmation', $order->order_number);
+            // Send order confirmation to customer and notification to store owner
+            OrderMailService::sendOrderPaidNotifications($lockedOrder);
+
+            return redirect()->route('order.confirmation', $lockedOrder->order_number);
+        });
     }
 
     /**
@@ -337,6 +365,15 @@ class CheckoutController extends Controller
     public function confirmation(string $orderNumber): Response
     {
         $order = Order::with('items')->where('order_number', $orderNumber)->firstOrFail();
+
+        // ── IDOR Protection: Only the order owner, recent checkout session, or store admin may view ──
+        $isOwner = auth()->check() && (int) auth()->id() === (int) $order->user_id;
+        $isRecentSession = session('recent_order_id') === $order->id;
+        $isAdmin = auth()->check() && auth()->user()->isAdmin();
+
+        if (! $isOwner && ! $isRecentSession && ! $isAdmin) {
+            abort(403);
+        }
 
         return Inertia::render('Store/OrderConfirmation', [
             'order' => [
