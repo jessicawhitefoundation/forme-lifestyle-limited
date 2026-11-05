@@ -65,7 +65,6 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
         { label: 'Men', href: '/shop?gender=male' },
         { label: 'Kids', href: '/shop?gender=kids' },
         { label: 'Debut Collection', href: '/collections/new-arrivals' },
-        { label: 'Sets', href: '/collections/sets' },
         { label: 'Accessories', href: '/collections/accessories' },
         { label: 'About Us', href: '/about' },
     ];
