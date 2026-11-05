@@ -192,9 +192,6 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
             <section className="hero-section-grid">
                 {/* Left: Text */}
                 <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(32px,5vw,80px) clamp(20px,4vw,60px)', position: 'relative' }}>
-                    <p style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: C.accent, marginBottom: '24px', opacity: heroVisible ? 1 : 0, transform: heroVisible ? 'translateY(0)' : 'translateY(12px)', transition: 'all 0.7s ease 0.1s' }}>
-                        Lagos · {new Date().getFullYear()} Collection
-                    </p>
                     <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(36px,4.5vw,78px)', fontWeight: 400, color: C.text, lineHeight: 1.1, marginBottom: '20px', opacity: heroVisible ? 1 : 0, transform: heroVisible ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.8s ease 0.2s' }}>
                         Made for<br />
                         <em style={{ color: C.accent }}>every form of</em><br />
