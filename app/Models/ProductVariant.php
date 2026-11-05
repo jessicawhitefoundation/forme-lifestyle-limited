@@ -14,7 +14,7 @@ class ProductVariant extends Model
 
     protected $casts = [
         'price_modifier' => 'decimal:2',
-        'is_active'      => 'boolean',
+        'is_active' => 'boolean',
     ];
 
     public function product(): BelongsTo
@@ -24,7 +24,9 @@ class ProductVariant extends Model
 
     public function getFinalPriceAttribute(): float
     {
-        return (float) $this->product->base_price + (float) $this->price_modifier;
+        $base = $this->product ? (float) $this->product->base_price : 0;
+
+        return $base + (float) $this->price_modifier;
     }
 
     public function getDescriptionAttribute(): string

@@ -70,6 +70,13 @@ class Product extends Model
 
     public function primaryImage(): ?ProductImage
     {
+        if ($this->relationLoaded('images')) {
+            /** @var ProductImage|null $loaded */
+            $loaded = $this->images->firstWhere('is_primary', true) ?? $this->images->first();
+
+            return $loaded;
+        }
+
         /** @var ProductImage|null $img */
         $img = $this->images()->where('is_primary', true)->first()
             ?? $this->images()->first();

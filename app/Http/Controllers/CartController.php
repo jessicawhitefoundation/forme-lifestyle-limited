@@ -8,7 +8,6 @@ use App\Models\ProductVariant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Inertia\Response;
 
 class CartController extends Controller
 {
@@ -19,37 +18,38 @@ class CartController extends Controller
         }
 
         $sessionId = session()->getId();
+
         return Cart::firstOrCreate(['session_id' => $sessionId]);
     }
 
     public function show(Request $request)
     {
-        $cart  = $this->getCart();
+        $cart = $this->getCart();
         $items = $cart->items()->with(['variant.product.images'])->get();
 
         $data = [
             'cartItems' => $items->map(fn ($item) => [
-                'id'          => $item->id,
-                'quantity'    => $item->quantity,
-                'variant'     => [
-                    'id'          => $item->variant->id,
-                    'color'       => $item->variant->color,
-                    'color_hex'   => $item->variant->color_hex,
-                    'size'        => $item->variant->size,
+                'id' => $item->id,
+                'quantity' => $item->quantity,
+                'variant' => [
+                    'id' => $item->variant->id,
+                    'color' => $item->variant->color,
+                    'color_hex' => $item->variant->color_hex,
+                    'size' => $item->variant->size,
                     'final_price' => $item->variant->final_price,
-                    'stock'       => $item->variant->stock_quantity,
+                    'stock' => $item->variant->stock_quantity,
                 ],
-                'product'     => [
-                    'name'  => $item->variant->product->name,
-                    'slug'  => $item->variant->product->slug,
+                'product' => [
+                    'name' => $item->variant->product->name,
+                    'slug' => $item->variant->product->slug,
                     'image' => $item->variant->product->images->first()
                         ? asset('storage/'.$item->variant->product->images->first()->image_path)
                         : null,
                 ],
-                'line_total'  => $item->variant->final_price * $item->quantity,
+                'line_total' => $item->variant->final_price * $item->quantity,
             ]),
-            'total'     => $cart->total,
-            'count'     => $cart->count,
+            'total' => $cart->total,
+            'count' => $cart->count,
         ];
 
         if ($request->has('json')) {
@@ -63,7 +63,7 @@ class CartController extends Controller
     {
         $request->validate([
             'variant_id' => 'required|exists:product_variants,id',
-            'quantity'   => 'required|integer|min:1',
+            'quantity' => 'required|integer|min:1|max:100',
         ]);
 
         $variant = ProductVariant::findOrFail($request->variant_id);
@@ -84,7 +84,7 @@ class CartController extends Controller
         } else {
             $cart->items()->create([
                 'product_variant_id' => $variant->id,
-                'quantity'           => $request->quantity,
+                'quantity' => $request->quantity,
             ]);
         }
 
@@ -93,7 +93,16 @@ class CartController extends Controller
 
     public function update(Request $request, CartItem $cartItem): JsonResponse
     {
-        $request->validate(['quantity' => 'required|integer|min:1']);
+        $cart = $this->getCart();
+
+        // Prevent IDOR: Ensure item belongs to the caller's active cart
+        if ($cartItem->cart_id !== $cart->id) {
+            return response()->json(['error' => 'Unauthorized action on cart item.'], 403);
+        }
+
+        $request->validate([
+            'quantity' => 'required|integer|min:1|max:100',
+        ]);
 
         if ($request->quantity > $cartItem->variant->stock_quantity) {
             return response()->json(['error' => 'Not enough stock'], 422);
@@ -106,13 +115,22 @@ class CartController extends Controller
 
     public function destroy(CartItem $cartItem): JsonResponse
     {
+        $cart = $this->getCart();
+
+        // Prevent IDOR: Ensure item belongs to the caller's active cart
+        if ($cartItem->cart_id !== $cart->id) {
+            return response()->json(['error' => 'Unauthorized action on cart item.'], 403);
+        }
+
         $cartItem->delete();
+
         return response()->json(['message' => 'Removed']);
     }
 
     public function count(): JsonResponse
     {
         $cart = $this->getCart();
+
         return response()->json(['count' => $cart->count]);
     }
 }

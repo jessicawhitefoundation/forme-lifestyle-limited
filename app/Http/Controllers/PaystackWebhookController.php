@@ -73,9 +73,13 @@ class PaystackWebhookController extends Controller
                 }
             }
 
-            // Deduct stock
+            // Deduct stock safely without allowing negative inventory
             foreach ($order->items as $item) {
-                optional($item->variant)->decrement('stock_quantity', $item->quantity);
+                if ($item->variant) {
+                    $item->variant->update([
+                        'stock_quantity' => DB::raw('GREATEST(0, stock_quantity - '.(int) $item->quantity.')'),
+                    ]);
+                }
             }
 
             // Clear cart

@@ -98,6 +98,21 @@ class CheckoutController extends Controller
             return back()->withErrors(['cart' => 'Your cart is empty']);
         }
 
+        // ── Pre-checkout Inventory & Availability Check ───────────────────────
+        foreach ($items as $item) {
+            $variant = $item->variant;
+            if (! $variant || ! $variant->is_active || ($variant->product && ! $variant->product->is_active)) {
+                return back()->withErrors(['cart' => 'One or more items in your cart is no longer available. Please update your cart.']);
+            }
+
+            if ($variant->stock_quantity < $item->quantity) {
+                $name = $variant->product?->name ?? 'An item';
+                $size = $variant->size ? " ({$variant->size})" : '';
+
+                return back()->withErrors(['cart' => "Sorry, '{$name}{$size}' only has {$variant->stock_quantity} in stock. Please adjust quantity."]);
+            }
+        }
+
         // ── Concurrency & Idempotency: Atomic lock per user/session ───────────
         $lockKey = 'checkout_lock_'.(auth()->id() ?: session()->getId());
         $lock = Cache::lock($lockKey, 10);
@@ -293,9 +308,13 @@ class CheckoutController extends Controller
                 ]);
             }
 
-            // Deduct stock
+            // Deduct stock safely without allowing negative inventory
             foreach ($lockedOrder->items as $item) {
-                optional($item->variant)->decrement('stock_quantity', $item->quantity);
+                if ($item->variant) {
+                    $item->variant->update([
+                        'stock_quantity' => DB::raw('GREATEST(0, stock_quantity - '.(int) $item->quantity.')'),
+                    ]);
+                }
             }
 
             // Clear the cart
