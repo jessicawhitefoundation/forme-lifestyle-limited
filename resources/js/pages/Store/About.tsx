@@ -105,9 +105,9 @@ export default function About() {
                                         background: C.surface
                                     }}>
                                         <img
-                                            src="https://images.unsplash.com/photo-1518611012118-696072aa579a?auto=format&fit=crop&w=900&q=85"
-                                            alt="Movement for everyone"
-                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                            src="/images/about-forme.jpg"
+                                            alt="FORMÉ Activewear"
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
                                         />
                                     </div>
                                     <div style={{
