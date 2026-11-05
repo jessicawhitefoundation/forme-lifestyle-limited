@@ -29,4 +29,35 @@ class Cart extends Model
     {
         return $this->items->sum('quantity');
     }
+
+    /**
+     * Merge items from a guest session cart into an authenticated user's cart.
+     */
+    public static function mergeSessionCartToUser(string $sessionId, int $userId): void
+    {
+        if (empty($sessionId)) {
+            return;
+        }
+
+        $sessionCart = self::where('session_id', $sessionId)->first();
+        if (! $sessionCart || $sessionCart->items->isEmpty()) {
+            return;
+        }
+
+        $userCart = self::firstOrCreate(['user_id' => $userId]);
+
+        foreach ($sessionCart->items as $sessionItem) {
+            $existingItem = $userCart->items()
+                ->where('product_variant_id', $sessionItem->product_variant_id)
+                ->first();
+
+            if ($existingItem) {
+                $existingItem->increment('quantity', $sessionItem->quantity);
+            } else {
+                $sessionItem->update(['cart_id' => $userCart->id]);
+            }
+        }
+
+        $sessionCart->delete();
+    }
 }

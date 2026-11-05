@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OrderResource\Pages;
 use App\Models\Order;
+use App\Services\OrderMailService;
 use App\Services\RoutelyService;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -166,6 +167,8 @@ class OrderResource extends Resource
                                 ->success()
                                 ->send();
                             $record->update(['status' => 'shipped']);
+                            OrderMailService::sendOrderShippedNotification($record->fresh());
+                            \App\Services\OrderMailService::sendOrderShippedNotification($record->fresh());
                         } else {
                             Notification::make()
                                 ->title('Routely Dispatch Failed')

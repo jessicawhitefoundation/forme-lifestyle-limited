@@ -3,9 +3,10 @@ import { Head, Link, router } from '@inertiajs/react';
 
 interface LoginProps {
     errors?: { email?: string; password?: string };
+    redirect?: string;
 }
 
-export default function Login({ errors = {} }: LoginProps) {
+export default function Login({ errors = {}, redirect }: LoginProps) {
     const [form, setForm] = useState({ email: '', password: '', remember: false });
     const [submitting, setSubmitting] = useState(false);
 
@@ -30,13 +31,21 @@ export default function Login({ errors = {} }: LoginProps) {
             <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
                 <div style={{ width: '100%', maxWidth: '440px' }}>
                     {/* Header */}
-                    <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '36px' }}>
                         <Link href="/" style={{ textDecoration: 'none' }}>
                             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '32px', letterSpacing: '4px', color: 'var(--forme-accent, #8B1A2A)', marginBottom: '24px', fontWeight: 600 }}>FORME</p>
                         </Link>
                         <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '32px', fontWeight: 400, color: 'var(--forme-text, #1a1a1a)', marginBottom: '8px' }}>Welcome Back</h1>
                         <p style={{ fontSize: '14px', color: 'var(--forme-dim, #888)' }}>Sign in to your account</p>
                     </div>
+
+                    {redirect === '/checkout' && (
+                        <div style={{ background: '#fdf0f2', border: '1px solid #8B1A2A', padding: '14px 16px', borderRadius: '4px', marginBottom: '24px', textAlign: 'center' }}>
+                            <p style={{ margin: 0, fontSize: '12px', color: '#8B1A2A', fontWeight: 600, letterSpacing: '0.5px' }}>
+                                🔒 An account is required to place an order. Please sign in or register below to proceed to checkout.
+                            </p>
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit}>
                         <div style={{ marginBottom: '16px' }}>
@@ -89,14 +98,9 @@ export default function Login({ errors = {} }: LoginProps) {
 
                         <div style={{ textAlign: 'center' }}>
                             <span style={{ fontSize: '13px', color: 'var(--forme-dim, #888)' }}>Don't have an account? </span>
-                            <Link href="/register" style={{ fontSize: '13px', color: 'var(--forme-accent, #8B1A2A)', textDecoration: 'underline' }}>Create one</Link>
+                            <Link href={redirect ? `/register?redirect=${encodeURIComponent(redirect)}` : '/register'} style={{ fontSize: '13px', color: 'var(--forme-accent, #8B1A2A)', textDecoration: 'underline' }}>Create one</Link>
                         </div>
                     </form>
-
-                    <div style={{ marginTop: '40px', padding: '20px', background: 'var(--forme-surface, #faf7f2)', borderRadius: '4px', textAlign: 'center' }}>
-                        <p style={{ fontSize: '12px', color: 'var(--forme-dim, #888)', marginBottom: '8px' }}>Or continue as a guest</p>
-                        <Link href="/checkout" style={{ fontSize: '13px', color: 'var(--forme-text, #1a1a1a)', textDecoration: 'underline' }}>Proceed to Checkout</Link>
-                    </div>
                 </div>
             </div>
         </>

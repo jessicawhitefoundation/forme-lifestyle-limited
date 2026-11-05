@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Cart;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\OrderMailService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -16,43 +18,62 @@ class CustomerAuthController extends Controller
 {
     public function showRegister(): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/Register', [
+            'redirect' => request('redirect'),
+        ]);
     }
 
     public function register(Request $request)
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users',
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
+        $sessionId = session()->getId();
+
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => 'customer',
+            'role' => 'customer',
         ]);
 
         Auth::login($user);
+
+        // Merge any items in guest cart into user cart
+        Cart::mergeSessionCartToUser($sessionId, $user->id);
+
+        // Send welcome email
+        OrderMailService::sendWelcomeNotification($user);
 
         return redirect()->intended(route('home'));
     }
 
     public function showLogin(): Response
     {
-        return Inertia::render('Auth/Login');
+        return Inertia::render('Auth/Login', [
+            'redirect' => request('redirect'),
+        ]);
     }
 
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
+        $sessionId = session()->getId();
+
         if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
+            $user = Auth::user();
+            if ($user) {
+                Cart::mergeSessionCartToUser($sessionId, $user->id);
+            }
             $request->session()->regenerate();
+
             return redirect()->intended(route('home'));
         }
 
@@ -64,6 +85,7 @@ class CustomerAuthController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect()->route('home');
     }
 
@@ -81,15 +103,15 @@ class CustomerAuthController extends Controller
             ->latest()
             ->get()
             ->map(fn ($o) => [
-                'id'             => $o->id,
-                'order_number'   => $o->order_number,
-                'status'         => $o->status,
+                'id' => $o->id,
+                'order_number' => $o->order_number,
+                'status' => $o->status,
                 'payment_status' => $o->payment_status,
-                'total_amount'   => $o->total_amount,
-                'items_count'    => $o->items->count(),
+                'total_amount' => $o->total_amount,
+                'items_count' => $o->items->count(),
                 'routely_tracking_number' => $o->routely_tracking_number,
                 'routely_status' => $o->routely_status,
-                'created_at'     => $o->created_at->format('M d, Y'),
+                'created_at' => $o->created_at->format('M d, Y'),
             ]);
 
         return Inertia::render('Auth/Orders', ['orders' => $orders]);
@@ -98,11 +120,11 @@ class CustomerAuthController extends Controller
     public function updateProfile(Request $request)
     {
         $request->validate([
-            'name'             => 'required|string|max:255',
-            'phone'            => 'nullable|string',
+            'name' => 'required|string|max:255',
+            'phone' => 'nullable|string',
             'shipping_address' => 'nullable|string',
-            'shipping_city'    => 'nullable|string',
-            'shipping_state'   => 'nullable|string',
+            'shipping_city' => 'nullable|string',
+            'shipping_state' => 'nullable|string',
         ]);
 
         auth()->user()->update($request->only([

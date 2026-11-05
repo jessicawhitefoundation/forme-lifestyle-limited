@@ -3,9 +3,10 @@ import { Head, Link, router } from '@inertiajs/react';
 
 interface RegisterProps {
     errors?: { name?: string; email?: string; password?: string };
+    redirect?: string;
 }
 
-export default function Register({ errors = {} }: RegisterProps) {
+export default function Register({ errors = {}, redirect }: RegisterProps) {
     const [form, setForm] = useState({ name: '', email: '', password: '', password_confirmation: '' });
     const [submitting, setSubmitting] = useState(false);
 
@@ -34,13 +35,21 @@ export default function Register({ errors = {} }: RegisterProps) {
 
             <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 24px' }}>
                 <div style={{ width: '100%', maxWidth: '440px' }}>
-                    <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+                    <div style={{ textAlign: 'center', marginBottom: '36px' }}>
                         <Link href="/" style={{ textDecoration: 'none' }}>
                             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '32px', letterSpacing: '4px', color: 'var(--forme-accent, #8B1A2A)', marginBottom: '24px', fontWeight: 600 }}>FORME</p>
                         </Link>
                         <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '32px', fontWeight: 400, color: 'var(--forme-text, #1a1a1a)', marginBottom: '8px' }}>Create Account</h1>
                         <p style={{ fontSize: '14px', color: 'var(--forme-dim, #888)' }}>Join the Forme community</p>
                     </div>
+
+                    {redirect === '/checkout' && (
+                        <div style={{ background: '#fdf0f2', border: '1px solid #8B1A2A', padding: '14px 16px', borderRadius: '4px', marginBottom: '24px', textAlign: 'center' }}>
+                            <p style={{ margin: 0, fontSize: '12px', color: '#8B1A2A', fontWeight: 600, letterSpacing: '0.5px' }}>
+                                🔒 An account is required to place an order. Create your account below to proceed to checkout.
+                            </p>
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit}>
                         <div style={{ marginBottom: '16px' }}>
@@ -100,7 +109,7 @@ export default function Register({ errors = {} }: RegisterProps) {
 
                         <div style={{ textAlign: 'center' }}>
                             <span style={{ fontSize: '13px', color: 'var(--forme-dim, #888)' }}>Already have an account? </span>
-                            <Link href="/login" style={{ fontSize: '13px', color: 'var(--forme-accent, #8B1A2A)', textDecoration: 'underline' }}>Sign in</Link>
+                            <Link href={redirect ? `/login?redirect=${encodeURIComponent(redirect)}` : '/login'} style={{ fontSize: '13px', color: 'var(--forme-accent, #8B1A2A)', textDecoration: 'underline' }}>Sign in</Link>
                         </div>
                     </form>
                 </div>

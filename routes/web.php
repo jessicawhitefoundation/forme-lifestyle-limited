@@ -36,12 +36,14 @@ Route::middleware('throttle:30,1')->group(function () {
     Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
 });
 
-// ─── Checkout & Paystack (Rate Limited) ───────────────────────────────────────
-Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
-Route::post('/checkout/shipping-rate', [CheckoutController::class, 'calculateShippingRate'])->name('checkout.shipping-rate');
-Route::post('/checkout/initiate', [CheckoutController::class, 'initiate'])
-    ->middleware('throttle:checkout')
-    ->name('checkout.initiate');
+// ─── Checkout & Paystack (Rate Limited, Auth Required) ────────────────────────
+Route::middleware('auth')->group(function () {
+    Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
+    Route::post('/checkout/shipping-rate', [CheckoutController::class, 'calculateShippingRate'])->name('checkout.shipping-rate');
+    Route::post('/checkout/initiate', [CheckoutController::class, 'initiate'])
+        ->middleware('throttle:checkout')
+        ->name('checkout.initiate');
+});
 Route::get('/checkout/callback', [CheckoutController::class, 'callback'])->name('checkout.callback');
 Route::get('/order/{orderNumber}/confirmation', [CheckoutController::class, 'confirmation'])->name('order.confirmation');
 

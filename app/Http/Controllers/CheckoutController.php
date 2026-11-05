@@ -6,6 +6,7 @@ use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\User;
+use App\Services\OrderMailService;
 use App\Services\RoutelyService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -273,6 +274,9 @@ class CheckoutController extends Controller
         // Clear the cart
         $cart = $this->getCart();
         $cart->items()->delete();
+
+        // Send order confirmation to customer and notification to store owner
+        OrderMailService::sendOrderPaidNotifications($order);
 
         return redirect()->route('order.confirmation', $order->order_number);
     }

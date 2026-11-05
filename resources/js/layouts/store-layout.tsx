@@ -27,6 +27,7 @@ const C = {
 export default function StoreLayout({ children }: StoreLayoutProps) {
     const { url, props } = usePage();
     const storeSetting = props.store_setting as any;
+    const isLoggedIn = !!(props as any)?.auth?.user;
     const [cartOpen, setCartOpen] = useState(false);
     const [navOpen, setNavOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
@@ -383,8 +384,8 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                             <span style={{ fontWeight: 600, color: C.text }}>₦{cartTotal.toLocaleString()}</span>
                         </div>
                         <p style={{ fontSize: '11px', color: C.muted, marginBottom: '20px' }}>Shipping calculated at checkout</p>
-                        <Link href="/checkout" onClick={() => setCartOpen(false)} className="shimmer-button" style={{ display: 'block', background: C.accent, color: '#fff', textAlign: 'center', padding: '16px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 500 }}>
-                            Checkout
+                        <Link href={isLoggedIn ? '/checkout' : '/login?redirect=/checkout'} onClick={() => setCartOpen(false)} className="shimmer-button" style={{ display: 'block', background: C.accent, color: '#fff', textAlign: 'center', padding: '16px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 500 }}>
+                            {isLoggedIn ? 'Checkout' : 'Sign In to Checkout'}
                         </Link>
                         <Link href="/cart" onClick={() => setCartOpen(false)} style={{ display: 'block', border: `1px solid ${C.border}`, color: C.muted, textAlign: 'center', padding: '14px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', transition: 'border-color .2s, color .2s' }}>
                             View Cart

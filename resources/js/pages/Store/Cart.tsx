@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 
 interface CartItem {
@@ -17,6 +17,8 @@ interface CartProps {
 }
 
 export default function Cart({ cartItems: initialItems, total: initialTotal }: CartProps) {
+    const { props } = usePage();
+    const isLoggedIn = !!(props as any)?.auth?.user;
     const [items, setItems] = useState(initialItems);
 
     const total = items.reduce((sum, i) => sum + i.variant.final_price * i.quantity, 0);
@@ -147,11 +149,16 @@ export default function Cart({ cartItems: initialItems, total: initialTotal }: C
                                 <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: '#1a1a1a' }}>₦{(total + (total >= 50000 ? 0 : 3000)).toLocaleString()}</span>
                             </div>
 
-                            <Link href="/checkout" style={{ display: 'block', background: '#8B1A2A', color: '#fff', textAlign: 'center', padding: '18px', textDecoration: 'none', fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '12px', transition: 'background 0.2s' }}
+                            <Link href={isLoggedIn ? '/checkout' : '/login?redirect=/checkout'} style={{ display: 'block', background: '#8B1A2A', color: '#fff', textAlign: 'center', padding: '18px', textDecoration: 'none', fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px', transition: 'background 0.2s' }}
                                 onMouseEnter={e => (e.currentTarget.style.background = '#6e1522')}
                                 onMouseLeave={e => (e.currentTarget.style.background = '#8B1A2A')}>
-                                Proceed to Checkout
+                                {isLoggedIn ? 'Proceed to Checkout' : 'Sign In to Checkout'}
                             </Link>
+                            {!isLoggedIn && (
+                                <p style={{ fontSize: '11px', color: '#888', textAlign: 'center', marginBottom: '14px', letterSpacing: '0.3px' }}>
+                                    🔒 Account sign-in is required to place your order.
+                                </p>
+                            )}
                             <Link href="/shop" style={{ display: 'block', border: '1px solid #1a1a1a', color: '#1a1a1a', textAlign: 'center', padding: '16px', textDecoration: 'none', fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase' }}>
                                 Continue Shopping
                             </Link>
