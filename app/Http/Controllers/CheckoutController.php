@@ -310,8 +310,8 @@ class CheckoutController extends Controller
         $subtotal = $items->sum(fn ($i) => $i->variant->final_price * $i->quantity);
 
         $quote = $routely->getFee([
-            'address' => $request->address ?: ($request->city ?: $request->state),
-            'city' => $request->city ?: 'Lagos',
+            'address' => $request->address,
+            'city' => $request->city,
             'state' => $request->state,
             'item_value' => $subtotal,
         ]);

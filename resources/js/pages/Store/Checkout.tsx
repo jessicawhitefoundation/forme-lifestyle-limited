@@ -107,15 +107,24 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
     };
 
     const nigeriaStates = [
-        'Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River',
-        'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'FCT', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano',
+        'Abia', 'Abuja (FCT)', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River',
+        'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano',
         'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun',
         'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara',
     ];
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-        setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-        setErrors(err => ({ ...err, [e.target.name]: '' }));
+        const { name, value } = e.target;
+        if (name === 'shipping_state') {
+            setForm(f => ({
+                ...f,
+                shipping_state: value,
+                shipping_city: f.shipping_city === 'Lekki' && value !== 'Lagos' ? '' : f.shipping_city,
+            }));
+        } else {
+            setForm(f => ({ ...f, [name]: value }));
+        }
+        setErrors(err => ({ ...err, [name]: '' }));
     };
 
 

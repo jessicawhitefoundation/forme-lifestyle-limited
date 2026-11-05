@@ -62,25 +62,142 @@ class RoutelyService
         'badagry' => '6.431600,2.887600',
         'lagos' => '6.452000,3.398000',
 
-        // Nigerian States
-        'abuja' => '9.076500,7.398600',
-        'fct' => '9.076500,7.398600',
-        'rivers' => '4.815600,7.049800',
-        'port harcourt' => '4.815600,7.049800',
-        'oyo' => '7.377500,3.947000',
-        'ibadan' => '7.377500,3.947000',
-        'ogun' => '7.147500,3.361900',
-        'abeokuta' => '7.147500,3.361900',
-        'edo' => '6.335000,5.603700',
-        'benin' => '6.335000,5.603700',
-        'enugu' => '6.458400,7.546400',
+        // Nigerian States & Capitals
+        'abia' => '5.526000,7.489600',
+        'umuahia' => '5.526000,7.489600',
+        'adamawa' => '9.209400,12.481800',
+        'yola' => '9.209400,12.481800',
+        'akwa ibom' => '5.037700,7.912800',
+        'uyo' => '5.037700,7.912800',
         'anambra' => '6.220900,7.072200',
+        'awka' => '6.220900,7.072200',
+        'onitsha' => '6.151800,6.785600',
+        'bauchi' => '10.315900,9.844200',
+        'bayelsa' => '4.926700,6.267600',
+        'yenagoa' => '4.926700,6.267600',
+        'benue' => '7.732200,8.539100',
+        'makurdi' => '7.732200,8.539100',
+        'borno' => '11.833300,13.150000',
+        'maiduguri' => '11.833300,13.150000',
+        'cross river' => '4.975700,8.341700',
+        'calabar' => '4.975700,8.341700',
         'delta' => '5.544200,5.760300',
         'asaba' => '6.198400,6.732900',
         'warri' => '5.516700,5.750000',
-        'kano' => '12.002200,8.592000',
+        'ebonyi' => '6.324900,8.113700',
+        'abakaliki' => '6.324900,8.113700',
+        'edo' => '6.335000,5.603700',
+        'benin' => '6.335000,5.603700',
+        'ekiti' => '7.621100,5.221500',
+        'ado-ekiti' => '7.621100,5.221500',
+        'enugu' => '6.458400,7.546400',
+        'abuja' => '9.076500,7.398600',
+        'fct' => '9.076500,7.398600',
+        'gombe' => '10.289700,11.167300',
+        'imo' => '5.485200,7.035000',
+        'owerri' => '5.485200,7.035000',
+        'jigawa' => '11.756200,9.339000',
+        'dutse' => '11.756200,9.339000',
         'kaduna' => '10.510500,7.416500',
+        'kano' => '12.002200,8.592000',
+        'katsina' => '12.990800,7.601800',
+        'kebbi' => '12.453900,4.197500',
+        'birnin kebbi' => '12.453900,4.197500',
+        'kogi' => '7.802300,6.733300',
+        'lokoja' => '7.802300,6.733300',
+        'kwara' => '8.479900,4.541800',
+        'ilorin' => '8.479900,4.541800',
+        'nasarawa' => '8.493200,8.515300',
+        'lafia' => '8.493200,8.515300',
+        'niger' => '9.583600,6.546300',
+        'minna' => '9.583600,6.546300',
+        'ogun' => '7.147500,3.361900',
+        'abeokuta' => '7.147500,3.361900',
+        'ondo' => '7.257100,5.205800',
+        'akure' => '7.257100,5.205800',
+        'osun' => '7.782700,4.541800',
+        'osogbo' => '7.782700,4.541800',
+        'oyo' => '7.377500,3.947000',
+        'ibadan' => '7.377500,3.947000',
+        'plateau' => '9.896500,8.858300',
+        'jos' => '9.896500,8.858300',
+        'rivers' => '4.815600,7.049800',
+        'port harcourt' => '4.815600,7.049800',
+        'sokoto' => '13.005900,5.247600',
+        'taraba' => '8.893700,11.359600',
+        'jalingo' => '8.893700,11.359600',
+        'yobe' => '11.747000,11.960800',
+        'damaturu' => '11.747000,11.960800',
+        'zamfara' => '12.162800,6.661400',
+        'gusau' => '12.162800,6.661400',
     ];
+
+    /**
+     * Default state capitals mapping for accurate interstate carrier rating
+     *
+     * @var array<string, string>
+     */
+    protected static array $stateCapitals = [
+        'Abia' => 'Umuahia',
+        'Adamawa' => 'Yola',
+        'Akwa Ibom' => 'Uyo',
+        'Anambra' => 'Awka',
+        'Bauchi' => 'Bauchi',
+        'Bayelsa' => 'Yenagoa',
+        'Benue' => 'Makurdi',
+        'Borno' => 'Maiduguri',
+        'Cross River' => 'Calabar',
+        'Delta' => 'Asaba',
+        'Ebonyi' => 'Abakaliki',
+        'Edo' => 'Benin',
+        'Ekiti' => 'Ado-Ekiti',
+        'Enugu' => 'Enugu',
+        'Abuja' => 'Abuja',
+        'Gombe' => 'Gombe',
+        'Imo' => 'Owerri',
+        'Jigawa' => 'Dutse',
+        'Kaduna' => 'Kaduna',
+        'Kano' => 'Kano',
+        'Katsina' => 'Katsina',
+        'Kebbi' => 'Birnin Kebbi',
+        'Kogi' => 'Lokoja',
+        'Kwara' => 'Ilorin',
+        'Lagos' => 'Ikeja',
+        'Nasarawa' => 'Lafia',
+        'Niger' => 'Minna',
+        'Ogun' => 'Abeokuta',
+        'Ondo' => 'Akure',
+        'Osun' => 'Osogbo',
+        'Oyo' => 'Ibadan',
+        'Plateau' => 'Jos',
+        'Rivers' => 'Port Harcourt',
+        'Sokoto' => 'Sokoto',
+        'Taraba' => 'Jalingo',
+        'Yobe' => 'Damaturu',
+        'Zamfara' => 'Gusau',
+    ];
+
+    /**
+     * Normalize Nigerian state name to what Routely expects.
+     */
+    public static function normalizeState(?string $state): string
+    {
+        $s = strtolower(trim((string) $state));
+        if ($s === 'fct' || str_contains($s, 'abuja') || str_contains($s, 'capital')) {
+            return 'Abuja';
+        }
+        if (str_contains($s, 'lagos')) {
+            return 'Lagos';
+        }
+        if (str_contains($s, 'akwa')) {
+            return 'Akwa Ibom';
+        }
+        if (str_contains($s, 'cross')) {
+            return 'Cross River';
+        }
+
+        return ucwords($s);
+    }
 
     public function __construct()
     {
@@ -118,9 +235,20 @@ class RoutelyService
      */
     public function getFee(array $params): array
     {
-        $toState = $params['state'] ?? 'Lagos';
-        $toCity = $params['city'] ?? 'Lagos';
-        $toAddress = $params['address'] ?? '';
+        $toState = self::normalizeState($params['state'] ?? 'Lagos');
+        $defaultCity = self::$stateCapitals[$toState] ?? $toState;
+
+        $rawCity = trim((string) ($params['city'] ?? ''));
+        $lagosAreas = ['lekki', 'ikeja', 'victoria island', 'vi', 'yaba', 'surulere', 'ajah', 'ikoyi', 'lagos', 'maryland', 'gbagada', 'magodo', 'festac'];
+        $rawCityLower = strtolower($rawCity);
+        $isLagosArea = in_array($rawCityLower, $lagosAreas);
+
+        $toCity = ($rawCity !== '' && ($toState === 'Lagos' || ! $isLagosArea))
+            ? $rawCity
+            : ($toState === 'Lagos' ? 'Lekki' : $defaultCity);
+
+        $rawAddress = trim((string) ($params['address'] ?? ''));
+        $toAddress = $rawAddress !== '' ? $rawAddress : "{$toCity}, {$toState}";
         $itemValue = (float) ($params['item_value'] ?? 25000);
         $weight = (float) ($params['weight'] ?? 1.5);
 
@@ -145,7 +273,7 @@ class RoutelyService
                 $payload = [
                     'from' => $fromAddress,
                     'from_coordinates' => $fromCoords,
-                    'to' => $toAddress ?: 'Lekki, Lagos',
+                    'to' => $toAddress,
                     'to_coordinates' => $toCoords,
                     'package_type' => 'package',
                     'vehicle_type' => 1, // Bike / Courier
@@ -159,7 +287,7 @@ class RoutelyService
                     'from_state' => 'Lagos',
                     'from_city' => 'Lekki',
                     'from_coordinates' => $fromCoords,
-                    'to' => $toAddress ?: $toCity,
+                    'to' => $toAddress,
                     'to_state' => $toState,
                     'to_city' => $toCity,
                     'to_coordinates' => $toCoords,
@@ -176,7 +304,7 @@ class RoutelyService
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
                 'x-api-key' => $this->apiKey,
-            ])->timeout(12)->post("{$this->baseUrl}/v1/business/shipments/fee", $payload);
+            ])->timeout(15)->post("{$this->baseUrl}/v1/business/shipments/fee", $payload);
 
             if ($response->successful() && ($response->json('success') === true)) {
                 $rates = $response->json('data.rates', []);
@@ -234,9 +362,20 @@ class RoutelyService
      */
     public function createShipment(Order $order, array $options = []): array
     {
-        $toState = $order->shipping_state ?: 'Lagos';
-        $toCity = $order->shipping_city ?: 'Lekki';
-        $toAddress = $order->shipping_address ?: 'Lagos';
+        $toState = self::normalizeState($order->shipping_state ?: 'Lagos');
+        $defaultCity = self::$stateCapitals[$toState] ?? $toState;
+
+        $rawCity = trim((string) ($order->shipping_city ?: ''));
+        $lagosAreas = ['lekki', 'ikeja', 'victoria island', 'vi', 'yaba', 'surulere', 'ajah', 'ikoyi', 'lagos', 'maryland', 'gbagada', 'magodo', 'festac'];
+        $rawCityLower = strtolower($rawCity);
+        $isLagosArea = in_array($rawCityLower, $lagosAreas);
+
+        $toCity = ($rawCity !== '' && ($toState === 'Lagos' || ! $isLagosArea))
+            ? $rawCity
+            : ($toState === 'Lagos' ? 'Lekki' : $defaultCity);
+
+        $rawAddress = trim((string) ($order->shipping_address ?: ''));
+        $toAddress = $rawAddress !== '' ? $rawAddress : "{$toCity}, {$toState}";
         $isIntracity = strcasecmp(trim($toState), 'lagos') === 0;
 
         if (empty($this->apiKey)) {
