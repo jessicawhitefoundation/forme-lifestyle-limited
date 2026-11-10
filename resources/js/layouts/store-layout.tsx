@@ -27,7 +27,6 @@ const C = {
 export default function StoreLayout({ children }: StoreLayoutProps) {
     const { url, props } = usePage();
     const storeSetting = props.store_setting as any;
-    const isLoggedIn = !!(props as any)?.auth?.user;
     const [cartOpen, setCartOpen] = useState(false);
     const [navOpen, setNavOpen] = useState(false);
     const [searchOpen, setSearchOpen] = useState(false);
@@ -60,12 +59,14 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
         }
     };
 
+    const contact = props.store_contact as { email: string; whatsapp_display: string; whatsapp_number: string };
+
     const nav = [
         { label: 'Shop All', href: '/shop' },
-        { label: 'Women', href: '/shop?gender=female' },
-        { label: 'Men', href: '/shop?gender=male' },
-        { label: 'Kids', href: '/shop?gender=kids' },
-        { label: 'Debut Collection', href: '/collections/new-arrivals' },
+        { label: 'New Arrivals', href: '/collections/new-arrivals' },
+        { label: 'Women', href: '/collections/women' },
+        { label: 'Men', href: '/collections/men' },
+        { label: 'Kids', href: '/collections/kids' },
         { label: 'Accessories', href: '/collections/accessories' },
         { label: 'About Us', href: '/about' },
     ];
@@ -119,6 +120,7 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                 @media(max-width:768px){
                     .hide-mob{display:none!important;}
                     .header-container{padding:0 16px!important;}
+                    .page-pad{padding-left:16px!important;padding-right:16px!important;}
                 }
                 @media(min-width:769px){.show-mob{display:none!important;}}
                 ::selection{background:${C.accent};color:#fff;}
@@ -223,9 +225,13 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                                 onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')}
                                 onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
                             >Size Guide</Link>
-                            {['FAQ', 'Contact Us'].map(t => (
-                                <p key={t} style={{ fontSize: '14px', color: C.text, fontWeight: 400, marginBottom: '12px', cursor: 'pointer', transition: 'opacity .2s' }}
-                                    onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')} onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>{t}</p>
+                            {[
+                                { label: 'Track Your Order', href: '/track-order' },
+                                { label: 'FAQ', href: '/faq' },
+                                { label: 'Contact Us', href: '/contact' },
+                            ].map(link => (
+                                <Link key={link.href} href={link.href} style={{ display: 'block', fontSize: '14px', color: C.text, fontWeight: 400, textDecoration: 'none', marginBottom: '12px', transition: 'opacity .2s' }}
+                                    onMouseEnter={e => (e.currentTarget.style.opacity = '0.7')} onMouseLeave={e => (e.currentTarget.style.opacity = '1')}>{link.label}</Link>
                             ))}
                             <Link
                                 href="/policy"
@@ -236,8 +242,8 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                         </div>
                         <div>
                             <p style={{ fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: '20px', color: C.accentLight || C.accent, fontWeight: 600 }}>Connect</p>
-                            <p style={{ fontSize: '14px', color: C.text, fontWeight: 400, marginBottom: '8px' }}>hello@forme.ng</p>
-                            <p style={{ fontSize: '14px', color: C.text, fontWeight: 400, marginBottom: '16px' }}>WhatsApp: 07026126265</p>
+                            <a href={`mailto:${contact.email}`} style={{ display: 'block', fontSize: '14px', color: C.text, fontWeight: 400, marginBottom: '8px', textDecoration: 'none' }}>{contact.email}</a>
+                            <a href={`https://wa.me/${contact.whatsapp_number}`} target="_blank" rel="noopener noreferrer" style={{ display: 'block', fontSize: '14px', color: C.text, fontWeight: 400, marginBottom: '16px', textDecoration: 'none' }}>WhatsApp: {contact.whatsapp_display}</a>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '14px', marginTop: '16px' }}>
                                 <a 
                                     href="https://www.instagram.com/4me_lifestyle?rpxt=YnByamwzdWg0MXc3"
@@ -304,13 +310,13 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                         </div>
                     </div>
                     <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '24px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-                        <p style={{ fontSize: '13px', color: C.text, fontWeight: 400, opacity: 0.8 }}>© {new Date().getFullYear()} Forme. All rights reserved.</p>
+                        <p style={{ fontSize: '13px', color: C.text, fontWeight: 400, opacity: 0.8 }}>© {new Date().getFullYear()} FORMÉ. All rights reserved.</p>
                         <div style={{ display: 'flex', gap: '12px' }}>
-                            <Link href="/policy" style={{ fontSize: '13px', color: C.text, fontWeight: 400, opacity: 0.8, textDecoration: 'none', transition: 'opacity .2s' }}
+                            <Link href="/privacy" style={{ fontSize: '13px', color: C.text, fontWeight: 400, opacity: 0.8, textDecoration: 'none', transition: 'opacity .2s' }}
                                 onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
                                 onMouseLeave={e => (e.currentTarget.style.opacity = '0.8')}>Privacy Policy</Link>
                             <span style={{ fontSize: '13px', color: C.text, opacity: 0.6 }}>·</span>
-                            <Link href="/policy" style={{ fontSize: '13px', color: C.text, fontWeight: 400, opacity: 0.8, textDecoration: 'none', transition: 'opacity .2s' }}
+                            <Link href="/terms" style={{ fontSize: '13px', color: C.text, fontWeight: 400, opacity: 0.8, textDecoration: 'none', transition: 'opacity .2s' }}
                                 onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
                                 onMouseLeave={e => (e.currentTarget.style.opacity = '0.8')}>Terms of Service</Link>
                         </div>
@@ -384,8 +390,8 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
                             <span style={{ fontWeight: 600, color: C.text }}>₦{cartTotal.toLocaleString()}</span>
                         </div>
                         <p style={{ fontSize: '11px', color: C.muted, marginBottom: '20px' }}>Shipping calculated at checkout</p>
-                        <Link href={isLoggedIn ? '/checkout' : '/login?redirect=/checkout'} onClick={() => setCartOpen(false)} className="shimmer-button" style={{ display: 'block', background: C.accent, color: '#fff', textAlign: 'center', padding: '16px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 500 }}>
-                            {isLoggedIn ? 'Checkout' : 'Sign In to Checkout'}
+                        <Link href="/checkout" onClick={() => setCartOpen(false)} className="shimmer-button" style={{ display: 'block', background: C.accent, color: '#fff', textAlign: 'center', padding: '16px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 500 }}>
+                            Checkout
                         </Link>
                         <Link href="/cart" onClick={() => setCartOpen(false)} style={{ display: 'block', border: `1px solid ${C.border}`, color: C.muted, textAlign: 'center', padding: '14px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', transition: 'border-color .2s, color .2s' }}>
                             View Cart

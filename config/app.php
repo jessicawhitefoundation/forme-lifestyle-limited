@@ -15,8 +15,6 @@ return [
 
     'name' => env('APP_NAME', 'Laravel'),
 
-    'store_password' => env('STORE_PASSWORD', 'forme2026'),
-
     /*
     |--------------------------------------------------------------------------
     | Application Environment

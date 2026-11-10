@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
+        // Paystack can't send a CSRF token; the webhook checks Paystack's signature instead.
+        $middleware->preventRequestForgery(except: ['webhooks/paystack']);
+
         $middleware->web(append: [
             SecurityHeadersMiddleware::class,
             HandleAppearance::class,

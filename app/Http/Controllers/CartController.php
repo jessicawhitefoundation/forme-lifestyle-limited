@@ -50,6 +50,8 @@ class CartController extends Controller
             ]),
             'total' => $cart->total,
             'count' => $cart->count,
+            'states' => config('store.nigeria_states'),
+            'lagosAreas' => config('store.lagos_areas'),
         ];
 
         if ($request->has('json')) {
@@ -66,7 +68,11 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1|max:100',
         ]);
 
-        $variant = ProductVariant::findOrFail($request->variant_id);
+        $variant = ProductVariant::with('product')->findOrFail($request->variant_id);
+
+        if (! $variant->is_active || ! $variant->product?->is_active) {
+            return response()->json(['error' => 'This item is no longer available'], 422);
+        }
 
         if ($variant->stock_quantity < $request->quantity) {
             return response()->json(['error' => 'Not enough stock'], 422);
@@ -129,8 +135,11 @@ class CartController extends Controller
 
     public function count(): JsonResponse
     {
-        $cart = $this->getCart();
+        // Runs on every page, so it must not create a cart row for each visitor.
+        $cart = auth()->check()
+            ? Cart::where('user_id', auth()->id())->first()
+            : Cart::where('session_id', session()->getId())->first();
 
-        return response()->json(['count' => $cart->count]);
+        return response()->json(['count' => $cart?->count ?? 0]);
     }
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link } from '@inertiajs/react';
-import axios from 'axios';
 import ScrollReveal from '@/components/ScrollReveal';
+import HalftoneWord from '@/components/ui/halftone-word';
 
 interface Product {
     id: number; name: string; slug: string;
@@ -33,15 +33,6 @@ const C = {
 
 function ProductCard({ product }: { product: Product }) {
     const [hovered, setHovered] = useState(false);
-    const [added, setAdded] = useState(false);
-
-    const handleQuickAdd = async (e: React.MouseEvent) => {
-        e.preventDefault(); e.stopPropagation();
-        try {
-            await axios.post('/cart', { variant_id: product.id, quantity: 1 });
-            setAdded(true); setTimeout(() => setAdded(false), 2000);
-        } catch {}
-    };
 
     return (
         <Link href={`/products/${product.slug}`} style={{ textDecoration: 'none', display: 'block' }}>
@@ -60,12 +51,12 @@ function ProductCard({ product }: { product: Product }) {
                         <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80" alt={product.name}
                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.6s ease', transform: hovered ? 'scale(1.05)' : 'scale(1)' }} />
                     )}
-                    {/* Quick Add */}
+                    {/* Choose options: the card links to the product page, where colour and size are picked */}
                     <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '14px 16px', background: 'linear-gradient(to top, var(--forme-overlay-heavy), transparent)', transform: hovered ? 'translateY(0)' : 'translateY(100%)', transition: 'transform 0.3s ease' }}>
-                        <button onClick={handleQuickAdd}
-                            style={{ width: '100%', background: 'none', border: `1px solid ${added ? C.accent : 'var(--forme-text-dim)'}`, color: added ? C.accent : C.text, fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', padding: '10px', cursor: 'pointer', transition: 'all 0.2s', fontFamily: "'DM Sans', sans-serif" }}>
-                            {added ? '✓ Added to Bag' : 'Quick Add'}
-                        </button>
+                        <span
+                            style={{ display: 'block', width: '100%', border: '1px solid var(--forme-text-dim)', color: C.text, fontSize: '10px', letterSpacing: '2px', textTransform: 'uppercase', padding: '10px', textAlign: 'center', fontFamily: "'DM Sans', sans-serif" }}>
+                            Choose Options
+                        </span>
                     </div>
                 </div>
                 <div>
@@ -139,7 +130,7 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
 
     return (
         <>
-            <Head title="Forme — Made for You" />
+            <Head title="Made for Every Form of Movement" />
 
             <style>{`
                 .hero-section-grid {
@@ -154,16 +145,34 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                     background: ${C.bg};
                     min-height: 480px;
                 }
-                .products-responsive-grid {
+                /* Line the hero text up with the header and sections, which sit in a
+                   centred 1400px column with 24px padding. The text column is half the
+                   page, so its left edge is 100% - 700px + 24px from the column start. */
+                .hero-text {
+                    padding: clamp(32px,5vw,80px) clamp(20px,4vw,60px);
+                    padding-left: max(24px, calc(100% - 676px));
+                }
+                .products-responsive-grid,
+                .category-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
                     gap: 32px;
+                }
+                .category-grid { gap: 16px; }
+                @media (max-width: 1100px) {
+                    .products-responsive-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
                 }
                 @media (max-width: 900px) {
                     .hero-section-grid {
                         grid-template-columns: 1fr;
                         min-height: auto;
                     }
+                    .category-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+                    .hero-text { padding-left: 24px; padding-right: 24px; }
+                }
+                @media (max-width: 768px) {
+                    .hero-text { padding-left: 16px; padding-right: 16px; }
+                    .home-section { padding-left: 16px !important; padding-right: 16px !important; }
                     .hero-slideshow-container {
                         min-height: 420px;
                         height: 420px;
@@ -177,13 +186,18 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                         grid-template-columns: repeat(2, 1fr);
                         gap: 14px;
                     }
+                    /* Phones: the two buttons share one row as equal halves. */
                     .hero-cta-container {
                         width: 100%;
+                        flex-wrap: nowrap !important;
                     }
                     .hero-cta-container a {
-                        width: 100%;
-                        max-width: 280px;
+                        flex: 1 1 0;
+                        min-width: 0;
                         box-sizing: border-box;
+                        padding: 14px 8px !important;
+                        letter-spacing: 2px !important;
+                        white-space: nowrap;
                     }
                 }
             `}</style>
@@ -191,11 +205,12 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
             {/* ── Hero ── */}
             <section className="hero-section-grid">
                 {/* Left: Text */}
-                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: 'clamp(32px,5vw,80px) clamp(20px,4vw,60px)', position: 'relative' }}>
+                <div className="hero-text" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', position: 'relative' }}>
                     <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(36px,4.5vw,78px)', fontWeight: 400, color: C.text, lineHeight: 1.1, marginBottom: '20px', opacity: heroVisible ? 1 : 0, transform: heroVisible ? 'translateY(0)' : 'translateY(20px)', transition: 'all 0.8s ease 0.2s' }}>
                         Made for<br />
                         <em style={{ color: C.accent }}>every form of</em><br />
-                        movement.
+                        {/* Bigger and semi-bold so the dotted word reads solid and anchors the heading. */}
+                        <HalftoneWord text="movement." style={{ fontSize: '1.3em', fontWeight: 600, letterSpacing: '-0.01em' }} />
                     </h1>
                     <div style={{ maxWidth: '420px', marginBottom: '32px', opacity: heroVisible ? 1 : 0, transition: 'all 0.8s ease 0.4s' }}>
                         <p style={{ fontSize: '15px', color: C.text, lineHeight: '1.8', fontWeight: 500, marginBottom: '12px' }}>
@@ -205,7 +220,7 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                             Move. Perform. Live. In your own form.
                         </p>
                     </div>
-                    <div className="hero-cta-container" style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-start', opacity: heroVisible ? 1 : 0, transition: 'all 0.8s ease 0.55s' }}>
+                    <div className="hero-cta-container" style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'stretch', opacity: heroVisible ? 1 : 0, transition: 'all 0.8s ease 0.55s' }}>
                         <Link href="/shop" className="shimmer-button" style={{ background: C.accent, color: '#fff', padding: '14px 32px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 500, display: 'inline-block', transition: 'background .3s', textAlign: 'center' }}
                             onMouseEnter={e => (e.currentTarget.style.background = '#B86878')}
                             onMouseLeave={e => (e.currentTarget.style.background = C.accent)}>
@@ -214,7 +229,7 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                         <Link href="/collections/new-arrivals" style={{ border: `1px solid ${C.border}`, color: C.muted, padding: '14px 32px', textDecoration: 'none', fontSize: '11px', letterSpacing: '2.5px', textTransform: 'uppercase', display: 'inline-block', transition: 'all .3s', textAlign: 'center' }}
                             onMouseEnter={e => { e.currentTarget.style.borderColor = C.accent; e.currentTarget.style.color = C.accent; }}
                             onMouseLeave={e => { e.currentTarget.style.borderColor = C.border; e.currentTarget.style.color = C.muted; }}>
-                            Debut Collection
+                            New Arrivals
                         </Link>
                     </div>
                 </div>
@@ -235,7 +250,7 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                                 />
                             ) : (
                                 <img src={slide.src} alt={slide.label}
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center top', display: 'block' }}
                                 />
                             )}
                             {/* Gradient overlay */}
@@ -297,7 +312,7 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
 
             {/* ── Categories ── */}
             {categories.length > 0 && (
-                <section style={{ padding: '96px 24px', maxWidth: '1400px', margin: '0 auto' }}>
+                <section className="home-section" style={{ padding: '96px 24px', maxWidth: '1400px', margin: '0 auto' }}>
                     <ScrollReveal>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '48px', flexWrap: 'wrap', gap: '16px' }}>
                         <div>
@@ -313,7 +328,7 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
                         </Link>
                     </div>
                     </ScrollReveal>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px' }}>
+                    <div className="category-grid">
                         {categories.filter(cat => !['new-arrivals', 'tops'].includes(cat.slug)).map(cat => (
                             <Link key={cat.id} href={`/collections/${cat.slug}`} style={{ textDecoration: 'none', display: 'block', position: 'relative', aspectRatio: '4/5', overflow: 'hidden', background: C.surface }}>
                                 <div style={{ position: 'absolute', inset: 0 }}>
@@ -395,12 +410,12 @@ export default function Home({ featuredProducts, categories, newArrivals, heroSl
 
             {/* ── New Arrivals ── */}
             {newArrivals.length > 0 && (
-                <section style={{ padding: '96px 24px', maxWidth: '1400px', margin: '0 auto' }}>
+                <section className="home-section" style={{ padding: '96px 24px', maxWidth: '1400px', margin: '0 auto' }}>
                     <ScrollReveal>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '56px', flexWrap: 'wrap', gap: '16px' }}>
                         <div>
                             <p style={{ fontSize: '9px', letterSpacing: '4px', textTransform: 'uppercase', color: C.accent, marginBottom: '12px' }}>Just In</p>
-                            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(28px,3.5vw,48px)', fontWeight: 400, color: C.text }}>Debut Collection</h2>
+                            <h2 style={{ fontFamily: "'Playfair Display', serif", fontSize: 'clamp(28px,3.5vw,48px)', fontWeight: 400, color: C.text }}>New Arrivals</h2>
                         </div>
                         <Link href="/collections/new-arrivals" style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: C.muted, textDecoration: 'none', borderBottom: `1px solid ${C.border}`, paddingBottom: '4px', transition: 'color .2s, border-color .2s' }}
                             onMouseEnter={e => { e.currentTarget.style.color = C.accent; e.currentTarget.style.borderColor = C.accent; }}

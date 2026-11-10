@@ -25,6 +25,7 @@ class User extends Authenticatable implements PasskeyUser, FilamentUser
 
     protected $hidden = [
         'password', 'two_factor_secret', 'two_factor_recovery_codes', 'remember_token',
+        'paystack_auth_code', 'card_last_four', 'card_brand',
     ];
 
     protected function casts(): array

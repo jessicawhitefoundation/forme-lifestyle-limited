@@ -25,13 +25,7 @@ class StoreSettings extends Page implements HasForms
 
     public function mount(): void
     {
-        $setting = StoreSetting::firstOrCreate(['id' => 1], [
-            'announcement_text' => 'Free Shipping on Orders Over ₦50,000',
-            'announcement_link' => '/shop',
-            'announcement_is_active' => true,
-        ]);
-        
-        $this->form->fill($setting->attributesToArray());
+        $this->form->fill(StoreSetting::current()->attributesToArray());
     }
 
     public function form(Form $form): Form
@@ -53,7 +47,38 @@ class StoreSettings extends Page implements HasForms
                             ->placeholder('/shop')
                             ->nullable()
                             ->maxLength(255),
-                    ])
+                    ]),
+                Forms\Components\Section::make('Free Delivery')
+                    ->description('Applies to Lagos deliveries only. Customers in other states always pay delivery.')
+                    ->schema([
+                        Forms\Components\Toggle::make('free_shipping_enabled')
+                            ->label('Offer free delivery within Lagos'),
+                        Forms\Components\TextInput::make('free_shipping_threshold')
+                            ->label('Minimum order value (before delivery)')
+                            ->numeric()
+                            ->minValue(0)
+                            ->prefix('₦')
+                            ->required(),
+                    ]),
+                Forms\Components\Section::make('VAT')
+                    ->description('Leave off until your accountant confirms whether the business must charge VAT.')
+                    ->schema([
+                        Forms\Components\Toggle::make('vat_enabled')
+                            ->label('Charge VAT')
+                            ->live(),
+                        Forms\Components\TextInput::make('vat_rate')
+                            ->label('VAT rate')
+                            ->numeric()
+                            ->minValue(0)
+                            ->maxValue(100)
+                            ->suffix('%')
+                            ->required()
+                            ->visible(fn (Forms\Get $get) => (bool) $get('vat_enabled')),
+                        Forms\Components\Toggle::make('vat_inclusive')
+                            ->label('Product prices already include VAT')
+                            ->helperText('When off, VAT is added on top of the price at checkout.')
+                            ->visible(fn (Forms\Get $get) => (bool) $get('vat_enabled')),
+                    ]),
             ])
             ->statePath('data');
     }
@@ -63,8 +88,7 @@ class StoreSettings extends Page implements HasForms
         try {
             $data = $this->form->getState();
             
-            $setting = StoreSetting::first();
-            $setting->update($data);
+            StoreSetting::firstOrFail()->update($data);
 
             Notification::make()
                 ->title('Saved successfully')

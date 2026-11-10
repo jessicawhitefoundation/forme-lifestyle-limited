@@ -20,7 +20,7 @@ interface CollectionProps {
     products: PaginatedProducts;
     categories: Category[];
     currentCategory: Category | null;
-    filters: { size?: string; min_price?: string; max_price?: string; in_stock?: string; gender?: string };
+    filters: { q?: string; size?: string; min_price?: string; max_price?: string; in_stock?: string; gender?: string };
 }
 
 function ProductCard({ product }: { product: Product }) {
@@ -34,9 +34,7 @@ function ProductCard({ product }: { product: Product }) {
                             <img src={product.primary_image} alt={product.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.5s', opacity: hovered && product.hover_image ? 0 : 1 }} />
                             {product.hover_image && <img src={product.hover_image} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.5s', opacity: hovered ? 1 : 0 }} />}
                         </>
-                    ) : (
-                        <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80" alt={product.name} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transition: 'opacity 0.5s', opacity: 1 }} />
-                    )}
+                    ) : null}
                 </div>
                 <div>
                     {product.category && <p style={{ fontSize: '10px', color: 'var(--forme-dim, #888)', letterSpacing: '1.5px', textTransform: 'uppercase', marginBottom: '4px' }}>{product.category}</p>}
@@ -69,14 +67,14 @@ export default function Collection({ products, categories, currentCategory, filt
         router.get(base, {});
     };
 
-    const pageTitle = currentCategory ? currentCategory.name : 'Shop All';
+    const pageTitle = filters.q ? `Results for "${filters.q}"` : currentCategory ? currentCategory.name : 'Shop All';
 
     return (
         <>
             <Head title={pageTitle} />
 
             {/* Breadcrumb */}
-            <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--forme-border, #EDE8DF)', background: 'var(--forme-surface, #FDFAF6)' }}>
+            <div className="page-pad" style={{ padding: '16px 24px', borderBottom: '1px solid var(--forme-border, #EDE8DF)', background: 'var(--forme-surface, #FDFAF6)' }}>
                 <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--forme-dim, #888)' }}>
                     <Link href="/" style={{ color: 'var(--forme-dim, #888)', textDecoration: 'none' }}>Home</Link>
                     <span>/</span>
@@ -152,24 +150,6 @@ export default function Collection({ products, categories, currentCategory, filt
                                     {c.name}
                                 </Link>
                             ))}
-                        </div>
-
-                        {/* Gender filter */}
-                        <div style={{ marginBottom: '32px' }}>
-                            <p style={{ fontSize: '11px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--forme-dim, #888)', marginBottom: '12px' }}>Gender</p>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                                {['female', 'male', 'kids', 'unisex'].map(g => (
-                                    <label key={g} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '13px', color: 'var(--forme-text, #1a1a1a)' }}>
-                                        <input type="radio" name="gender" checked={localFilters.gender === g}
-                                            onChange={() => setLocalFilters(f => ({ ...f, gender: g }))}
-                                            style={{ accentColor: 'var(--forme-accent, #8B1A2A)' }} />
-                                        {g.charAt(0).toUpperCase() + g.slice(1)}
-                                    </label>
-                                ))}
-                                {localFilters.gender && (
-                                    <button onClick={() => setLocalFilters(f => { const nf = {...f}; delete nf.gender; return nf; })} style={{ alignSelf: 'flex-start', fontSize: '11px', color: 'var(--forme-dim, #888)', background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline', marginTop: '4px' }}>Clear gender</button>
-                                )}
-                            </div>
                         </div>
 
                         {/* Size filter */}

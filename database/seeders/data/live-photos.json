@@ -1,0 +1,852 @@
+{
+    "heart-grip-socks": [
+        {
+            "file": "heart-grip-socks/01.jpg",
+            "source": "Accessories/FORMÉ Heart grip socks/048549C8-45F4-4914-8641-20E9026E9BB8.png",
+            "color": null,
+            "is_primary": true
+        },
+        {
+            "file": "heart-grip-socks/02.jpg",
+            "source": "Accessories/FORMÉ Heart grip socks/0C809EBE-FEB6-47DC-9935-F5C1FCE32DC6.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "heart-grip-socks/03.jpg",
+            "source": "Accessories/FORMÉ Heart grip socks/37905D31-F83A-41C5-A47F-3CC223D2B947.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "heart-grip-socks/04.jpg",
+            "source": "Accessories/FORMÉ Heart grip socks/49BD0357-E531-460A-A1D8-FE31F20DF8F2.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "heart-grip-socks/05.jpg",
+            "source": "Accessories/FORMÉ Heart grip socks/A3E86180-3307-4EAA-BF87-9B6F9F71BBFE.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "heart-grip-socks/06.jpg",
+            "source": "Accessories/FORMÉ Heart grip socks/DD4DEA45-F572-4919-B9D6-E254467A7A3A.png",
+            "color": null,
+            "is_primary": false
+        }
+    ],
+    "forme-pilates-socks": [
+        {
+            "file": "forme-pilates-socks/01.jpg",
+            "source": "Accessories/FORMÉ Pilates socks/06FEE40E-3C64-408D-9832-FD515178B1DC.png",
+            "color": null,
+            "is_primary": true
+        },
+        {
+            "file": "forme-pilates-socks/02.jpg",
+            "source": "Accessories/FORMÉ Pilates socks/27A742EA-7640-4BBE-9E41-01E709BF8B0F.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "forme-pilates-socks/03.jpg",
+            "source": "Accessories/FORMÉ Pilates socks/409C1326-96E0-4669-B22D-B9A61359ACD1.png",
+            "color": null,
+            "is_primary": false
+        }
+    ],
+    "the-formed-face-cap": [
+        {
+            "file": "the-formed-face-cap/01.jpg",
+            "source": "Accessories/FORMÉD Face Cap/08F92F4B-7FD7-4D03-9C9B-FF5EF10BCAA8.png",
+            "color": null,
+            "is_primary": true
+        },
+        {
+            "file": "the-formed-face-cap/02.jpg",
+            "source": "Accessories/FORMÉD Face Cap/246564A3-617C-4030-95CA-D364C81EB6CA.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "the-formed-face-cap/03.jpg",
+            "source": "Accessories/FORMÉD Face Cap/69561E18-A646-4F6A-AFC7-3D7156CB46A5.png",
+            "color": null,
+            "is_primary": false
+        }
+    ],
+    "the-formed-headband": [
+        {
+            "file": "the-formed-headband/01.jpg",
+            "source": "Accessories/FORMÉD Headband/29A16294-8A84-453E-A989-FEA23987E0FF.png",
+            "color": "White",
+            "is_primary": true
+        },
+        {
+            "file": "the-formed-headband/02.jpg",
+            "source": "Accessories/FORMÉD Headband/57BB4C40-4F4A-4E33-B613-3090538075E2.png",
+            "color": "Black",
+            "is_primary": false
+        },
+        {
+            "file": "the-formed-headband/03.jpg",
+            "source": "Accessories/FORMÉD Headband/955F6013-D635-408F-A946-7CA8BBA40247.png",
+            "color": "Olive Green",
+            "is_primary": false
+        },
+        {
+            "file": "the-formed-headband/04.jpg",
+            "source": "Accessories/FORMÉD Headband/A689BB54-5991-4EBF-9E09-05640210260D.png",
+            "color": "Pink",
+            "is_primary": false
+        }
+    ],
+    "forme-grip-socks": [
+        {
+            "file": "forme-grip-socks/01.jpg",
+            "source": "Accessories/The FORMÉ grip socks/7A24F896-9FA5-412E-A463-D34D109D6BDA.png",
+            "color": null,
+            "is_primary": true
+        },
+        {
+            "file": "forme-grip-socks/02.jpg",
+            "source": "Accessories/The FORMÉ grip socks/90350153-6107-4AE1-B882-40581F91D7BF.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "forme-grip-socks/03.jpg",
+            "source": "Accessories/The FORMÉ grip socks/A6C17EA0-7E4D-4A1D-9325-3F52879DF852.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "forme-grip-socks/04.jpg",
+            "source": "Accessories/The FORMÉ grip socks/FA8BECB0-EA50-4912-8811-8B39AFC38431.png",
+            "color": null,
+            "is_primary": false
+        }
+    ],
+    "the-forme-socks": [
+        {
+            "file": "the-forme-socks/01.jpg",
+            "source": "Accessories/The FORMÉD Socks/25C22DFE-F605-4784-8717-E7502B02582F.png",
+            "color": null,
+            "is_primary": true
+        },
+        {
+            "file": "the-forme-socks/02.jpg",
+            "source": "Accessories/The FORMÉD Socks/49DF9C66-5D2D-4B34-AF02-E2FC41A40FA4.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "the-forme-socks/03.jpg",
+            "source": "Accessories/The FORMÉD Socks/5CBD1F7E-3EA7-4244-AC0D-3FB8BF3C91C3.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "the-forme-socks/04.jpg",
+            "source": "Accessories/The FORMÉD Socks/8E33F7D6-4DDF-4894-91C9-2115D3844660.png",
+            "color": null,
+            "is_primary": false
+        }
+    ],
+    "the-formed-visor": [
+        {
+            "file": "the-formed-visor/01.jpg",
+            "source": "Accessories/The FORMÉD Visor/648B7415-7DAE-4A32-A435-B5A05450F1F2.png",
+            "color": "Pink",
+            "is_primary": true
+        },
+        {
+            "file": "the-formed-visor/02.jpg",
+            "source": "Accessories/The FORMÉD Visor/IMG_7632.PNG",
+            "color": "White",
+            "is_primary": false
+        },
+        {
+            "file": "the-formed-visor/03.jpg",
+            "source": "Accessories/The FORMÉD Visor/IMG_7738.PNG",
+            "color": "Black",
+            "is_primary": false
+        }
+    ],
+    "the-element-jacket": [
+        {
+            "file": "the-element-jacket/01.jpg",
+            "source": "Men/The Element Jacket/FORMÉ Element Jacket in Black-1.png",
+            "color": "Black",
+            "is_primary": true
+        },
+        {
+            "file": "the-element-jacket/02.jpg",
+            "source": "Men/The Element Jacket/Navy FORMÉ Element Jacket, rear three-quarter-4.png",
+            "color": "Navy",
+            "is_primary": false
+        },
+        {
+            "file": "the-element-jacket/03.jpg",
+            "source": "Men/The Element Jacket/Olive FORMÉ Element Jacket Portrait-3.png",
+            "color": "Olive",
+            "is_primary": false
+        },
+        {
+            "file": "the-element-jacket/04.jpg",
+            "source": "Men/The Element Jacket/Slate Grey FORMÉ Element Jacket Portrait-2.png",
+            "color": "Slate Grey",
+            "is_primary": false
+        }
+    ],
+    "jojo-set": [
+        {
+            "file": "jojo-set/01.jpg",
+            "source": "Women/The Jojo Set/Jet-black FORMÉ set in golden light-1.png",
+            "color": "All Black",
+            "is_primary": true
+        },
+        {
+            "file": "jojo-set/02.jpg",
+            "source": "Women/The Jojo Set/FORMÉ Jojo set with subtle V opening.png",
+            "color": "Nude",
+            "is_primary": false
+        },
+        {
+            "file": "jojo-set/03.jpg",
+            "source": "Women/The Jojo Set/FORMÉ lettering on white crew socks-1.png",
+            "color": "Plum",
+            "is_primary": false
+        },
+        {
+            "file": "jojo-set/04.jpg",
+            "source": "Women/The Jojo Set/White crew socks with FORMÉ lettering-2.png",
+            "color": "Olive",
+            "is_primary": false
+        }
+    ],
+    "mini-move-set": [
+        {
+            "file": "mini-move-set/01.jpg",
+            "source": "Kids/The Mini Move Set/Black cropped athletic set with sunglasses.png",
+            "color": "Black",
+            "is_primary": true
+        },
+        {
+            "file": "mini-move-set/02.jpg",
+            "source": "Kids/The Mini Move Set/Candid mid-step in a dusty rose set.png",
+            "color": "Dusty Rose",
+            "is_primary": false
+        },
+        {
+            "file": "mini-move-set/03.jpg",
+            "source": "Kids/The Mini Move Set/Lilac athletic set with FORMÉ logos-3.png",
+            "color": "Lilac",
+            "is_primary": false
+        },
+        {
+            "file": "mini-move-set/04.jpg",
+            "source": "Kids/The Mini Move Set/Navy FORMÉ tank and leggings-1.png",
+            "color": "Navy",
+            "is_primary": false
+        },
+        {
+            "file": "mini-move-set/05.jpg",
+            "source": "Kids/The Mini Move Set/Wide waistband with updated FORMÉ logo-4.png",
+            "color": "Sky Blue",
+            "is_primary": false
+        }
+    ],
+    "the-amour-set": [
+        {
+            "file": "the-amour-set/01.jpg",
+            "source": "Women/The Amour Set/Black Amour Set studio portrait.png",
+            "color": "Black / Cream",
+            "is_primary": true
+        },
+        {
+            "file": "the-amour-set/02.jpg",
+            "source": "Women/The Amour Set/Amour Set studio portrait-3.png",
+            "color": "White / Black",
+            "is_primary": false
+        },
+        {
+            "file": "the-amour-set/03.jpg",
+            "source": "Women/The Amour Set/Dusty rose Amour set pose-2.png",
+            "color": "Dusty Rose",
+            "is_primary": false
+        },
+        {
+            "file": "the-amour-set/04.jpg",
+            "source": "Women/The Amour Set/exec-af2891c2-5dd6-44cd-a429-9c44a6130920.png",
+            "color": "Dusty Rose",
+            "is_primary": false
+        },
+        {
+            "file": "the-amour-set/05.jpg",
+            "source": "Women/The Amour Set/Navy Amour Set Studio Portrait-5.png",
+            "color": "Navy / Cream",
+            "is_primary": false
+        },
+        {
+            "file": "the-amour-set/06.jpg",
+            "source": "Women/The Amour Set/Olive Amour Set on Wood Stool-4.png",
+            "color": "Olive / Cream",
+            "is_primary": false
+        },
+        {
+            "file": "the-amour-set/07.jpg",
+            "source": "Women/The Amour Set/white amour.jpg",
+            "color": "White / Black",
+            "is_primary": false
+        }
+    ],
+    "ivy-skirt": [
+        {
+            "file": "ivy-skirt/01.jpg",
+            "source": "Women/The Ivy Skirt/Ivy skirt in soft black-3.png",
+            "color": "Black",
+            "is_primary": true
+        },
+        {
+            "file": "ivy-skirt/02.jpg",
+            "source": "Women/The Ivy Skirt/Dark olive Ivy skirt portrait.png",
+            "color": "Olive",
+            "is_primary": false
+        },
+        {
+            "file": "ivy-skirt/03.jpg",
+            "source": "Women/The Ivy Skirt/Muted dusty pink Ivy skirt-2.png",
+            "color": "Pink",
+            "is_primary": false
+        },
+        {
+            "file": "ivy-skirt/04.jpg",
+            "source": "Women/The Ivy Skirt/Off-white pleated skirt portrait-1.png",
+            "color": "Off-White",
+            "is_primary": false
+        }
+    ],
+    "the-adventurer-set": [
+        {
+            "file": "the-adventurer-set/01.jpg",
+            "source": "Kids/The Adventurer Set/Solo curly-puff portrait in navy-2.png",
+            "color": "Navy",
+            "is_primary": true
+        },
+        {
+            "file": "the-adventurer-set/02.jpg",
+            "source": "Kids/The Adventurer Set/48F5C6B3-EDA4-4D68-80E9-760A65661A55.png",
+            "color": "Taupe",
+            "is_primary": false
+        },
+        {
+            "file": "the-adventurer-set/03.jpg",
+            "source": "Kids/The Adventurer Set/Black boy wearing Formé adventurer set.png",
+            "color": "Black",
+            "is_primary": false
+        },
+        {
+            "file": "the-adventurer-set/04.jpg",
+            "source": "Kids/The Adventurer Set/Dusty Rose Club Adventurer Set.png",
+            "color": "Dusty Rose",
+            "is_primary": false
+        },
+        {
+            "file": "the-adventurer-set/05.jpg",
+            "source": "Kids/The Adventurer Set/Four Kids in Coordinated Hoodies-3.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "the-adventurer-set/06.jpg",
+            "source": "Kids/The Adventurer Set/Four kids in coordinated studio loungewear.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "the-adventurer-set/07.jpg",
+            "source": "Kids/The Adventurer Set/Sage Adventurer Set Studio Portrait.png",
+            "color": "Sage",
+            "is_primary": false
+        },
+        {
+            "file": "the-adventurer-set/08.jpg",
+            "source": "Kids/The Adventurer Set/Warm studio portrait in grey fleece tracksuit-1.png",
+            "color": "Grey Marl",
+            "is_primary": false
+        }
+    ],
+    "the-ease-set": [
+        {
+            "file": "the-ease-set/01.jpg",
+            "source": "Women/The Ease Set/FORMÉ Ease Set in black-2.png",
+            "color": "Black",
+            "is_primary": true
+        },
+        {
+            "file": "the-ease-set/02.jpg",
+            "source": "Women/The Ease Set/7.jpg",
+            "color": "Black",
+            "is_primary": false
+        },
+        {
+            "file": "the-ease-set/03.jpg",
+            "source": "Women/The Ease Set/FORMÉ Ease Set in Deep Navy-5.png",
+            "color": "Navy",
+            "is_primary": false
+        },
+        {
+            "file": "the-ease-set/04.jpg",
+            "source": "Women/The Ease Set/FORMÉ Ease Set in dusty rose-7.png",
+            "color": "Blush",
+            "is_primary": false
+        },
+        {
+            "file": "the-ease-set/05.jpg",
+            "source": "Women/The Ease Set/FORMÉ Ease Set in mocha brown-4.png",
+            "color": "Mocha",
+            "is_primary": false
+        },
+        {
+            "file": "the-ease-set/06.jpg",
+            "source": "Women/The Ease Set/FORMÉ Ease Set in warm greige-1.png",
+            "color": "Stone",
+            "is_primary": false
+        },
+        {
+            "file": "the-ease-set/07.jpg",
+            "source": "Women/The Ease Set/Ivory FORMÉ Ease Set Portrait-6.png",
+            "color": "Ivory",
+            "is_primary": false
+        },
+        {
+            "file": "the-ease-set/08.jpg",
+            "source": "Women/The Ease Set/Olive FORMÉ Ease Set portrait-3.png",
+            "color": "Olive",
+            "is_primary": false
+        }
+    ],
+    "the-nobi-set": [
+        {
+            "file": "the-nobi-set/01.jpg",
+            "source": "Kids/The Nobi Set/ACC429A3-5741-49BB-9C02-0FA7AA41A1FC.png",
+            "color": null,
+            "is_primary": true
+        },
+        {
+            "file": "the-nobi-set/02.jpg",
+            "source": "Kids/The Nobi Set/Kneeling in a Sage Nobi Set-23.png",
+            "color": "Sage",
+            "is_primary": false
+        },
+        {
+            "file": "the-nobi-set/03.jpg",
+            "source": "Kids/The Nobi Set/Matching cream tee and pocket shorts-4.png",
+            "color": "Cream",
+            "is_primary": false
+        },
+        {
+            "file": "the-nobi-set/04.jpg",
+            "source": "Kids/The Nobi Set/Navy Nobi Set studio portrait-11.png",
+            "color": "Navy",
+            "is_primary": false
+        },
+        {
+            "file": "the-nobi-set/05.jpg",
+            "source": "Kids/The Nobi Set/Side portrait in a matching black set-2.png",
+            "color": "Black",
+            "is_primary": false
+        }
+    ],
+    "the-heavenly-dress": [
+        {
+            "file": "the-heavenly-dress/01.jpg",
+            "source": "Kids/The Heavenly Dress/Cream dress with black piping and bow-1.png",
+            "color": "Cream",
+            "is_primary": true
+        },
+        {
+            "file": "the-heavenly-dress/02.jpg",
+            "source": "Kids/The Heavenly Dress/Black FORMÉ dress with shoulder bow-5.png",
+            "color": "Black",
+            "is_primary": false
+        },
+        {
+            "file": "the-heavenly-dress/03.jpg",
+            "source": "Kids/The Heavenly Dress/Sage green FORMÉ dress with shoulder bow-2.png",
+            "color": "Sage",
+            "is_primary": false
+        },
+        {
+            "file": "the-heavenly-dress/04.jpg",
+            "source": "Kids/The Heavenly Dress/Sky blue Formé dress with bow-4.png",
+            "color": "Sky Blue",
+            "is_primary": false
+        }
+    ],
+    "the-serve-set": [
+        {
+            "file": "the-serve-set/01.jpg",
+            "source": "Men/The Serve Set/Black FORMÉ courtwear walking portrait-4.png",
+            "color": "Black",
+            "is_primary": true
+        },
+        {
+            "file": "the-serve-set/02.jpg",
+            "source": "Men/The Serve Set/FORMÉ black serve set portrait-4.png",
+            "color": "Black",
+            "is_primary": false
+        },
+        {
+            "file": "the-serve-set/03.jpg",
+            "source": "Men/The Serve Set/FORMÉ navy serve set portrait-1.png",
+            "color": "Navy",
+            "is_primary": false
+        },
+        {
+            "file": "the-serve-set/04.jpg",
+            "source": "Men/The Serve Set/FORMÉ olive serve set portrait-3.png",
+            "color": "Olive",
+            "is_primary": false
+        },
+        {
+            "file": "the-serve-set/05.jpg",
+            "source": "Men/The Serve Set/Formé white polo and court shorts-1.png",
+            "color": "White",
+            "is_primary": false
+        },
+        {
+            "file": "the-serve-set/06.jpg",
+            "source": "Men/The Serve Set/Navy courtwear full-length studio portrait-1.png",
+            "color": "Navy",
+            "is_primary": false
+        },
+        {
+            "file": "the-serve-set/07.jpg",
+            "source": "Men/The Serve Set/White courtwear in a warm studio-2.png",
+            "color": "White",
+            "is_primary": false
+        },
+        {
+            "file": "the-serve-set/08.jpg",
+            "source": "Men/The Serve Set/White Formé Serve Set Portrait-2.png",
+            "color": "White",
+            "is_primary": false
+        }
+    ],
+    "off-duty-set": [
+        {
+            "file": "off-duty-set/01.jpg",
+            "source": "Men/The Off-Duty Set/FORMÉ Black Off-Duty Set-1.png",
+            "color": "Black",
+            "is_primary": true
+        },
+        {
+            "file": "off-duty-set/02.jpg",
+            "source": "Men/The Off-Duty Set/FORMÉ Mocha Off-Duty Set-3.png",
+            "color": "Mocha",
+            "is_primary": false
+        },
+        {
+            "file": "off-duty-set/03.jpg",
+            "source": "Men/The Off-Duty Set/FORMÉ Stone off-duty set in motion-2.png",
+            "color": "Stone",
+            "is_primary": false
+        },
+        {
+            "file": "off-duty-set/04.jpg",
+            "source": "Men/The Off-Duty Set/Olive FORMÉ off-duty set-4.png",
+            "color": "Olive",
+            "is_primary": false
+        }
+    ],
+    "the-grind-set": [
+        {
+            "file": "the-grind-set/01.jpg",
+            "source": "Men/The Grind Set/FORMÉ Grind Set in Black-2.png",
+            "color": "All Black",
+            "is_primary": true
+        },
+        {
+            "file": "the-grind-set/02.jpg",
+            "source": "Men/The Grind Set/Enlarged FORMÉ wordmark on white shirt.png",
+            "color": "White / Black",
+            "is_primary": false
+        },
+        {
+            "file": "the-grind-set/03.jpg",
+            "source": "Men/The Grind Set/FORMÉ Grind Set dumbbell curl-4.png",
+            "color": "Slate / Taupe",
+            "is_primary": false
+        },
+        {
+            "file": "the-grind-set/04.jpg",
+            "source": "Men/The Grind Set/FORMÉ Grind Set on Gold Studio Floor-1.png",
+            "color": "Olive / Black",
+            "is_primary": false
+        },
+        {
+            "file": "the-grind-set/05.jpg",
+            "source": "Men/The Grind Set/FORMÉ Navy Grind Set Studio Portrait-5.png",
+            "color": "Navy",
+            "is_primary": false
+        },
+        {
+            "file": "the-grind-set/06.jpg",
+            "source": "Men/The Grind Set/FORMÉ Sprint Lunge in Monochrome.png",
+            "color": "White / Black",
+            "is_primary": false
+        }
+    ],
+    "arvey-active": [
+        {
+            "file": "arvey-active/01.jpg",
+            "source": "Kids/Harvey Active/Black activewear detail in warm studio light.png",
+            "color": "Black",
+            "is_primary": true
+        },
+        {
+            "file": "arvey-active/02.jpg",
+            "source": "Kids/Harvey Active/Black activewear studio side pose.png",
+            "color": "Black",
+            "is_primary": false
+        },
+        {
+            "file": "arvey-active/03.jpg",
+            "source": "Kids/Harvey Active/Crisp white Harvey Active product portrait.png",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "arvey-active/04.jpg",
+            "source": "Kids/Harvey Active/Harvey in cream studio activewear-1.png",
+            "color": "Cream",
+            "is_primary": false
+        },
+        {
+            "file": "arvey-active/05.jpg",
+            "source": "Kids/Harvey Active/Harvey in midnight navy activewear-2.png",
+            "color": "Navy",
+            "is_primary": false
+        },
+        {
+            "file": "arvey-active/06.jpg",
+            "source": "Kids/Harvey Active/Smiling boy holding football in studio.png",
+            "color": null,
+            "is_primary": false
+        }
+    ],
+    "the-jade-jacket": [
+        {
+            "file": "the-jade-jacket/01.jpg",
+            "source": "Women/The Jade Jacket/Black Jade Jacket ecommerce portrait-5.png",
+            "color": "Black",
+            "is_primary": true
+        },
+        {
+            "file": "the-jade-jacket/02.jpg",
+            "source": "Women/The Jade Jacket/Chocolate Jade Jacket Studio Portrait-2-2.png",
+            "color": "Chocolate",
+            "is_primary": false
+        },
+        {
+            "file": "the-jade-jacket/03.jpg",
+            "source": "Women/The Jade Jacket/Curly-haired model in tailored white jacket-3.png",
+            "color": "Ivory",
+            "is_primary": false
+        },
+        {
+            "file": "the-jade-jacket/04.jpg",
+            "source": "Women/The Jade Jacket/Dark olive jacket ecommerce portrait-7.png",
+            "color": "Olive",
+            "is_primary": false
+        },
+        {
+            "file": "the-jade-jacket/05.jpg",
+            "source": "Women/The Jade Jacket/Deep plum jacket over-shoulder portrait-6.png",
+            "color": "Plum",
+            "is_primary": false
+        },
+        {
+            "file": "the-jade-jacket/06.jpg",
+            "source": "Women/The Jade Jacket/Dusty Pink Jade Jacket Portrait-4.png",
+            "color": "Pink",
+            "is_primary": false
+        },
+        {
+            "file": "the-jade-jacket/07.jpg",
+            "source": "Women/The Jade Jacket/Warm Ivory Jade Jacket Portrait-1.png",
+            "color": "Ivory",
+            "is_primary": false
+        }
+    ],
+    "the-naya-set": [
+        {
+            "file": "the-naya-set/01.jpg",
+            "source": "Women/The Naya Set/FORMÉ Naya set in true black-2.png",
+            "color": "Black",
+            "is_primary": true
+        },
+        {
+            "file": "the-naya-set/02.jpg",
+            "source": "Women/The Naya Set/Formé Naya Set in Dusty Rose-1.png",
+            "color": "Dusty Rose",
+            "is_primary": false
+        },
+        {
+            "file": "the-naya-set/03.jpg",
+            "source": "Women/The Naya Set/FORMÉ Naya Set in Olive-3.png",
+            "color": "Olive",
+            "is_primary": false
+        },
+        {
+            "file": "the-naya-set/04.jpg",
+            "source": "Women/The Naya Set/FORMÉ Naya Set in Taupe-5.png",
+            "color": "Taupe",
+            "is_primary": false
+        },
+        {
+            "file": "the-naya-set/05.jpg",
+            "source": "Women/The Naya Set/Naya set in deep ink navy-4.png",
+            "color": "Navy",
+            "is_primary": false
+        }
+    ],
+    "the-serene-set": [
+        {
+            "file": "the-serene-set/01.jpg",
+            "source": "Women/The Serene Set/Dusty rose Serene Set, ponytail pose.png",
+            "color": "Dusty Rose",
+            "is_primary": true
+        },
+        {
+            "file": "the-serene-set/02.jpg",
+            "source": "Women/The Serene Set/00026.jpg",
+            "color": null,
+            "is_primary": false
+        },
+        {
+            "file": "the-serene-set/03.jpg",
+            "source": "Women/The Serene Set/Chocolate Serene Set in Golden Light.png",
+            "color": "Deep Espresso Brown",
+            "is_primary": false
+        },
+        {
+            "file": "the-serene-set/04.jpg",
+            "source": "Women/The Serene Set/FORMÉ Taupe Set in Golden Studio.png",
+            "color": "Mocha Brown",
+            "is_primary": false
+        },
+        {
+            "file": "the-serene-set/05.jpg",
+            "source": "Women/The Serene Set/Olive-green Serene Set studio portrait.png",
+            "color": "Olive Green",
+            "is_primary": false
+        }
+    ],
+    "zahra-set": [
+        {
+            "file": "zahra-set/01.jpg",
+            "source": "Women/The Zahra Court Set/Dusty rose Zahra set portrait-1.png",
+            "color": "Dusty Rose",
+            "is_primary": true
+        },
+        {
+            "file": "zahra-set/02.jpg",
+            "source": "Women/The Zahra Court Set/Modest relaxed-fit hijab ensemble-3.png",
+            "color": "White",
+            "is_primary": false
+        },
+        {
+            "file": "zahra-set/03.jpg",
+            "source": "Women/The Zahra Court Set/Relaxed Hijab Set with Flowing Maxi Skirt-2.png",
+            "color": "Black",
+            "is_primary": false
+        },
+        {
+            "file": "zahra-set/04.jpg",
+            "source": "Women/The Zahra Court Set/Relaxed hijab set with flowing skirt-1.png",
+            "color": "Nude",
+            "is_primary": false
+        },
+        {
+            "file": "zahra-set/05.jpg",
+            "source": "Women/The Zahra Court Set/Zahra Nude Set in Golden Light-2.png",
+            "color": "Nude",
+            "is_primary": false
+        }
+    ],
+    "the-ace-dress": [
+        {
+            "file": "the-ace-dress/01.jpg",
+            "source": "Women/The Ace Dress/FORMÉ Black Ace Dress Portrait.png",
+            "color": "Black",
+            "is_primary": true
+        },
+        {
+            "file": "the-ace-dress/02.jpg",
+            "source": "Women/The Ace Dress/Ace Dress in Dusty Rose.png",
+            "color": "Dusty Rose",
+            "is_primary": false
+        },
+        {
+            "file": "the-ace-dress/03.jpg",
+            "source": "Women/The Ace Dress/Centered black F on white skirt.png",
+            "color": "White",
+            "is_primary": false
+        },
+        {
+            "file": "the-ace-dress/04.jpg",
+            "source": "Women/The Ace Dress/FORMÉ white Ace dress visor close-up.png",
+            "color": "White",
+            "is_primary": false
+        },
+        {
+            "file": "the-ace-dress/05.jpg",
+            "source": "Women/The Ace Dress/Vivid pink dress portrait.png",
+            "color": "Vivid Pink",
+            "is_primary": false
+        }
+    ],
+    "the-flex-set": [
+        {
+            "file": "the-flex-set/01.jpg",
+            "source": "Women/The Flex Set/Olive and white flexing studio portrait.png",
+            "color": "Cream + Olive",
+            "is_primary": true
+        },
+        {
+            "file": "the-flex-set/02.jpg",
+            "source": "Women/The Flex Set/00021.jpg",
+            "color": "Cream + Black",
+            "is_primary": false
+        },
+        {
+            "file": "the-flex-set/03.jpg",
+            "source": "Women/The Flex Set/FORMÉ Flex Set Back View-3.png",
+            "color": "Lilac + Plum",
+            "is_primary": false
+        },
+        {
+            "file": "the-flex-set/04.jpg",
+            "source": "Women/The Flex Set/FORMÉ Flex Set side pose-2.png",
+            "color": "Cream + Black",
+            "is_primary": false
+        },
+        {
+            "file": "the-flex-set/05.jpg",
+            "source": "Women/The Flex Set/Oxblood FORMÉ squat studio portrait-1.png",
+            "color": "Nude + Oxblood",
+            "is_primary": false
+        },
+        {
+            "file": "the-flex-set/06.jpg",
+            "source": "Women/The Flex Set/Plum leggings, white sports bra.png",
+            "color": "Lilac + Plum",
+            "is_primary": false
+        }
+    ]
+}

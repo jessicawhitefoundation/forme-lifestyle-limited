@@ -37,19 +37,31 @@ class AppServiceProvider extends ServiceProvider
 
     protected function configureRateLimiting(): void
     {
-        // Homepage & Store Front protection: max 60 requests per minute per IP
+        // Limits are per IP, but many Nigerian mobile customers can share one IP,
+        // so they are set well above what a single shopper would ever reach.
         RateLimiter::for('storefront', function (Request $request) {
-            return Limit::perMinute(60)->by($request->ip());
+            return Limit::perMinute(300)->by($request->ip());
         });
 
-        // Auth protection (login/register): max 6 attempts per minute per IP
+        RateLimiter::for('cart', function (Request $request) {
+            return Limit::perMinute(300)->by($request->ip());
+        });
+
+        // Login and registration attempts: per account and per IP.
         RateLimiter::for('auth', function (Request $request) {
-            return Limit::perMinute(6)->by($request->ip());
+            return [
+                Limit::perMinute(30)->by($request->ip()),
+                Limit::perMinute(6)->by(strtolower((string) $request->input('email')).'|'.$request->ip()),
+            ];
         });
 
-        // Checkout initiation: max 10 attempts per minute per IP
         RateLimiter::for('checkout', function (Request $request) {
-            return Limit::perMinute(10)->by($request->ip());
+            return Limit::perMinute(30)->by($request->ip());
+        });
+
+        // Each uncached quote calls Routely with the store's API key.
+        RateLimiter::for('shipping-rate', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
         });
     }
 

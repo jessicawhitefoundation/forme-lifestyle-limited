@@ -27,3 +27,9 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Database dumps can hold customer data
+*.sql
+
+# Original Debut Collection photos (244 MB). The site uses the resized copies in database/seeders/data/photos.
+/public/images/Debut Collection/

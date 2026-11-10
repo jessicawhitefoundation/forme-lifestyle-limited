@@ -127,7 +127,7 @@
                         <td class="footer">
                             <p style="margin: 0 0 8px 0; font-weight: 500; color: #1a1a1a;">FORMÉ Activewear · Lagos, Nigeria</p>
                             <p style="margin: 0 0 12px 0;">
-                                Questions? Reach us at <a href="mailto:hello@forme.ng">hello@forme.ng</a> or WhatsApp <a href="https://wa.me/2347026126265">+234 702 612 6265</a>
+                                Questions? Reach us at <a href="mailto:{{ config('store.email') }}">{{ config('store.email') }}</a> or WhatsApp <a href="https://wa.me/{{ config('store.whatsapp_number') }}">{{ config('store.whatsapp_display') }}</a>
                             </p>
                             <p style="margin: 0; font-size: 11px; color: #a19a93;">
                                 © {{ date('Y') }} FORMÉ. All rights reserved.

@@ -9,6 +9,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class CategoryResource extends Resource
@@ -20,6 +21,15 @@ class CategoryResource extends Resource
     protected static ?string $navigationGroup = 'Shop';
 
     protected static ?int $navigationSort = 3;
+
+    /**
+     * Deleting a category would also delete every product in it, so it must be
+     * empty first.
+     */
+    public static function canDelete(Model $record): bool
+    {
+        return parent::canDelete($record) && ! $record->products()->exists();
+    }
 
     public static function form(Form $form): Form
     {
@@ -65,8 +75,7 @@ class CategoryResource extends Resource
         ])
             ->defaultSort('sort_order')
             ->filters([])
-            ->actions([Tables\Actions\EditAction::make()])
-            ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
+            ->actions([Tables\Actions\EditAction::make()]);
     }
 
     public static function getPages(): array

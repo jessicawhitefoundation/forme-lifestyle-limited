@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 
 const C = {
     bg: 'var(--forme-bg)',
@@ -64,9 +64,14 @@ const sections = [
 ];
 
 export default function Policy() {
+    const { store_contact: contact, store_setting: setting } = usePage().props as any;
+    const freeDelivery = setting?.free_shipping_enabled
+        ? ` Orders of ₦${Number(setting.free_shipping_threshold).toLocaleString()} or more delivered within Lagos ship free. This does not apply outside Lagos.`
+        : '';
+
     return (
         <div style={{ background: C.bg, minHeight: '100vh' }}>
-            <Head title="Shipping & Policy — Formé" />
+            <Head title="Shipping & Returns" />
 
             {/* Hero Banner */}
             <div style={{
@@ -103,7 +108,7 @@ export default function Policy() {
             </div>
 
             {/* Content */}
-            <div style={{ maxWidth: '860px', margin: '0 auto', padding: '60px 24px 80px' }}>
+            <div className="page-pad" style={{ maxWidth: '860px', margin: '0 auto', padding: '60px 24px 80px' }}>
                 {sections.map((section, si) => (
                     <div key={section.id} style={{ marginBottom: si < sections.length - 1 ? '64px' : 0 }}>
                         {/* Section Header */}
@@ -158,7 +163,7 @@ export default function Policy() {
                                             color: C.muted,
                                             lineHeight: '1.85',
                                             margin: 0,
-                                        }}>{item.body}</p>
+                                        }}>{item.body}{item.title === 'Shipping Rates' ? freeDelivery : ''}</p>
                                     </div>
                                 </div>
                             ))}
@@ -191,7 +196,7 @@ export default function Policy() {
                     }}>Our support team is always happy to help. Reach out and we will get back to you as quickly as possible.</p>
                     <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', flexWrap: 'wrap' }}>
                         <a
-                            href="mailto:hello@forme.ng"
+                            href={`mailto:${contact.email}`}
                             style={{
                                 display: 'inline-flex',
                                 alignItems: 'center',
@@ -213,7 +218,7 @@ export default function Policy() {
                             Email Us
                         </a>
                         <a
-                            href="https://wa.me/2347026126265"
+                            href={`https://wa.me/${contact.whatsapp_number}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             style={{

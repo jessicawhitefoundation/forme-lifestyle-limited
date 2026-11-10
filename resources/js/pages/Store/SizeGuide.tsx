@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 import { WOMEN_SIZES, MEN_SIZES, KIDS_SIZES } from '@/components/SizeGuideModal';
 
 export default function SizeGuide() {
+    const whatsappNumber = (usePage().props as any).store_contact.whatsapp_number as string;
     const [activeTab, setActiveTab] = useState<'women' | 'men' | 'kids' | 'poster'>('women');
     const [unit, setUnit] = useState<'both' | 'cm' | 'in'>('both');
     const [lightboxImg, setLightboxImg] = useState<{ src: string; title: string } | null>(null);
@@ -46,10 +47,10 @@ export default function SizeGuide() {
 
     return (
         <>
-            <Head title="Size Guide — Formé Lagos" />
+            <Head title="Size Guide" />
 
             <div style={{ background: C.bg, color: C.text, minHeight: '100vh' }}>
-                <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 24px 100px', fontFamily: "'Manrope', 'Inter', sans-serif" }}>
+                <div className="page-pad" style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 24px 100px', fontFamily: "'Manrope', 'Inter', sans-serif" }}>
                 
                 {/* Header Banner */}
                 <div style={{ textAlign: 'center', marginBottom: '48px' }}>
@@ -567,7 +568,7 @@ export default function SizeGuide() {
                                     Shop Collection
                                 </Link>
                                 <a 
-                                    href="https://wa.me/2347026126265" 
+                                    href={`https://wa.me/${whatsappNumber}`}
                                     target="_blank" 
                                     rel="noopener noreferrer" 
                                     style={{ 

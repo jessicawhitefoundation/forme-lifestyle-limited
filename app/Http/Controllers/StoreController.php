@@ -5,9 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use App\Models\HeroSlide;
 use App\Models\Product;
-use App\Models\WaitlistEntry;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,9 +27,14 @@ class StoreController extends Controller
             ->orderBy('sort_order')
             ->get();
 
+        // Follow the New Arrivals ticks set in the admin, like /collections/new-arrivals does.
+        $newArrivalsId = Category::where('slug', 'new-arrivals')->where('is_active', true)->value('id');
+
         $newArrivals = Product::with(['images', 'category', 'variants'])
             ->where('is_active', true)
+            ->when($newArrivalsId, fn ($q) => $q->inCategory($newArrivalsId))
             ->latest()
+            ->latest('id')
             ->take(4)
             ->get()
             ->map(fn ($p) => $this->formatProduct($p));
@@ -83,6 +85,14 @@ class StoreController extends Controller
         return Inertia::render('Store/SizeGuide');
     }
 
+    /**
+     * FAQ, contact, privacy and terms pages.
+     */
+    public function info(string $page): Response
+    {
+        return Inertia::render('Store/Info', ['page' => $page]);
+    }
+
     public function collection(?string $slug = null): Response
     {
         $query = Product::with(['images', 'category', 'variants'])
@@ -90,12 +100,22 @@ class StoreController extends Controller
 
         $currentCategory = null;
         if ($slug) {
-            $currentCategory = Category::where('slug', $slug)->firstOrFail();
-            $query->where('category_id', $currentCategory->id);
+            $currentCategory = Category::where('slug', $slug)->where('is_active', true)->firstOrFail();
+            $query->inCategory($currentCategory->id);
+        }
+
+        $search = is_string(request('q')) ? trim(request('q')) : '';
+        if ($search !== '') {
+            $term = '%'.addcslashes($search, '%_\\').'%';
+            $query->where(fn ($q) => $q
+                ->where('name', 'like', $term)
+                ->orWhere('short_description', 'like', $term)
+                ->orWhere('description', 'like', $term)
+                ->orWhereHas('category', fn ($c) => $c->where('name', 'like', $term)));
         }
 
         // Filters
-        if (request('size')) {
+        if (is_string(request('size')) && request('size') !== '') {
             $query->whereHas('variants', fn ($q) => $q->where('size', request('size'))->where('is_active', true));
         }
         if (request('min_price')) {
@@ -112,7 +132,7 @@ class StoreController extends Controller
             $query->whereIn('gender', (array) request('gender'));
         }
 
-        $products = $query->orderBy('sort_order')->paginate(12)->through(fn ($p) => $this->formatProduct($p));
+        $products = $query->orderBy('sort_order')->latest('id')->paginate(12)->withQueryString()->through(fn ($p) => $this->formatProduct($p));
 
         $categories = Category::where('is_active', true)->orderBy('sort_order')->get();
 
@@ -120,7 +140,7 @@ class StoreController extends Controller
             'products' => $products,
             'categories' => $categories,
             'currentCategory' => $currentCategory,
-            'filters' => request()->only(['size', 'min_price', 'max_price', 'in_stock', 'gender']),
+            'filters' => request()->only(['q', 'size', 'min_price', 'max_price', 'in_stock', 'gender']),
         ]);
     }
 
@@ -159,6 +179,12 @@ class StoreController extends Controller
                 'material' => $product->material,
                 'care_instructions' => $product->care_instructions,
                 'category' => $product->category?->name,
+                // Chooses which size chart the product page shows.
+                'gender' => match ($product->category?->slug) {
+                    'men' => 'male',
+                    'kids' => 'kids',
+                    default => 'female',
+                },
                 'images' => $product->images->map(function ($img, $index) use ($product) {
                     $color = $img->color;
 
@@ -234,54 +260,5 @@ class StoreController extends Controller
             'hover_image' => $secondImg ? asset('storage/'.$secondImg->image_path) : null,
             'is_featured' => $p->is_featured,
         ];
-    }
-
-    public function waitlist(Request $request): JsonResponse
-    {
-        $request->validate([
-            'email' => 'required|email|max:255',
-        ]);
-
-        $email = strtolower(trim($request->email));
-
-        WaitlistEntry::firstOrCreate(
-            ['email' => $email],
-            [
-                'ip_address' => $request->ip(),
-                'user_agent' => substr((string) $request->userAgent(), 0, 500),
-            ]
-        );
-
-        return response()->json([
-            'success' => true,
-            'message' => "You're on the list! We will notify you as soon as we launch.",
-        ]);
-    }
-
-    public function unlock(Request $request): JsonResponse
-    {
-        $request->validate([
-            'password' => 'required|string',
-        ]);
-
-        $correctPassword = (string) config('app.store_password', 'forme2026');
-
-        if ($request->password === $correctPassword) {
-            session(['store_unlocked' => true]);
-
-            return response()->json(['success' => true]);
-        }
-
-        return response()->json([
-            'success' => false,
-            'message' => 'Incorrect password.',
-        ], 422);
-    }
-
-    public function lock(): RedirectResponse
-    {
-        session()->forget('store_unlocked');
-
-        return redirect()->route('home');
     }
 }

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import SizeGuideModal from '@/components/SizeGuideModal';
 
@@ -89,6 +89,12 @@ export default function ProductPage({ product, related }: ProductPageProps) {
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState<'details' | 'sizing' | 'care' | 'shipping' | null>('details');
     const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
+    const setting = (usePage().props as any).store_setting as { free_shipping_enabled?: boolean; free_shipping_threshold?: number } | undefined;
+    const freeDeliveryLine = setting?.free_shipping_enabled
+        ? ` Delivery is free within Lagos on orders of ₦${Number(setting.free_shipping_threshold).toLocaleString()} or more.`
+        : '';
+    // Touch screens fire mouseenter on tap, which would leave the photo stuck zoomed in.
+    const canHover = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches;
 
     const genderKey = (product.gender === 'male' || product.gender === 'men') 
         ? 'men' 
@@ -223,17 +229,25 @@ export default function ProductPage({ product, related }: ProductPageProps) {
             <style>{`
                 .product-main-grid {
                     display: grid;
-                    grid-template-columns: 1fr 1fr;
+                    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
                     gap: 64px;
                     align-items: start;
                 }
+                /* Grid and flex children may shrink below their content, so a long
+                   row of thumbnails scrolls instead of widening the page. */
+                .product-main-grid > *, .product-images-wrap > * { min-width: 0; }
                 .product-images-wrap {
                     display: flex;
                     gap: 16px;
                 }
+                .related-grid {
+                    display: grid;
+                    grid-template-columns: repeat(4, minmax(0, 1fr));
+                    gap: 32px;
+                }
                 @media (max-width: 900px) {
                     .product-main-grid {
-                        grid-template-columns: 1fr;
+                        grid-template-columns: minmax(0, 1fr);
                         gap: 32px;
                     }
                     .product-images-wrap {
@@ -243,16 +257,35 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                         flex-direction: row !important;
                         width: 100% !important;
                         overflow-x: auto;
+                        scrollbar-width: none;
                     }
+                    .product-thumbnails-list::-webkit-scrollbar { display: none; }
                     .product-thumbnails-list button {
                         width: 64px !important;
                         flex-shrink: 0;
                     }
+                    .related-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+                }
+                @media (max-width: 768px) {
+                    .product-page, .product-breadcrumb { padding-left: 16px !important; padding-right: 16px !important; }
+                }
+                /* Details, care and shipping text: may contain paragraphs and lists (admin rich text). */
+                .product-rich-text p { margin: 0 0 10px; }
+                .product-rich-text p:last-child { margin-bottom: 0; }
+                .product-rich-text ul, .product-rich-text ol { margin: 0 0 10px; padding-left: 18px; }
+                .product-rich-text ul { list-style: disc; }
+                .product-rich-text ol { list-style: decimal; }
+                .product-rich-text li { margin-bottom: 4px; }
+                .product-rich-text strong { color: var(--forme-text); font-weight: 500; }
+                .product-rich-text a { color: var(--forme-accent); }
+                /* Phones and tablets can't hover: no zoom hint there. */
+                @media (hover: none) {
+                    .zoom-hint { display: none; }
                 }
             `}</style>
 
             {/* Breadcrumb */}
-            <div style={{ padding: '16px 24px', borderBottom: `1px solid ${C.border}` }}>
+            <div className="product-breadcrumb" style={{ padding: '16px 24px', borderBottom: `1px solid ${C.border}` }}>
                 <div style={{ maxWidth: '1400px', margin: '0 auto', display: 'flex', gap: '8px', fontSize: '12px', color: C.muted }}>
                     <Link href="/" style={{ color: C.muted, textDecoration: 'none' }}>Home</Link>
                     <span>/</span>
@@ -262,7 +295,7 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                 </div>
             </div>
 
-            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 20px 80px' }}>
+            <div className="product-page" style={{ maxWidth: '1400px', margin: '0 auto', padding: '32px 24px 80px' }}>
                 <div className="product-main-grid">
 
                     {/* ── Images ────────────────────────────────────────── */}
@@ -285,7 +318,7 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                         {/* Main image with zoom */}
                         <div
                             ref={imgContainerRef}
-                            onMouseEnter={() => setZoomed(true)}
+                            onMouseEnter={() => { if (canHover) setZoomed(true); }}
                             onMouseLeave={() => setZoomed(false)}
                             onMouseMove={handleMouseMove}
                             style={{ flex: 1, aspectRatio: '3/4', background: C.surface, borderRadius: '2px', overflow: 'hidden', position: 'relative', cursor: zoomed ? 'crosshair' : 'default' }}
@@ -320,7 +353,7 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                             )}
                             {/* Zoom hint */}
                             {!zoomed && product.images[selectedImage] && (
-                                <div style={{ position: 'absolute', bottom: '12px', right: '12px', background: C.surface, backdropFilter: 'blur(4px)', padding: '6px 12px', fontSize: '11px', letterSpacing: '1px', color: C.muted, borderRadius: '2px', pointerEvents: 'none', border: `1px solid ${C.border}` }}>
+                                <div className="zoom-hint" style={{ position: 'absolute', bottom: '12px', right: '12px', background: C.surface, backdropFilter: 'blur(4px)', padding: '6px 12px', fontSize: '11px', letterSpacing: '1px', color: C.muted, borderRadius: '2px', pointerEvents: 'none', border: `1px solid ${C.border}` }}>
                                     Hover to zoom
                                 </div>
                             )}
@@ -408,8 +441,8 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                         {[
                             { key: 'details' as const, label: 'Details', isSizing: false, content: product.description || 'No additional details.' },
                             { key: 'sizing' as const, label: 'Size & Fit Guide', isSizing: true, content: '' },
-                            { key: 'care' as const, label: 'Care Instructions', isSizing: false, content: product.care_instructions || 'Handle with care. Dry clean recommended.' },
-                            { key: 'shipping' as const, label: 'Shipping & Returns', isSizing: false, content: 'Standard delivery within Lagos: 2-3 business days. Nigeria-wide: 3-7 business days. Free returns within 14 days.' },
+                            { key: 'care' as const, label: 'Care Instructions', isSizing: false, content: product.care_instructions || 'Follow the care label inside your garment.' },
+                            { key: 'shipping' as const, label: 'Shipping & Returns', isSizing: false, content: `<p>Orders are processed in 1–2 business days. Delivery within Lagos takes 2–5 business days, and 3–7 business days to other states.${freeDeliveryLine}</p><p>Unused items in their original condition, with tags attached, can be returned or exchanged within 3 days of delivery. <a href="/policy">Read the full policy</a>.</p>` },
                         ].map(tab => (
                             <div key={tab.key} style={{ borderBottom: `1px solid ${C.border}` }}>
                                 <button onClick={() => setActiveTab(activeTab === tab.key ? null : tab.key)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', background: 'none', border: 'none', cursor: 'pointer' }}>
@@ -499,7 +532,7 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                                                 </div>
                                             </div>
                                         ) : (
-                                            <p style={{ fontSize: '13px', color: C.muted, lineHeight: '1.8' }} dangerouslySetInnerHTML={{ __html: tab.content }} />
+                                            <div className="product-rich-text" style={{ fontSize: '13px', color: C.muted, lineHeight: '1.8' }} dangerouslySetInnerHTML={{ __html: tab.content }} />
                                         )}
                                     </div>
                                 )}
@@ -515,7 +548,7 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                             <p style={{ fontSize: '10px', letterSpacing: '4px', textTransform: 'uppercase', color: C.accent, marginBottom: '12px' }}>You May Also Like</p>
                             <h2 style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: '36px', fontWeight: 400, color: C.text }}>Complete the Look</h2>
                         </div>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '32px' }}>
+                        <div className="related-grid">
                             {related.map(p => (
                                 <Link key={p.id} href={`/products/${p.slug}`} style={{ textDecoration: 'none' }}>
                                     <div>

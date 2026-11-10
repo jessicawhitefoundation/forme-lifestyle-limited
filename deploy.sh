@@ -7,8 +7,12 @@ set -e
 echo "🚀 [1/6] Running Database Migrations..."
 php artisan migrate --force
 
-echo "📦 [2/6] Building Production Frontend Assets (Vite)..."
-npm run build
+if command -v npm >/dev/null 2>&1; then
+    echo "📦 [2/6] Building Production Frontend Assets (Vite)..."
+    npm run build
+else
+    echo "ℹ️  [2/6] 'npm' not found on this server — using pre-built assets in public/build/."
+fi
 
 echo "🧹 [3/6] Clearing Old Caches..."
 php artisan optimize:clear

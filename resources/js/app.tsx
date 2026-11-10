@@ -20,7 +20,7 @@ createInertiaApp({
             import.meta.glob('./pages/**/*.tsx'),
         ) as any,
     layout: (name) => {
-        if (name.startsWith('Store/') || name.startsWith('Auth/') || name === 'Error') {
+        if (name.startsWith('Store/') || ['auth/Login', 'auth/Register', 'auth/Account', 'auth/Orders'].includes(name) || name === 'Error') {
             return StoreLayout;
         }
         return null;

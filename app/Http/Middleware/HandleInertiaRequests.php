@@ -4,7 +4,6 @@ namespace App\Http\Middleware;
 
 use App\Models\StoreSetting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Middleware;
 
 class HandleInertiaRequests extends Middleware
@@ -37,21 +36,21 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $storeSetting = Cache::remember('store_setting_global', 86400, function () {
-            return StoreSetting::firstOrCreate(['id' => 1], [
-                'announcement_text' => 'Free Shipping on Orders Over ₦50,000',
-                'announcement_link' => '/shop',
-                'announcement_is_active' => true,
-            ]);
-        });
-
         return [
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
             ],
-            'store_setting' => $storeSetting,
+            'store_setting' => StoreSetting::current(),
+            'store_contact' => [
+                'email' => config('store.email'),
+                'whatsapp_display' => config('store.whatsapp_display'),
+                'whatsapp_number' => config('store.whatsapp_number'),
+            ],
+            'flash' => [
+                'success' => fn () => $request->session()->get('success'),
+            ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
         ];
     }

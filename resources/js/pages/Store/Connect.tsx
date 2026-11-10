@@ -44,9 +44,9 @@ export default function Connect() {
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: C.bg, color: C.text, fontFamily: 'Syne, sans-serif' }}>
-            <Head title="Connect | Formé" />
+            <Head title="Connect" />
             
-            <div style={{ maxWidth: '480px', margin: '0 auto', padding: '60px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div className="page-pad" style={{ maxWidth: '480px', margin: '0 auto', padding: '60px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
                 
                 {/* Brand Header */}
                 <div style={{ marginBottom: '50px' }}>

@@ -74,8 +74,14 @@
         </tr>
         <tr>
             <td align="right" style="color: #777;">Delivery:</td>
-            <td align="right" width="120" style="color: #1a1a1a;">₦{{ number_format((float) $order->shipping_fee, 2) }}</td>
+            <td align="right" width="120" style="color: #1a1a1a;">{{ $order->free_shipping ? 'Free' : '₦'.number_format((float) $order->shipping_fee, 2) }}</td>
         </tr>
+        @if((float) $order->vat_amount > 0)
+            <tr>
+                <td align="right" style="color: #777;">VAT{{ $order->vat_inclusive ? ' (included)' : '' }}:</td>
+                <td align="right" width="120" style="color: #1a1a1a;">₦{{ number_format((float) $order->vat_amount, 2) }}</td>
+            </tr>
+        @endif
         <tr style="font-size: 15px;">
             <td align="right" style="font-weight: 600; color: #1a1a1a; padding-top: 10px; border-top: 1px solid #EFEAE6;">Total Paid:</td>
             <td align="right" width="120" style="font-weight: 700; color: #6F1D2F; padding-top: 10px; border-top: 1px solid #EFEAE6;">
@@ -100,7 +106,7 @@
 
     <!-- CTA Button -->
     <div style="text-align: center; margin: 32px 0 16px 0;">
-        <a href="{{ url('/order/' . $order->order_number . '/confirmation') }}" class="button">
+        <a href="{{ $order->confirmationUrl() }}" class="button">
             View Order Status
         </a>
     </div>

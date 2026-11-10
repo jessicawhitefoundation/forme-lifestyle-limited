@@ -26,7 +26,7 @@ class OrderResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        $count = static::getModel()::whereIn('status', ['pending', 'processing'])->count();
+        $count = static::getModel()::where('payment_status', 'paid')->where('status', 'processing')->count();
 
         return $count > 0 ? (string) $count : null;
     }
@@ -66,8 +66,14 @@ class OrderResource extends Resource
             Forms\Components\Section::make('Totals')->schema([
                 Forms\Components\TextInput::make('subtotal')->disabled()->prefix('₦'),
                 Forms\Components\TextInput::make('shipping_fee')->disabled()->prefix('₦'),
+                Forms\Components\TextInput::make('vat_amount')->label('VAT')->disabled()->prefix('₦'),
                 Forms\Components\TextInput::make('total_amount')->disabled()->prefix('₦'),
-            ])->columns(3),
+                Forms\Components\Toggle::make('free_shipping')
+                    ->label('Free delivery applied')
+                    ->helperText('Check the address is really in Lagos before dispatch.')
+                    ->disabled()
+                    ->columnSpanFull(),
+            ])->columns(4),
 
             Forms\Components\Section::make('Routely Logistics & Dispatch')->schema([
                 Forms\Components\TextInput::make('routely_tracking_number')
@@ -139,6 +145,12 @@ class OrderResource extends Resource
                 ->label('Total')
                 ->formatStateUsing(fn ($state) => filled($state) ? '₦'.Number::format((float) $state, 2) : '—')
                 ->sortable(),
+            Tables\Columns\IconColumn::make('free_shipping')
+                ->label('Free delivery')
+                ->boolean()
+                ->trueColor('warning')
+                ->falseColor('gray')
+                ->tooltip(fn (Order $record) => $record->free_shipping ? 'Check the address is really in Lagos before dispatch.' : null),
             Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
         ])
             ->defaultSort('created_at', 'desc')
@@ -146,7 +158,8 @@ class OrderResource extends Resource
                 Tables\Filters\SelectFilter::make('status')
                     ->options(['pending' => 'Pending', 'processing' => 'Processing', 'shipped' => 'Shipped', 'delivered' => 'Delivered', 'cancelled' => 'Cancelled']),
                 Tables\Filters\SelectFilter::make('payment_status')
-                    ->options(['unpaid' => 'Unpaid', 'paid' => 'Paid', 'refunded' => 'Refunded']),
+                    ->options(['unpaid' => 'Unpaid', 'paid' => 'Paid', 'refunded' => 'Refunded'])
+                    ->default('paid'),
             ])
             ->actions([
                 Tables\Actions\Action::make('dispatch_routely')
@@ -168,7 +181,6 @@ class OrderResource extends Resource
                                 ->send();
                             $record->update(['status' => 'shipped']);
                             OrderMailService::sendOrderShippedNotification($record->fresh());
-                            \App\Services\OrderMailService::sendOrderShippedNotification($record->fresh());
                         } else {
                             Notification::make()
                                 ->title('Routely Dispatch Failed')

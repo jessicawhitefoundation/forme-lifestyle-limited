@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -258,6 +259,13 @@ class RoutelyService
 
         $isIntracity = strcasecmp(trim($toState), 'lagos') === 0;
 
+        $cacheKey = 'routely_fee_'.md5(implode('|', [strtolower($toAddress), strtolower($toCity), strtolower($toState), round($itemValue, -3), $weight]));
+        $cached = Cache::get($cacheKey);
+
+        if (is_array($cached)) {
+            return $cached;
+        }
+
         if (empty($this->apiKey)) {
             return [
                 'success' => true,
@@ -304,25 +312,26 @@ class RoutelyService
             $response = Http::withHeaders([
                 'Accept' => 'application/json',
                 'x-api-key' => $this->apiKey,
-            ])->timeout(15)->post("{$this->baseUrl}/v1/business/shipments/fee", $payload);
+            ])->timeout(10)->post("{$this->baseUrl}/v1/business/shipments/fee", $payload);
 
             if ($response->successful() && ($response->json('success') === true)) {
                 $rates = $response->json('data.rates', []);
-                $cheapestRate = null;
+                $selectedRate = $rates[0] ?? null;
 
-                if (! empty($rates)) {
-                    // Pick the best rate (or first available rate)
-                    $cheapestRate = $rates[0];
-                }
-
-                return [
+                $quote = [
                     'success' => true,
-                    'rate' => $cheapestRate ? (float) $cheapestRate['selling_price'] : 3000.0,
-                    'carrier' => $cheapestRate['carrier_name'] ?? 'Routely Standard',
-                    'delivery_time' => $cheapestRate['delivery_time'] ?? ($isIntracity ? '1-2 business days' : '3-5 business days'),
+                    'rate' => $selectedRate ? (float) $selectedRate['selling_price'] : ($isIntracity ? 3000.0 : 6500.0),
+                    'carrier' => $selectedRate['carrier_name'] ?? 'Routely Standard',
+                    'delivery_time' => $selectedRate['delivery_time'] ?? ($isIntracity ? '1-2 business days' : '3-5 business days'),
                     'cachekey' => $response->json('data.cachekey'),
                     'all_rates' => $rates,
                 ];
+
+                if ($selectedRate) {
+                    Cache::put($cacheKey, $quote, now()->addMinutes(15));
+                }
+
+                return $quote;
             }
 
             Log::warning('Routely fee calculation non-success response', [
@@ -391,7 +400,10 @@ class RoutelyService
         $fromCoords = $this->sender['coordinates'] ?? '6.4426,3.4833';
         $toCoords = self::resolveCoordinates($toAddress, $toCity, $toState);
 
-        $order->loadMissing('items.product');
+        $order->loadMissing('items');
+
+        // What the courier charges, even when the customer got free delivery.
+        $courierFee = (float) ($order->routely_fee ?: $order->shipping_fee);
 
         $packageItems = [];
         $totalWeight = 0.0;
@@ -436,7 +448,7 @@ class RoutelyService
                             'city' => $this->sender['city'] ?? 'Lekki',
                             'state' => 'Lagos',
                             'country' => 'Nigeria',
-                            'email' => $this->sender['email'] ?? 'hello@forme.ng',
+                            'email' => $this->sender['email'] ?? 'hello@shopforme.net',
                             'phone_no' => $this->sender['phone'] ?? '+2347026126265',
                             'save_address' => false,
                             'coordinates' => $fromCoords,
@@ -466,7 +478,7 @@ class RoutelyService
                         'vehicle_type' => 1, // Bike
                     ],
                     'special_instruction' => $order->notes ?: "FORMÉ Order #{$order->order_number}",
-                    'total_amount' => (float) ($order->shipping_fee > 0 ? $order->shipping_fee : 2500),
+                    'total_amount' => $courierFee > 0 ? $courierFee : 2500.0,
                     'shipment_plan' => 'premium',
                     'payment_method' => 'wallet',
                 ];
@@ -479,7 +491,7 @@ class RoutelyService
                         'city' => $this->sender['city'] ?? 'Lekki',
                         'state' => 'Lagos',
                         'country' => 'Nigeria',
-                        'email' => $this->sender['email'] ?? 'hello@forme.ng',
+                        'email' => $this->sender['email'] ?? 'hello@shopforme.net',
                         'phone_no' => $this->sender['phone'] ?? '+2347026126265',
                         'save_address' => false,
                         'coordinates' => $fromCoords,
@@ -506,7 +518,7 @@ class RoutelyService
                     ],
                     'package_items' => $packageItems,
                     'special_instruction' => $order->notes ?: "FORMÉ Order #{$order->order_number}",
-                    'total_amount' => (float) ($order->shipping_fee > 0 ? $order->shipping_fee : 5000),
+                    'total_amount' => $courierFee > 0 ? $courierFee : 5000.0,
                     'shipment_plan' => 'premium',
                     'payment_method' => 'wallet',
                 ];

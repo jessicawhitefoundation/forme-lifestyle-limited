@@ -1,0 +1,1457 @@
+{
+  "source": "knotunan_forme.sql, exported from forme.com.ng phpMyAdmin on 2026-11-09; names and colours aligned with the FORMÉ price list and launch books, 2026-11-10",
+  "products": [
+    {
+      "gender": "male",
+      "name": "Element Jacket",
+      "slug": "the-element-jacket",
+      "description": "<p>A refined essential designed for movement in all environments. Lightweight, breathable and versatile, the Element Jacket keeps you comfortable through warm-ups, workouts, travel and everyday wear.</p><ul><li>Stand collar with full zip and chin guard</li><li>Raglan sleeves for a greater range of motion</li><li>Zip pockets for your essentials</li><li>Elastic cuffs</li><li>Water-resistant, windproof and packable</li></ul><p><strong>Fabric:</strong> 92% recycled polyester, 8% spandex</p>",
+      "short_description": "Adapts to your day. Built for more.",
+      "base_price": "38000.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "92% recycled polyester, 8% spandex",
+      "care_instructions": null,
+      "old_category": "men",
+      "variants": [
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Slate Grey",
+          "color_hex": "#5A5F66",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy",
+          "color_hex": "#1C2541",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Jojo Set",
+      "slug": "jojo-set",
+      "description": "<p>A fitted short-sleeve full-zip top with a clean raised collar and a slightly cropped proportion, paired with high-waisted sculpting shorts with longer mid-thigh coverage. Tonal contour seams keep the look clean and sculpted, for training and everyday movement.</p><ul><li>Full zip with a clean raised collar</li><li>High-waisted shorts with mid-thigh coverage</li><li>Tonal contour panels and seams</li><li>Supportive, opaque 4-way stretch</li></ul><p><strong>Fabric:</strong> Premium matte 4-way-stretch performance knit</p>",
+      "short_description": "Zip top and training shorts.",
+      "base_price": "38000.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "Premium matte 4-way-stretch performance knit",
+      "care_instructions": null,
+      "old_category": "new-arrivals",
+      "variants": [
+        {
+          "color": "All Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 10,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 10,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Nude",
+          "color_hex": "#D9B9A3",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 20,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Plum",
+          "color_hex": "#4A1E33",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 10,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "kids",
+      "name": "Mini Move Set",
+      "slug": "mini-move-set",
+      "description": "<p>Designed for girls who do it all: school runs, play, dance, sport or the gym. A sleek, comfortable and supportive set that moves with her.</p><ul><li>Performance tank with a racerback</li><li>High-waist, full-length leggings</li><li>Flatlock seams for chafe-free comfort</li><li>Breathable, sweat-wicking and 4-way stretch</li></ul><p><strong>Fabric:</strong> 75% recycled polyester, 25% spandex</p>",
+      "short_description": "Built for bright days and big moves.",
+      "base_price": "32500.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "75% recycled polyester, 25% spandex",
+      "care_instructions": null,
+      "old_category": "kids",
+      "variants": [
+        {
+          "color": "Dusty Rose",
+          "color_hex": "#C48A92",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 15,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Sage",
+          "color_hex": "#8A9A78",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Sky Blue",
+          "color_hex": "#9EC5EA",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy",
+          "color_hex": "#1C2541",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Lilac",
+          "color_hex": "#B79CCB",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Amour Set",
+      "slug": "the-amour-set",
+      "description": "<p>A fitted short-sleeve performance top with a high sporty collar, a functional quarter zip and contrast piping across the shoulders, paired with a high-waisted, wrap-inspired A-line skort.</p><ul><li>Functional quarter zip</li><li>Contrast piping tracing the shoulders</li><li>Built-in shorts with side phone/ball pocket</li><li>4-way stretch, breathable and opaque under stretch</li></ul><p><strong>Fabric:</strong> Matte performance jersey</p>",
+      "short_description": "Quarter-zip top and wrap-inspired skort.",
+      "base_price": "44100.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "Matte performance jersey",
+      "care_instructions": null,
+      "old_category": "new-arrivals",
+      "variants": [
+        {
+          "color": "Black / Cream",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "White / Black",
+          "color_hex": "#FFFFFF",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 6,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Dusty Rose",
+          "color_hex": "#C48A92",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive / Cream",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy / Cream",
+          "color_hex": "#1C2541",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Ivy Skirt",
+      "slug": "ivy-skirt",
+      "description": "<p>A timeless pleated tennis skirt designed to move with you. Engineered for performance, made for everyday wear.</p><ul><li>Wide, supportive waistband with FORMÉ branding</li><li>Structured pleats for a flattering fit and effortless movement</li><li>Built-in performance shorts with a side pocket for your phone, cards or tennis balls</li><li>Breathable, non-see-through inner shorts</li></ul><p><strong>Fabric:</strong> Outer and inner shorts: 75% nylon, 25% spandex</p>",
+      "short_description": "Sport. Style. Confidence. Anywhere.",
+      "base_price": "28500.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "Outer and inner shorts: 75% nylon, 25% spandex",
+      "care_instructions": null,
+      "old_category": "new-arrivals",
+      "variants": [
+        {
+          "color": "Off-White",
+          "color_hex": "#F4EFE6",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Pink",
+          "color_hex": "#E6A3B4",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "kids",
+      "name": "Adventurer Set",
+      "slug": "the-adventurer-set",
+      "description": "<p>Designed for curious minds and busy days: a comfortable, versatile hoodie and jogger set made for play, school, travel and everything in between. Unisex.</p><ul><li>Relaxed hoodie with a double-layer hood</li><li>Ribbed cuffs for a secure, comfortable fit</li><li>Joggers with an adjustable drawstring</li></ul><p><strong>Fabric:</strong> 60% cotton, 40% polyester</p>",
+      "short_description": "Play. Explore. Grow.",
+      "base_price": "36800.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "60% cotton, 40% polyester",
+      "care_instructions": null,
+      "old_category": "kids",
+      "variants": [
+        {
+          "color": "Taupe",
+          "color_hex": "#A8988A",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Dusty Rose",
+          "color_hex": "#C48A92",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Sage",
+          "color_hex": "#8A9A78",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy",
+          "color_hex": "#1C2541",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Grey Marl",
+          "color_hex": "#BDBFC1",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Ease Set",
+      "slug": "the-ease-set",
+      "description": "<p>The Ease Set is designed for everything from slow mornings to on-the-go days: a cropped zip jacket and relaxed wide-leg trousers, crafted for comfort, movement and everyday style.</p><ul><li>Cropped zip jacket with a high neck collar</li><li>Ribbed cuffs and hem for a structured fit</li><li>Relaxed trousers with elastic waistband and side pockets</li></ul><p><strong>Fabric:</strong> 75% nylon, 25% spandex</p>",
+      "short_description": "Relax. Move. Feel good. Anywhere.",
+      "base_price": "49999.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "75% nylon, 25% spandex",
+      "care_instructions": null,
+      "old_category": "women",
+      "variants": [
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Stone",
+          "color_hex": "#BDB0A0",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Mocha",
+          "color_hex": "#6B4F3F",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy",
+          "color_hex": "#1C2541",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Ivory",
+          "color_hex": "#F2EBDD",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Blush",
+          "color_hex": "#E3A6AE",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "kids",
+      "name": "Nobi Set",
+      "slug": "the-nobi-set",
+      "description": "<p>A performance tee and shorts set for boys who move differently, for sport, play and everyday adventures. The set includes one T-shirt and one pair of shorts.</p><ul><li>Performance tee with contrast piping</li><li>Shorts with elastic waistband and side pockets</li><li>Lightweight, breathable and quick-drying</li></ul><p><strong>Fabric:</strong> 100% recycled polyester performance fabric</p>",
+      "short_description": "Clean. Sporty. Everyday.",
+      "base_price": "33900.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "100% recycled polyester performance fabric",
+      "care_instructions": null,
+      "old_category": "kids",
+      "variants": [
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Cream",
+          "color_hex": "#EEE4D3",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy",
+          "color_hex": "#1C2541",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Sage",
+          "color_hex": "#8A9A78",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "kids",
+      "name": "Heavenly Dress",
+      "slug": "the-heavenly-dress",
+      "description": "<p>A dress made for movement, imagination and everything in between. Soft, comfortable and thoughtfully designed, with a flattering flared skirt and built-in shorts.</p><ul><li>Signature shoulder bow</li><li>Sporty contrast piping</li><li>Single flowing flared skirt</li><li>Built-in shorts for comfort and coverage</li></ul><p><strong>Fabric:</strong> 75% recycled polyester, 25% spandex</p>",
+      "short_description": "Playful. Polished. All her.",
+      "base_price": "35000.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "75% recycled polyester, 25% spandex",
+      "care_instructions": null,
+      "old_category": "kids",
+      "variants": [
+        {
+          "color": "Cream",
+          "color_hex": "#EEE4D3",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Pink",
+          "color_hex": "#E6A3B4",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Sage",
+          "color_hex": "#8A9A78",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Sky Blue",
+          "color_hex": "#9EC5EA",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 6,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "The FORMED visor",
+      "slug": "the-formed-visor",
+      "description": null,
+      "short_description": null,
+      "base_price": "12000.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": null,
+      "care_instructions": null,
+      "old_category": "accessories",
+      "variants": [
+        {
+          "color": "Black",
+          "color_hex": "#0f0101",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "White",
+          "color_hex": "#f7f7f7",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Pink",
+          "color_hex": "#FFC0CB",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "The Formed Headband",
+      "slug": "the-formed-headband",
+      "description": null,
+      "short_description": null,
+      "base_price": "7000.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": null,
+      "care_instructions": null,
+      "old_category": "accessories",
+      "variants": [
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "White",
+          "color_hex": "#f2f2f2",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive Green",
+          "color_hex": "#2a380c",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Pink",
+          "color_hex": "#FFC0CB",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "male",
+      "name": "The Formed Face Cap",
+      "slug": "the-formed-face-cap",
+      "description": null,
+      "short_description": null,
+      "base_price": "14000.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": null,
+      "care_instructions": null,
+      "old_category": "accessories",
+      "variants": [
+        {
+          "color": "White",
+          "color_hex": "#ffffff",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 10,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy Blue",
+          "color_hex": "#0f1340",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "male",
+      "name": "Serve Set",
+      "slug": "the-serve-set",
+      "description": "<p>Designed for the game and beyond: a technical polo and performance court shorts that deliver comfort, mobility and a refined, athletic look. Whether it&#x27;s tennis, padel or an active day out, the Serve Set keeps you cool, confident and in motion.</p><ul><li>Performance polo: moisture-wicking, breathable, refined fit</li><li>Contrast collar and sleeve detail</li><li>Court shorts: lightweight 4-way stretch with functional pockets</li><li>Elastic waistband with drawstring</li><li>UV protection</li></ul><p><strong>Fabric:</strong> 92% recycled polyester, 8% spandex</p>",
+      "short_description": "Court ready. Always.",
+      "base_price": "45000.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "92% recycled polyester, 8% spandex",
+      "care_instructions": null,
+      "old_category": "men",
+      "variants": [
+        {
+          "color": "White",
+          "color_hex": "#FFFFFF",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 7,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy",
+          "color_hex": "#1C2541",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 6,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 8,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "male",
+      "name": "Off-Duty Set",
+      "slug": "off-duty-set",
+      "description": "<p>The Off-Duty Set is designed for rest, recovery and everything in between: a relaxed fit in premium fabric that keeps you comfortable while still looking put together. Whether you&#x27;re travelling, running errands or unwinding.</p><ul><li>Relaxed tee: oversized fit with a ribbed collar</li><li>Lounge pants: relaxed straight leg, elastic waistband and side pockets</li><li>Soft, breathable and durable fabric</li></ul><p><strong>Fabric:</strong> 70% cotton, 30% recycled polyester</p>",
+      "short_description": "Same discipline. Different pace.",
+      "base_price": "40000.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "70% cotton, 30% recycled polyester",
+      "care_instructions": null,
+      "old_category": "men",
+      "variants": [
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 8,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Stone",
+          "color_hex": "#BDB0A0",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Mocha",
+          "color_hex": "#6B4F3F",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "male",
+      "name": "Grind Set",
+      "slug": "the-grind-set",
+      "description": "<p>The Grind Set is designed for movement in all its forms: a relaxed-fit performance tee paired with technical shorts and a built-in compression inner short. Engineered for the gym, running, court sports and anything on your agenda.</p><ul><li>Performance tee: relaxed fit with contrast piping detail</li><li>Technical fabric: breathable, lightweight and quick-drying</li><li>Performance shorts: elastic waistband with side pockets</li><li>Built-in compression inner short for support and coverage</li><li>Minimal FORMÉ branding</li></ul><p><strong>Fabric:</strong> 75% recycled polyester, 25% spandex</p>",
+      "short_description": "Train harder. Go further. Everyday.",
+      "base_price": "38999.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "75% recycled polyester, 25% spandex",
+      "care_instructions": null,
+      "old_category": "men",
+      "variants": [
+        {
+          "color": "All Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Slate / Taupe",
+          "color_hex": "#5A5F66",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "White / Black",
+          "color_hex": "#FFFFFF",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive / Black",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 6,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy",
+          "color_hex": "#1C2541",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "kids",
+      "name": "Arvey Active",
+      "slug": "arvey-active",
+      "description": "<p>A performance set for boys who move differently, crafted for sport, play and everyday adventures.</p><ul><li>Sleeveless performance tank</li><li>Double-layer shorts with built-in compression inner shorts</li><li>Elastic waistband</li><li>Lightweight, breathable and quick-drying</li></ul><p><strong>Fabric:</strong> 75% recycled polyester, 25% spandex</p>",
+      "short_description": "Built for big energy and bright tomorrows.",
+      "base_price": "33900.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "75% recycled polyester, 25% spandex",
+      "care_instructions": null,
+      "old_category": "kids",
+      "variants": [
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Cream",
+          "color_hex": "#EEE4D3",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy",
+          "color_hex": "#1C2541",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Sage",
+          "color_hex": "#8A9A78",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Jade Jacket",
+      "slug": "the-jade-jacket",
+      "description": "<p>A sleek, sculpted jacket designed for movement, made for everyday. The Jade Jacket blends performance, comfort and style with a flattering fit and refined minimal details. Whether you&#x27;re heading to the gym, on a run, or out and about, it&#x27;s the layer you&#x27;ll reach for every time.</p><ul><li>Full zip with a high neck collar</li><li>Contour seams for a sculpted, flattering fit</li><li>Thumbholes to keep sleeves in place</li><li>Minimal FORMÉ branding</li></ul><p><strong>Fabric:</strong> 75% nylon, 25% spandex</p>",
+      "short_description": "Layer. Move. Feel good. Always you.",
+      "base_price": "29999.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "75% nylon, 25% spandex",
+      "care_instructions": null,
+      "old_category": "women",
+      "variants": [
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Chocolate",
+          "color_hex": "#4B3027",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Ivory",
+          "color_hex": "#F2EBDD",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "White",
+          "color_hex": "#FFFFFF",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 0,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Pink",
+          "color_hex": "#E6A3B4",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Plum",
+          "color_hex": "#4A1E33",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 21,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Naya Set",
+      "slug": "the-naya-set",
+      "description": "<p>Modest activewear built for training: a layered top with a vented back for coverage and breathability, relaxed wide-leg pants and a performance hijab.</p><ul><li>Layered training top with a vented back</li><li>High-waist wide-leg pants with elastic waistband</li><li>Performance hijab: lightweight with a secure fit</li><li>Sweat-wicking and 4-way stretch</li></ul><p><strong>Fabric:</strong> 75% recycled polyester, 25% spandex</p>",
+      "short_description": "Train without limits.",
+      "base_price": "59999.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "75% recycled polyester, 25% spandex",
+      "care_instructions": null,
+      "old_category": "women",
+      "variants": [
+        {
+          "color": "Dusty Rose",
+          "color_hex": "#C48A92",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 6,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Navy",
+          "color_hex": "#1C2541",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Taupe",
+          "color_hex": "#A8988A",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Serene Set",
+      "slug": "the-serene-set",
+      "description": null,
+      "short_description": null,
+      "base_price": "38900.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": null,
+      "care_instructions": null,
+      "old_category": "women",
+      "variants": [
+        {
+          "color": "Mocha Brown",
+          "color_hex": "#a38e7e",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Deep Espresso Brown",
+          "color_hex": "#4e382a",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Dusty Rose",
+          "color_hex": "#a47e8a",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive Green",
+          "color_hex": "#3d4a37",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Sky Blue",
+          "color_hex": "#0e1438",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Dark ",
+          "color_hex": "#1c1b1b",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 5,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "unisex",
+      "name": "The Forme socks",
+      "slug": "the-forme-socks",
+      "description": null,
+      "short_description": null,
+      "base_price": "12000.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": null,
+      "care_instructions": null,
+      "old_category": "accessories",
+      "variants": [
+        {
+          "color": "Black",
+          "color_hex": "#0a0a0a",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "White",
+          "color_hex": "#ffffff",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Olive Green",
+          "color_hex": "#435240",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Cream White",
+          "color_hex": "#ecedde",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "unisex",
+      "name": "Forme grip socks",
+      "slug": "forme-grip-socks",
+      "description": null,
+      "short_description": null,
+      "base_price": "14500.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": null,
+      "care_instructions": null,
+      "old_category": "accessories",
+      "variants": [
+        {
+          "color": "Olive Green",
+          "color_hex": "#405e4b",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "White",
+          "color_hex": "#f7f6f6",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#121111",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Cream White",
+          "color_hex": "#f0dfdf",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Heart grip socks",
+      "slug": "heart-grip-socks",
+      "description": null,
+      "short_description": null,
+      "base_price": "14500.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": null,
+      "care_instructions": null,
+      "old_category": "accessories",
+      "variants": [
+        {
+          "color": "Brown",
+          "color_hex": "#693b3b",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Orange",
+          "color_hex": "#e68171",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "White",
+          "color_hex": "#ffffff",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "unisex",
+      "name": "Forme Pilates socks",
+      "slug": "forme-pilates-socks",
+      "description": null,
+      "short_description": null,
+      "base_price": "13000.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": null,
+      "care_instructions": null,
+      "old_category": "accessories",
+      "variants": [
+        {
+          "color": "Pink",
+          "color_hex": "#ff9eBa",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Gray",
+          "color_hex": "#757474",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Zahra Set",
+      "slug": "zahra-set",
+      "description": "<p>Designed for the modern woman who values performance, modesty and elegance on court and beyond. A refined silhouette in premium fabric, so you can move freely, feel comfortable and stay true to you.</p><ul><li>Long-sleeve performance top with a clean, zip-free neckline</li><li>Flowing high-waist maxi court skirt</li><li>Performance hijab: lightweight with a secure fit</li><li>Breathable, sweat-wicking and 4-way stretch</li></ul><p><strong>Fabric:</strong> 75% recycled polyester, 25% spandex</p>",
+      "short_description": "Elegance in motion.",
+      "base_price": "59999.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "75% recycled polyester, 25% spandex",
+      "care_instructions": null,
+      "old_category": "women",
+      "variants": [
+        {
+          "color": "Dusty Rose",
+          "color_hex": "#C48A92",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 6,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "White",
+          "color_hex": "#FFFFFF",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Nude",
+          "color_hex": "#D9B9A3",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Ace Dress",
+      "slug": "the-ace-dress",
+      "description": "<p>A fitted, sculpted tennis dress with a high sporty collar and a flared skirt. The front zip lets you adjust your coverage, the racerback keeps you free to move, and built-in shorts with a side pocket hold your phone or a ball.</p><ul><li>Functional front zip for adjustable coverage</li><li>Racerback for mobility</li><li>Built-in shorts with side phone/ball pocket</li><li>Breathable, 4-way stretch, moisture-wicking and lightweight</li></ul><p><strong>Fabric:</strong> Premium matte performance knit</p>",
+      "short_description": "Zip-front racerback tennis dress.",
+      "base_price": "39999.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "Premium matte performance knit",
+      "care_instructions": null,
+      "old_category": "women",
+      "variants": [
+        {
+          "color": "Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "White",
+          "color_hex": "#FFFFFF",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Vivid Pink",
+          "color_hex": "#F23FA0",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Dusty Rose",
+          "color_hex": "#C48A92",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    },
+    {
+      "gender": "female",
+      "name": "Flex Set",
+      "slug": "the-flex-set",
+      "description": "<p>A sports bra with contrast edging, a crossover back and a slim underbust band, paired with high-waisted sculpting leggings finished with signature curved contour piping. The high-compression waistband gives strong support and tummy hold.</p><ul><li>Sports bra with contrast straps and crossover back</li><li>High-waisted sculpting leggings with no front seam</li><li>Signature curved contour piping</li><li>Opaque 4-way stretch with strong recovery</li></ul><p><strong>Fabric:</strong> Premium matte, opaque 4-way-stretch performance knit</p>",
+      "short_description": "Contrast-strap sports bra and contour leggings.",
+      "base_price": "39999.00",
+      "compare_price": null,
+      "is_featured": false,
+      "material": "Premium matte, opaque 4-way-stretch performance knit",
+      "care_instructions": null,
+      "old_category": "women",
+      "variants": [
+        {
+          "color": "Cream + Black",
+          "color_hex": "#000000",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Cream + Olive",
+          "color_hex": "#556040",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Nude + Oxblood",
+          "color_hex": "#4A0F17",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 4,
+          "sku": null,
+          "is_active": true
+        },
+        {
+          "color": "Lilac + Plum",
+          "color_hex": "#4A1E33",
+          "size": null,
+          "price_modifier": "0.00",
+          "stock_quantity": 3,
+          "sku": null,
+          "is_active": true
+        }
+      ]
+    }
+  ]
+}

@@ -13,13 +13,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use Laravel\Fortify\Features;
 
 class CustomerAuthController extends Controller
 {
     public function showRegister(): Response
     {
-        return Inertia::render('Auth/Register', [
-            'redirect' => request('redirect'),
+        return Inertia::render('auth/Register', [
+            'redirect' => $this->rememberRedirect(),
         ]);
     }
 
@@ -27,7 +28,7 @@ class CustomerAuthController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
+            'email' => 'required|email|max:255|unique:users',
             'password' => ['required', 'confirmed', Password::min(8)],
         ]);
 
@@ -53,8 +54,8 @@ class CustomerAuthController extends Controller
 
     public function showLogin(): Response
     {
-        return Inertia::render('Auth/Login', [
-            'redirect' => request('redirect'),
+        return Inertia::render('auth/Login', [
+            'redirect' => $this->rememberRedirect(),
         ]);
     }
 
@@ -66,18 +67,28 @@ class CustomerAuthController extends Controller
         ]);
 
         $sessionId = session()->getId();
+        $remember = $request->boolean('remember');
+        $credentials = $request->only('email', 'password');
 
-        if (Auth::attempt($request->only('email', 'password'), $request->boolean('remember'))) {
-            $user = Auth::user();
-            if ($user) {
-                Cart::mergeSessionCartToUser($sessionId, $user->id);
-            }
-            $request->session()->regenerate();
-
-            return redirect()->intended(route('home'));
+        if (! Auth::validate($credentials)) {
+            return back()->withErrors(['email' => 'The provided credentials do not match our records.']);
         }
 
-        return back()->withErrors(['email' => 'The provided credentials do not match our records.']);
+        /** @var User $user */
+        $user = User::where('email', $credentials['email'])->first();
+
+        // Customers who switched on two-step login must complete it first.
+        if (Features::enabled(Features::twoFactorAuthentication()) && $user->two_factor_confirmed_at) {
+            $request->session()->put(['login.id' => $user->id, 'login.remember' => $remember]);
+
+            return redirect()->route('two-factor.login');
+        }
+
+        Auth::login($user, $remember);
+        Cart::mergeSessionCartToUser($sessionId, $user->id);
+        $request->session()->regenerate();
+
+        return redirect()->intended(route('home'));
     }
 
     public function logout(Request $request)
@@ -91,14 +102,21 @@ class CustomerAuthController extends Controller
 
     public function account(): Response
     {
-        return Inertia::render('Auth/Account', [
-            'user' => auth()->user(),
+        $user = auth()->user();
+
+        return Inertia::render('auth/Account', [
+            'user' => $user,
+            'savedCard' => $user->paystack_auth_code ? [
+                'last_four' => $user->card_last_four,
+                'brand' => $user->card_brand,
+            ] : null,
         ]);
     }
 
     public function orders(): Response
     {
         $orders = Order::where('user_id', auth()->id())
+            ->where('payment_status', 'paid')
             ->with('items')
             ->latest()
             ->get()
@@ -114,17 +132,17 @@ class CustomerAuthController extends Controller
                 'created_at' => $o->created_at->format('M d, Y'),
             ]);
 
-        return Inertia::render('Auth/Orders', ['orders' => $orders]);
+        return Inertia::render('auth/Orders', ['orders' => $orders]);
     }
 
     public function updateProfile(Request $request)
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'phone' => 'nullable|string',
-            'shipping_address' => 'nullable|string',
-            'shipping_city' => 'nullable|string',
-            'shipping_state' => 'nullable|string',
+            'phone' => 'nullable|string|max:30',
+            'shipping_address' => 'nullable|string|max:500',
+            'shipping_city' => 'nullable|string|max:120',
+            'shipping_state' => 'nullable|string|max:60',
         ]);
 
         auth()->user()->update($request->only([
@@ -132,5 +150,33 @@ class CustomerAuthController extends Controller
         ]));
 
         return back()->with('success', 'Profile updated successfully.');
+    }
+
+    public function removeSavedCard()
+    {
+        auth()->user()->forceFill([
+            'paystack_auth_code' => null,
+            'card_last_four' => null,
+            'card_brand' => null,
+        ])->save();
+
+        return back()->with('success', 'Your saved card has been removed.');
+    }
+
+    /**
+     * Send the customer back where they came from after signing in. Only paths
+     * on this site are accepted, so the link can't redirect anyone elsewhere.
+     */
+    private function rememberRedirect(): ?string
+    {
+        $redirect = request('redirect');
+
+        if (! is_string($redirect) || ! preg_match('#^/(?![/\\\\])#', $redirect)) {
+            return null;
+        }
+
+        redirect()->setIntendedUrl($redirect);
+
+        return $redirect;
     }
 }

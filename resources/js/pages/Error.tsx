@@ -1,5 +1,5 @@
 import React from 'react';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
 
 interface ErrorProps {
     status: number;
@@ -45,6 +45,7 @@ const errorDetails: Record<number, { title: string; headline: string; descriptio
 };
 
 export default function Error({ status, message }: ErrorProps) {
+    const contact = (usePage().props as any).store_contact as { whatsapp_number: string; whatsapp_display: string } | undefined;
     const error = errorDetails[status] || {
         title: 'Error',
         headline: 'Something went wrong.',
@@ -150,7 +151,7 @@ export default function Error({ status, message }: ErrorProps) {
                     </div>
 
                     <div style={{ marginTop: '36px', paddingTop: '24px', borderTop: '1px solid var(--forme-border, #EFEAE6)', fontSize: '12px', color: 'var(--forme-muted, #736b63)' }}>
-                        Need assistance? WhatsApp <a href="https://wa.me/2347026126265" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--forme-accent, #6F1D2F)', textDecoration: 'none', fontWeight: 500 }}>+234 702 612 6265</a>
+                        Need assistance? WhatsApp <a href={`https://wa.me/${contact?.whatsapp_number}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--forme-accent, #6F1D2F)', textDecoration: 'none', fontWeight: 500 }}>{contact?.whatsapp_display}</a>
                     </div>
                 </div>
             </div>

@@ -18,17 +18,11 @@ class OrderMailService
      */
     private static function isMailConfigured(): bool
     {
-        $mailer = config('mail.default', 'smtp');
+        if (config('mail.default') === 'smtp'
+            && (empty(config('mail.mailers.smtp.username')) || empty(config('mail.mailers.smtp.password')))) {
+            Log::critical('Email NOT sent: MAIL_USERNAME and MAIL_PASSWORD must be set in .env.');
 
-        if ($mailer === 'smtp') {
-            $username = config('mail.mailers.smtp.username') ?: env('MAIL_USERNAME');
-            $password = config('mail.mailers.smtp.password') ?: env('MAIL_PASSWORD');
-
-            if (empty($username) || empty($password)) {
-                Log::info('Email sending deferred: SMTP credentials (MAIL_USERNAME/MAIL_PASSWORD) not yet configured in .env.');
-
-                return false;
-            }
+            return false;
         }
 
         return true;
@@ -55,7 +49,7 @@ class OrderMailService
                 }
 
                 // 2. Send owner/admin notification
-                $adminEmail = config('mail.admin_address') ?: env('ADMIN_NOTIFICATION_EMAIL', 'hello@forme.ng');
+                $adminEmail = config('mail.admin_address');
                 if (! empty($adminEmail)) {
                     Mail::to($adminEmail)->send(new NewOrderAdminMail($order));
                     Log::info("Admin new order notification sent to {$adminEmail} for Order #{$order->order_number}");

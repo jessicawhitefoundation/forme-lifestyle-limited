@@ -3,16 +3,16 @@
 use App\Http\Controllers\Auth\CustomerAuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\PaystackWebhookController;
 use App\Http\Controllers\StoreController;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-// ─── Store Front (Rate Limited: Max 60 req/min) ────────────────────────────────
+// ─── Store Front ──────────────────────────────────────────────────────────────
 Route::middleware('throttle:storefront')->group(function () {
     Route::get('/', [StoreController::class, 'home'])->name('home');
     Route::get('/shop', [StoreController::class, 'collection'])->name('shop');
@@ -22,13 +22,16 @@ Route::middleware('throttle:storefront')->group(function () {
     Route::get('/about', [StoreController::class, 'about'])->name('about');
     Route::get('/connect', [StoreController::class, 'connect'])->name('connect');
     Route::get('/size-guide', [StoreController::class, 'sizeGuide'])->name('size-guide');
-    Route::post('/waitlist', [StoreController::class, 'waitlist'])->middleware('throttle:15,1')->name('waitlist.store');
-    Route::post('/store/unlock', [StoreController::class, 'unlock'])->middleware('throttle:10,1')->name('store.unlock');
-    Route::get('/store/lock', [StoreController::class, 'lock'])->name('store.lock');
+    Route::get('/faq', [StoreController::class, 'info'])->defaults('page', 'faq')->name('faq');
+    Route::get('/contact', [StoreController::class, 'info'])->defaults('page', 'contact')->name('contact');
+    Route::get('/privacy', [StoreController::class, 'info'])->defaults('page', 'privacy')->name('privacy');
+    Route::get('/terms', [StoreController::class, 'info'])->defaults('page', 'terms')->name('terms');
+    Route::get('/track-order', [OrderTrackingController::class, 'show'])->name('order.track');
+    Route::post('/track-order', [OrderTrackingController::class, 'find'])->middleware('throttle:10,1')->name('order.track.find');
 });
 
-// ─── Cart (Rate Limited: Max 30 req/min) ──────────────────────────────────────
-Route::middleware('throttle:30,1')->group(function () {
+// ─── Cart ─────────────────────────────────────────────────────────────────────
+Route::middleware('throttle:cart')->group(function () {
     Route::get('/cart', [CartController::class, 'show'])->name('cart.show');
     Route::post('/cart', [CartController::class, 'store'])->name('cart.store');
     Route::patch('/cart/{cartItem}', [CartController::class, 'update'])->name('cart.update');
@@ -36,29 +39,30 @@ Route::middleware('throttle:30,1')->group(function () {
     Route::get('/cart/count', [CartController::class, 'count'])->name('cart.count');
 });
 
-// ─── Checkout & Paystack (Rate Limited, Auth Required) ────────────────────────
-Route::middleware('auth')->group(function () {
+// ─── Checkout & Paystack (open to guests; an account is optional) ─────────────
+Route::middleware('throttle:cart')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
-    Route::post('/checkout/shipping-rate', [CheckoutController::class, 'calculateShippingRate'])->name('checkout.shipping-rate');
-    Route::post('/checkout/initiate', [CheckoutController::class, 'initiate'])
-        ->middleware('throttle:checkout')
-        ->name('checkout.initiate');
+    Route::get('/checkout/callback', [CheckoutController::class, 'callback'])->name('checkout.callback');
+    Route::get('/order/{orderNumber}/confirmation', [CheckoutController::class, 'confirmation'])->name('order.confirmation');
 });
-Route::get('/checkout/callback', [CheckoutController::class, 'callback'])->name('checkout.callback');
-Route::get('/order/{orderNumber}/confirmation', [CheckoutController::class, 'confirmation'])->name('order.confirmation');
+Route::post('/checkout/shipping-rate', [CheckoutController::class, 'calculateShippingRate'])
+    ->middleware('throttle:shipping-rate')
+    ->name('checkout.shipping-rate');
+Route::post('/checkout/initiate', [CheckoutController::class, 'initiate'])
+    ->middleware('throttle:checkout')
+    ->name('checkout.initiate');
 
-// ─── Paystack Webhook (Rate Limited: Max 60 req/min, CSRF-exempt) ────────────
+// ─── Paystack Webhook (CSRF-exempt in bootstrap/app.php; verified by signature) ─
 Route::post('/webhooks/paystack', [PaystackWebhookController::class, 'handle'])
-    ->middleware('throttle:60,1')
-    ->name('webhook.paystack')
-    ->withoutMiddleware(VerifyCsrfToken::class);
+    ->middleware('throttle:120,1')
+    ->name('webhook.paystack');
 
-// ─── Customer Auth (Rate Limited: Max 6 req/min) ──────────────────────────────
-Route::middleware(['guest', 'throttle:auth'])->group(function () {
+// ─── Customer Auth (only form submissions are limited, not viewing the pages) ──
+Route::middleware('guest')->group(function () {
     Route::get('/register', [CustomerAuthController::class, 'showRegister'])->name('register');
-    Route::post('/register', [CustomerAuthController::class, 'register']);
+    Route::post('/register', [CustomerAuthController::class, 'register'])->middleware('throttle:auth');
     Route::get('/login', [CustomerAuthController::class, 'showLogin'])->name('login');
-    Route::post('/login', [CustomerAuthController::class, 'login']);
+    Route::post('/login', [CustomerAuthController::class, 'login'])->middleware('throttle:auth');
 });
 
 Route::middleware('auth')->group(function () {
@@ -66,6 +70,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/account', [CustomerAuthController::class, 'account'])->name('account');
     Route::get('/account/orders', [CustomerAuthController::class, 'orders'])->name('account.orders');
     Route::patch('/account/profile', [CustomerAuthController::class, 'updateProfile'])->name('account.update');
+    Route::delete('/account/saved-card', [CustomerAuthController::class, 'removeSavedCard'])->name('account.saved-card.destroy');
 });
 
 // ─── Storage Fallback (Serves uploads if symlink is missing in production) ────
@@ -73,7 +78,7 @@ Route::get('/storage/{path}', function (string $path) {
     $publicDir = realpath(storage_path('app/public'));
     $fullPath = realpath(storage_path('app/public/'.$path));
 
-    if (! $fullPath || ! $publicDir || ! str_starts_with($fullPath, $publicDir) || ! is_file($fullPath)) {
+    if (! $fullPath || ! $publicDir || ! str_starts_with($fullPath, $publicDir.DIRECTORY_SEPARATOR) || ! is_file($fullPath)) {
         abort(404);
     }
 

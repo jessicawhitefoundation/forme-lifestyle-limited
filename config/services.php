@@ -47,7 +47,7 @@ return [
         'sender' => [
             'name' => env('ROUTELY_SENDER_NAME', 'FORMÉ Lagos'),
             'phone' => env('ROUTELY_SENDER_PHONE', '07026126265'),
-            'email' => env('ROUTELY_SENDER_EMAIL', 'hello@forme.ng'),
+            'email' => env('ROUTELY_SENDER_EMAIL', 'hello@shopforme.net'),
             'address' => env('ROUTELY_SENDER_ADDRESS', 'Lekki Phase 1, Lagos'),
             'city' => env('ROUTELY_SENDER_CITY', 'Lekki'),
             'state' => env('ROUTELY_SENDER_STATE', 'Lagos'),

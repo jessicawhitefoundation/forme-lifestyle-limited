@@ -10,6 +10,6 @@
     </p>
     <div class="actions">
         <button onclick="window.location.reload();" class="btn-primary">Check Again</button>
-        <a href="https://wa.me/2347026126265" target="_blank" class="btn-secondary">Message on WhatsApp</a>
+        <a href="https://wa.me/{{ config('store.whatsapp_number') }}" target="_blank" class="btn-secondary">Message on WhatsApp</a>
     </div>
 @endsection

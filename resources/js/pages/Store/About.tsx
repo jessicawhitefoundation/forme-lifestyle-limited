@@ -16,7 +16,7 @@ const C = {
 export default function About() {
     return (
         <>
-            <Head title="About Formé — Made for Every Form of Movement" />
+            <Head title="About Us" />
 
             <div style={{ background: C.bg, color: C.text, minHeight: '100vh', paddingBottom: '80px' }}>
                 {/* Hero Header */}
@@ -90,7 +90,7 @@ export default function About() {
                     </ScrollReveal>
                 </section>
 
-                <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 24px' }}>
+                <div className="page-pad" style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 24px' }}>
 
                     {/* Main Story Section */}
                     <section style={{ padding: '80px 0 60px', borderBottom: `1px solid ${C.border}` }}>

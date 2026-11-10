@@ -11,6 +11,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Number;
 use Illuminate\Support\Str;
 
@@ -94,19 +95,14 @@ class ProductResource extends Resource
             Forms\Components\Group::make()->schema([
                 Forms\Components\Section::make('Status')->schema([
                     Forms\Components\Select::make('category_id')
-                        ->label('Category')
-                        ->options(Category::pluck('name', 'id'))
-                        ->searchable()
+                        ->label('Main category')
+                        ->options(fn () => Category::where('is_active', true)->where('slug', '!=', 'new-arrivals')->orderBy('sort_order')->pluck('name', 'id'))
+                        ->helperText('Also sets which size chart customers see.')
                         ->required(),
-                    Forms\Components\Select::make('gender')
-                        ->options([
-                            'female' => 'Female',
-                            'male' => 'Male',
-                            'kids' => 'Kids',
-                            'unisex' => 'Unisex',
-                        ])
-                        ->required()
-                        ->default('female'),
+                    Forms\Components\CheckboxList::make('categories')
+                        ->label('Also show in')
+                        ->relationship('categories', 'name', fn (Builder $query) => $query->where('is_active', true)->orderBy('sort_order'))
+                        ->helperText('Tick New Arrivals to feature this product there. Untick it later and the product stays in its main category.'),
                     Forms\Components\Toggle::make('is_active')->default(true),
                     Forms\Components\Toggle::make('is_featured'),
                     Forms\Components\TextInput::make('sort_order')->numeric()->default(0),
@@ -144,14 +140,8 @@ class ProductResource extends Resource
                 ])
                 ->square(),
             Tables\Columns\TextColumn::make('name')->searchable()->sortable(),
-            Tables\Columns\TextColumn::make('category.name')->sortable(),
-            Tables\Columns\TextColumn::make('gender')->sortable()->badge()->color(fn (string $state): string => match ($state) {
-                'female' => 'pink',
-                'male' => 'blue',
-                'kids' => 'success',
-                'unisex' => 'gray',
-                default => 'gray',
-            }),
+            Tables\Columns\TextColumn::make('category.name')->label('Main category')->sortable(),
+            Tables\Columns\TextColumn::make('categories.name')->label('Also in')->badge()->placeholder('—'),
             Tables\Columns\TextColumn::make('base_price')
                 ->label('Price')
                 ->formatStateUsing(function ($state, Product $record): string {
@@ -190,12 +180,6 @@ class ProductResource extends Resource
         ])
             ->filters([
                 Tables\Filters\SelectFilter::make('category')->relationship('category', 'name'),
-                Tables\Filters\SelectFilter::make('gender')->options([
-                    'female' => 'Female',
-                    'male' => 'Male',
-                    'kids' => 'Kids',
-                    'unisex' => 'Unisex',
-                ]),
                 Tables\Filters\TernaryFilter::make('is_featured'),
                 Tables\Filters\TernaryFilter::make('is_active'),
             ])
@@ -215,7 +199,28 @@ class ProductResource extends Resource
                         return 'Are you sure you want to delete this product? This action cannot be undone.';
                     }),
             ])
-            ->bulkActions([Tables\Actions\BulkActionGroup::make([Tables\Actions\DeleteBulkAction::make()])]);
+            ->bulkActions([Tables\Actions\BulkActionGroup::make([
+                Tables\Actions\BulkAction::make('add_to_new_arrivals')
+                    ->label('Add to New Arrivals')
+                    ->icon('heroicon-o-sparkles')
+                    ->action(fn (Collection $records) => $records->each(
+                        fn (Product $product) => $product->categories()->syncWithoutDetaching(self::newArrivalsId()),
+                    ))
+                    ->deselectRecordsAfterCompletion(),
+                Tables\Actions\BulkAction::make('remove_from_new_arrivals')
+                    ->label('Remove from New Arrivals')
+                    ->icon('heroicon-o-minus-circle')
+                    ->action(fn (Collection $records) => $records->each(
+                        fn (Product $product) => $product->categories()->detach(self::newArrivalsId()),
+                    ))
+                    ->deselectRecordsAfterCompletion(),
+                Tables\Actions\DeleteBulkAction::make(),
+            ])]);
+    }
+
+    private static function newArrivalsId(): int
+    {
+        return (int) Category::where('slug', 'new-arrivals')->value('id');
     }
 
     /**
@@ -223,7 +228,7 @@ class ProductResource extends Resource
      */
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['variants', 'images', 'category']);
+        return parent::getEloquentQuery()->with(['variants', 'images', 'category', 'categories']);
     }
 
     public static function getPages(): array

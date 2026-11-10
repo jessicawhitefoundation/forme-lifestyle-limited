@@ -112,10 +112,10 @@ return [
     */
 
     'from' => [
-        'address' => env('MAIL_FROM_ADDRESS', 'hello@forme.ng'),
+        'address' => env('MAIL_FROM_ADDRESS', 'hello@shopforme.net'),
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'FORMÉ')),
     ],
 
-    'admin_address' => env('ADMIN_NOTIFICATION_EMAIL', 'hello@forme.ng'),
+    'admin_address' => env('ADMIN_NOTIFICATION_EMAIL', 'hello@shopforme.net'),
 
 ];

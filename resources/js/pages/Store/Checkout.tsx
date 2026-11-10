@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 
 interface CartItem {
@@ -24,35 +24,49 @@ interface SavedCard {
     brand: string;
 }
 
+interface Quote {
+    subtotal: number;
+    shipping_fee: number;
+    free_shipping: boolean;
+    free_shipping_remaining: number;
+    carrier: string;
+    delivery_time: string | null;
+    vat_amount: number;
+    vat_inclusive: boolean;
+    total: number;
+}
+
 interface CheckoutProps {
     cartItems: CartItem[];
-    subtotal: number;
-    shippingFee: number;
-    carrierInfo?: string;
-    deliveryTime?: string | null;
-    total: number;
+    quote: Quote;
+    states: string[];
     user: User | null;
     savedCard?: SavedCard | null;
 }
 
-export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo: initialCarrier, deliveryTime: initialEta, total, user, savedCard }: CheckoutProps) {
+export default function Checkout({ cartItems, quote: initialQuote, states, user, savedCard }: CheckoutProps) {
+    const pageErrors = usePage().props.errors as Record<string, string>;
     const [form, setForm] = useState({
         customer_name: user?.name ?? '',
         customer_email: user?.email ?? '',
         customer_phone: user?.phone ?? '',
         shipping_address: user?.shipping_address ?? '',
-        shipping_city: user?.shipping_city ?? 'Lekki',
-        shipping_state: user?.shipping_state ?? 'Lagos',
+        shipping_city: user?.shipping_city ?? '',
+        shipping_state: states.includes(user?.shipping_state ?? '') ? (user?.shipping_state as string) : 'Lagos',
         notes: '',
     });
-    const [useSavedCard, setUseSavedCard] = useState(!!savedCard);
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [useSavedCard, setUseSavedCard] = useState(false);
+    const [saveCard, setSaveCard] = useState(false);
+    const [errors, setErrors] = useState<Record<string, string>>(pageErrors ?? {});
     const [submitting, setSubmitting] = useState(false);
 
-    // Dynamic shipping rate via Routely
-    const [liveShippingFee, setLiveShippingFee] = useState<number>(shippingFee);
-    const [carrierInfo, setCarrierInfo] = useState<string>(initialCarrier ?? 'Routely Delivery');
-    const [deliveryEta, setDeliveryEta] = useState<string | null>(initialEta ?? '4 to 8 working hours');
+    useEffect(() => {
+        setErrors(pageErrors ?? {});
+    }, [pageErrors]);
+
+    // Delivery, free-delivery and VAT all come from the server, so this always
+    // matches what the customer is charged.
+    const [quote, setQuote] = useState<Quote>(initialQuote);
     const [calculatingRate, setCalculatingRate] = useState<boolean>(false);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
@@ -75,16 +89,10 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
                 });
 
                 if (response.data && response.data.success) {
-                    setLiveShippingFee(Number(response.data.shipping_fee));
-                    if (response.data.carrier) {
-                        setCarrierInfo(response.data.carrier);
-                    }
-                    if (response.data.delivery_time) {
-                        setDeliveryEta(response.data.delivery_time);
-                    }
+                    setQuote(response.data);
                 }
-            } catch (err) {
-                console.warn('Failed to calculate live Routely rate, retaining fallback', err);
+            } catch {
+                // Keep showing the last quote; the server recalculates it at payment.
             } finally {
                 setCalculatingRate(false);
             }
@@ -95,37 +103,22 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
         };
     }, [form.shipping_state, form.shipping_city, form.shipping_address]);
 
-    const finalTotal = subtotal + liveShippingFee;
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
-        router.post('/checkout/initiate', { ...form, use_saved_card: useSavedCard }, {
+        router.post('/checkout/initiate', { ...form, use_saved_card: useSavedCard, save_card: saveCard && !useSavedCard }, {
             onError: (errs) => { setErrors(errs); setSubmitting(false); },
             onFinish: () => setSubmitting(false),
         });
     };
 
-    const nigeriaStates = [
-        'Abia', 'Abuja (FCT)', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River',
-        'Delta', 'Ebonyi', 'Edo', 'Ekiti', 'Enugu', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano',
-        'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun',
-        'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfara',
-    ];
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        if (name === 'shipping_state') {
-            setForm(f => ({
-                ...f,
-                shipping_state: value,
-                shipping_city: f.shipping_city === 'Lekki' && value !== 'Lagos' ? '' : f.shipping_city,
-            }));
-        } else {
-            setForm(f => ({ ...f, [name]: value }));
-        }
+        setForm(f => ({ ...f, [name]: value }));
         setErrors(err => ({ ...err, [name]: '' }));
     };
+
+    const generalError = errors.payment || errors.cart || errors.checkout;
 
 
     const inputStyle: React.CSSProperties = {
@@ -158,7 +151,7 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
             `}</style>
 
             {/* Breadcrumb */}
-            <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--forme-border)' }}>
+            <div className="page-pad" style={{ padding: '16px 24px', borderBottom: '1px solid var(--forme-border)' }}>
                 <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', gap: '8px', fontSize: '12px', color: 'var(--forme-muted)' }}>
                     <Link href="/cart" style={{ color: 'var(--forme-muted)', textDecoration: 'none' }}>Bag</Link>
                     <span>›</span>
@@ -168,7 +161,7 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
                 </div>
             </div>
 
-            <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 24px 80px' }}>
+            <div className="page-pad" style={{ maxWidth: '1200px', margin: '0 auto', padding: '48px 24px 80px' }}>
                 <div className="checkout-grid">
 
                     {/* ── Checkout form ─────────────────────────────────── */}
@@ -190,9 +183,16 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
                             </div>
 
                             <div>
-                                <label style={labelStyle}>Phone Number</label>
-                                <input name="customer_phone" value={form.customer_phone} onChange={handleChange} placeholder="+234..." style={inputStyle} />
+                                <label style={labelStyle}>Phone Number *</label>
+                                <input name="customer_phone" type="tel" value={form.customer_phone} onChange={handleChange} placeholder="+234..." style={{ ...inputStyle, borderColor: errors.customer_phone ? 'var(--forme-accent)' : 'var(--forme-border)' }} required />
+                                <p style={{ fontSize: '12px', color: 'var(--forme-muted)', marginTop: '4px' }}>The courier uses this to reach you.</p>
+                                {errors.customer_phone && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.customer_phone}</p>}
                             </div>
+                            {!user && (
+                                <p style={{ fontSize: '13px', color: 'var(--forme-muted)', marginTop: '16px' }}>
+                                    Checking out as a guest. Have an account? <Link href="/login?redirect=/checkout" style={{ color: 'var(--forme-accent)' }}>Sign in</Link>
+                                </p>
+                            )}
                         </div>
 
                         <div style={{ marginBottom: '40px' }}>
@@ -214,7 +214,7 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
                                     <label style={labelStyle}>State *</label>
                                     <select name="shipping_state" value={form.shipping_state} onChange={handleChange} style={{ ...inputStyle, appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', cursor: 'pointer' }} required>
                                         <option value="">Select State</option>
-                                        {nigeriaStates.map(s => <option key={s} value={s}>{s}</option>)}
+                                        {states.map(s => <option key={s} value={s}>{s}</option>)}
                                     </select>
                                     {errors.shipping_state && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.shipping_state}</p>}
                                 </div>
@@ -226,9 +226,10 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
                             </div>
                         </div>
 
-                        {errors.payment && (
-                            <div style={{ background: 'var(--forme-surface)', border: '1px solid var(--forme-accent)', padding: '16px', borderRadius: '4px', marginBottom: '24px' }}>
-                                <p style={{ color: 'var(--forme-accent)', fontSize: '13px' }}>{errors.payment}</p>
+                        {generalError && (
+                            <div role="alert" style={{ background: 'var(--forme-surface)', border: '1px solid var(--forme-accent)', padding: '16px', borderRadius: '4px', marginBottom: '24px' }}>
+                                <p style={{ color: 'var(--forme-accent)', fontSize: '13px' }}>{generalError}</p>
+                                {errors.cart && <Link href="/cart" style={{ color: 'var(--forme-accent)', fontSize: '13px', fontWeight: 600, marginTop: '8px', display: 'inline-block' }}>Update your bag</Link>}
                             </div>
                         )}
 
@@ -242,15 +243,26 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
                                             <p style={{ fontSize: '13px', color: 'var(--forme-text)', fontWeight: 500, marginBottom: '2px' }}>
                                                 {savedCard.brand?.toUpperCase()} ending in {savedCard.last_four}
                                             </p>
-                                            <p style={{ fontSize: '12px', color: 'var(--forme-muted)' }}>Saved card • One-click checkout</p>
+                                            <p style={{ fontSize: '12px', color: 'var(--forme-muted)' }}>{useSavedCard ? 'This card will be charged when you click Pay' : 'Saved card'}</p>
                                         </div>
                                     </div>
-                                    <button type="button" onClick={() => setUseSavedCard(v => !v)}
+                                    <button type="button" onClick={() => setUseSavedCard(v => !v)} aria-pressed={useSavedCard}
                                         style={{ fontSize: '12px', letterSpacing: '1px', textTransform: 'uppercase', padding: '8px 16px', border: '1px solid var(--forme-accent)', color: useSavedCard ? '#fff' : 'var(--forme-accent)', background: useSavedCard ? 'var(--forme-accent)' : 'transparent', cursor: 'pointer', borderRadius: '2px', transition: 'all 0.2s' }}>
-                                        {useSavedCard ? '✓ Use This Card' : 'Use Saved Card'}
+                                        {useSavedCard ? '✓ Using This Card' : 'Use Saved Card'}
                                     </button>
                                 </div>
                             </div>
+                        )}
+
+                        {/* Saving a card needs an account to attach it to. */}
+                        {user && !useSavedCard && (
+                            <label style={{ display: 'flex', gap: '10px', alignItems: 'flex-start', cursor: 'pointer', marginBottom: '24px' }}>
+                                <input type="checkbox" checked={saveCard} onChange={e => setSaveCard(e.target.checked)} style={{ width: '16px', height: '16px', marginTop: '2px', accentColor: 'var(--forme-accent)' }} />
+                                <span style={{ fontSize: '13px', color: 'var(--forme-text)', lineHeight: 1.5 }}>
+                                    Save my card for faster checkout next time.
+                                    <span style={{ display: 'block', fontSize: '12px', color: 'var(--forme-muted)' }}>Held securely by Paystack. You can remove it from your account at any time.</span>
+                                </span>
+                            </label>
                         )}
 
                         {/* Secure Payment Guarantee */}
@@ -278,7 +290,7 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
 
                         <button type="submit" disabled={submitting || calculatingRate}
                             style={{ width: '100%', background: 'var(--forme-accent)', color: '#fff', border: 'none', padding: '18px', fontSize: '12px', letterSpacing: '3px', textTransform: 'uppercase', cursor: (submitting || calculatingRate) ? 'wait' : 'pointer', opacity: (submitting || calculatingRate) ? 0.7 : 1, transition: 'opacity 0.2s' }}>
-                            {submitting ? 'Connecting to Secure Checkout...' : calculatingRate ? 'Calculating Shipping...' : `Pay ₦${finalTotal.toLocaleString()}`}
+                            {submitting ? 'Connecting to Secure Checkout...' : calculatingRate ? 'Calculating Delivery...' : `Pay ₦${Number(quote.total).toLocaleString()}`}
                         </button>
                     </form>
 
@@ -290,7 +302,7 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
                             {cartItems.map((item, i) => (
                                 <div key={i} style={{ display: 'flex', gap: '12px', padding: '12px 0', borderBottom: '1px solid var(--forme-border)' }}>
                                     <div style={{ width: '60px', height: '80px', background: 'var(--forme-surface)', flexShrink: 0, borderRadius: '2px', overflow: 'hidden' }}>
-                                        {item.image ? <img src={item.image} alt={item.product_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=600&q=80" alt={item.product_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
+                                        {item.image && <img src={item.image} alt={item.product_name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />}
                                     </div>
                                     <div style={{ flex: 1 }}>
                                         <p style={{ fontSize: '14px', color: 'var(--forme-text)', marginBottom: '4px' }}>{item.product_name}</p>
@@ -305,22 +317,33 @@ export default function Checkout({ cartItems, subtotal, shippingFee, carrierInfo
                         <div style={{ background: 'var(--forme-surface)', padding: '20px', borderRadius: '4px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
                                 <span style={{ fontSize: '13px', color: 'var(--forme-muted)' }}>Subtotal</span>
-                                <span style={{ fontSize: '13px', color: 'var(--forme-text)' }}>₦{subtotal.toLocaleString()}</span>
+                                <span style={{ fontSize: '13px', color: 'var(--forme-text)' }}>₦{Number(quote.subtotal).toLocaleString()}</span>
                             </div>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', gap: '12px' }}>
                                 <div>
-                                    <span style={{ fontSize: '13px', color: 'var(--forme-muted)', display: 'block' }}>Delivery (Routely)</span>
+                                    <span style={{ fontSize: '13px', color: 'var(--forme-muted)', display: 'block' }}>Delivery</span>
                                     <span style={{ fontSize: '11px', color: 'var(--forme-muted)', display: 'block', marginTop: '2px' }}>
-                                        {carrierInfo} {deliveryEta ? `· ${deliveryEta}` : ''}
+                                        {quote.carrier} {quote.delivery_time ? `· ${quote.delivery_time}` : ''}
                                     </span>
                                 </div>
-                                <span style={{ fontSize: '13px', color: 'var(--forme-text)', fontWeight: 500 }}>
-                                    {calculatingRate ? 'Calculating...' : `₦${liveShippingFee.toLocaleString()}`}
+                                <span style={{ fontSize: '13px', color: quote.free_shipping ? '#2d7a4f' : 'var(--forme-text)', fontWeight: 500, whiteSpace: 'nowrap' }}>
+                                    {calculatingRate ? 'Calculating...' : quote.free_shipping ? 'FREE' : `₦${Number(quote.shipping_fee).toLocaleString()}`}
                                 </span>
                             </div>
+                            {!calculatingRate && quote.free_shipping_remaining > 0 && (
+                                <p style={{ fontSize: '12px', color: 'var(--forme-accent)', marginBottom: '16px' }}>
+                                    Add ₦{Number(quote.free_shipping_remaining).toLocaleString()} more for free delivery within Lagos.
+                                </p>
+                            )}
+                            {Number(quote.vat_amount) > 0 && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                                    <span style={{ fontSize: '13px', color: 'var(--forme-muted)' }}>VAT{quote.vat_inclusive ? ' (included)' : ''}</span>
+                                    <span style={{ fontSize: '13px', color: 'var(--forme-text)' }}>₦{Number(quote.vat_amount).toLocaleString()}</span>
+                                </div>
+                            )}
                             <div style={{ borderTop: '1px solid var(--forme-border)', paddingTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: 'var(--forme-text)' }}>Total</span>
-                                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: 'var(--forme-accent)' }}>₦{finalTotal.toLocaleString()}</span>
+                                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: 'var(--forme-accent)' }}>₦{Number(quote.total).toLocaleString()}</span>
                             </div>
                         </div>
                     </div>

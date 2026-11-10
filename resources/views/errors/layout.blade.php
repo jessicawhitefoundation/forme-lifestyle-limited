@@ -177,7 +177,7 @@
     </main>
 
     <footer class="footer">
-        <p>Need urgent help with an order? WhatsApp <a href="https://wa.me/2347026126265" target="_blank">+234 702 612 6265</a> or email <a href="mailto:hello@forme.ng">hello@forme.ng</a></p>
+        <p>Need urgent help with an order? WhatsApp <a href="https://wa.me/{{ config('store.whatsapp_number') }}" target="_blank">{{ config('store.whatsapp_display') }}</a> or email <a href="mailto:{{ config('store.email') }}">{{ config('store.email') }}</a></p>
     </footer>
 </body>
 </html>

@@ -53,7 +53,7 @@
 
     <!-- CTA Button -->
     <div style="text-align: center; margin: 32px 0 16px 0;">
-        <a href="{{ url('/order/' . $order->order_number . '/confirmation') }}" class="button">
+        <a href="{{ $order->confirmationUrl() }}" class="button">
             Track Delivery
         </a>
     </div>
