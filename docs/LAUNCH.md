@@ -42,7 +42,7 @@ Do not upload:
 On Namecheap's cPanel first:
 
 - **Nameservers:** in the Namecheap domain list, set `shopforme.net` to "Namecheap Web Hosting DNS" so DNS records are managed in cPanel's Zone Editor.
-- **PHP:** "Select PHP Version": choose 8.3 or newer, and tick `intl`, `pdo_mysql`, `mbstring`, `fileinfo`, `gd`, `zip` and `bcmath`.
+- **PHP:** "Select PHP Version": choose **8.4** (the packages need 8.4.1 or newer; 8.3 shows a 500 error), and tick `intl`, `pdo_mysql`, `mbstring`, `fileinfo`, `gd`, `zip` and `bcmath`.
 - **SSH:** switch it on under "Manage Shell", then use cPanel's Terminal for the commands below.
 - **Database:** create a database and user under "MySQL Databases" and give the user all privileges. Namecheap adds the cPanel username as a prefix to both names.
 - **SSL:** check under "SSL Status" that `shopforme.net` and `www.shopforme.net` have a certificate before testing payments.
@@ -106,7 +106,7 @@ Paystack has one live webhook URL per account. If the old forme.com.ng site uses
 
 ## 5. Content
 
-- [ ] Load the real catalogue after `storage:link`: `php artisan db:seed --class=LiveCatalogueSeeder --force`. It adds the 26 products from the old forme.com.ng database (prices, stock, categories), with names and colours aligned to Jessica's price list and launch books and the 133 Debut Collection photos, already resized for the web and linked to colours where the file name showed one. It also adds 6 homepage banners and the 4 "Shop by Category" photos, picked from the same photos (`database/seeders/data/hero-slides.json` and `category-photos.json`). Every product starts in New Arrivals, because Jessica counts the whole launch collection as new; untick them in Admin > Products as newer pieces arrive. 25 products go live; the Nobi Set stays hidden until it has stock. It adds no users or orders, and running it twice adds nothing twice.
+- [ ] Load the real catalogue after `storage:link`: `php artisan db:seed --class=LiveCatalogueSeeder --force`. It adds the 26 products from the old forme.com.ng database (prices, stock, categories), with names and colours aligned to Jessica's price list and launch books and the 133 Debut Collection photos, already resized for the web and linked to colours where the file name showed one. It also adds 6 homepage banners and the 4 "Shop by Category" photos, picked from the same photos (`database/seeders/data/hero-slides.json` and `category-photos.json`). Every product starts in New Arrivals, because Jessica counts the whole launch collection as new; untick them in Admin > Products as newer pieces arrive. All 26 products go live. The Nobi Set starts with 10 of each colour, a placeholder set on 11 November until Jessica sends real counts. It adds no users or orders, and running it twice adds nothing twice.
 - [ ] Go through `docs/PRODUCT-REVIEW.md` with Jessica: no product has sizes yet, plus colour links and missing photos to confirm.
 - [ ] Have Privacy and Terms reviewed. The wording on `/privacy`, `/terms` and `/faq` is a draft based on the existing policy page, and it isn't legal advice.
 - [ ] Ask the accountant about VAT. It is off by default; the switch is in Admin > Store Settings.

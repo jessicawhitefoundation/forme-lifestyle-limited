@@ -3,6 +3,7 @@
 use App\Http\Controllers\Auth\CustomerAuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\ClientErrorController;
 use App\Http\Controllers\OrderTrackingController;
 use App\Http\Controllers\PaystackWebhookController;
 use App\Http\Controllers\StoreController;
@@ -56,6 +57,11 @@ Route::post('/checkout/initiate', [CheckoutController::class, 'initiate'])
 Route::post('/webhooks/paystack', [PaystackWebhookController::class, 'handle'])
     ->middleware('throttle:120,1')
     ->name('webhook.paystack');
+
+// ─── Crash reports from the store's error screen (CSRF-exempt; sent by sendBeacon) ─
+Route::post('/client-error', [ClientErrorController::class, 'store'])
+    ->middleware('throttle:6,1')
+    ->name('client-error');
 
 // ─── Customer Auth (only form submissions are limited, not viewing the pages) ──
 Route::middleware('guest')->group(function () {

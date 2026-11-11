@@ -19,7 +19,7 @@ Updated 10 November 2026, after comparing the site with Jessica's price list (`F
    - Adventurer Set: Taupe (Dusty Rose is also at 0, as it was on the old site)
    - Mini Move Set: Sage
    - Arvey Active: Sage
-   - Nobi Set: all four colours (Black, Cream, Navy, Sage), so it stays hidden until it has stock
+   - Nobi Set: now 10 of each colour (Black, Cream, Navy, Sage) and live since 11 November; these are placeholder numbers until Jessica confirms real stock
 3. **Colours removed because they aren't in the books** (confirm none of these are really for sale):
    - Ace Dress: "Dark", "Light White"
    - Flex Set: "Maroon", "Dark"

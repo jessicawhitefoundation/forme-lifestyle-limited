@@ -21,6 +21,19 @@ export class ErrorBoundary extends Component<Props, State> {
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
         console.error('Uncaught error caught by ErrorBoundary:', error, errorInfo);
+
+        // Send the details to the server log, since this only happens in visitors' browsers.
+        try {
+            const report = new Blob([JSON.stringify({
+                message: String(error?.message ?? error).slice(0, 300),
+                stack: String(error?.stack ?? '').slice(0, 2000),
+                componentStack: String(errorInfo?.componentStack ?? '').slice(0, 1500),
+                url: window.location.href.slice(0, 300),
+            })], { type: 'application/json' });
+            navigator.sendBeacon?.('/client-error', report);
+        } catch {
+            // Reporting must never cause a second error.
+        }
     }
 
     public render() {

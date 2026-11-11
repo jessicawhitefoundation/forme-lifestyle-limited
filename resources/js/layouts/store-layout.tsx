@@ -59,7 +59,9 @@ export default function StoreLayout({ children }: StoreLayoutProps) {
         }
     };
 
-    const contact = props.store_contact as { email: string; whatsapp_display: string; whatsapp_number: string };
+    // Fallback keeps the layout from crashing if a page is ever rendered without the shared details.
+    const contact = (props.store_contact as { email: string; whatsapp_display: string; whatsapp_number: string } | undefined)
+        ?? { email: 'hello@shopforme.net', whatsapp_display: '+234 702 612 6265', whatsapp_number: '2347026126265' };
 
     const nav = [
         { label: 'Shop All', href: '/shop' },

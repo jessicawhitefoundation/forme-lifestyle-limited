@@ -105,8 +105,8 @@ export default function About() {
                                         background: C.surface
                                     }}>
                                         <img
-                                            src="/images/about-forme.jpg"
-                                            alt="FORMÉ Activewear"
+                                            src="/images/about-forme-studio.jpg"
+                                            alt="Two women in FORMÉ zip-up tracksuits, one in black and one in pink, posing in the studio"
                                             style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top center' }}
                                         />
                                     </div>

@@ -448,7 +448,7 @@
           "color_hex": "#000000",
           "size": null,
           "price_modifier": "0.00",
-          "stock_quantity": 0,
+          "stock_quantity": 10,
           "sku": null,
           "is_active": true
         },
@@ -457,7 +457,7 @@
           "color_hex": "#EEE4D3",
           "size": null,
           "price_modifier": "0.00",
-          "stock_quantity": 0,
+          "stock_quantity": 10,
           "sku": null,
           "is_active": true
         },
@@ -466,7 +466,7 @@
           "color_hex": "#1C2541",
           "size": null,
           "price_modifier": "0.00",
-          "stock_quantity": 0,
+          "stock_quantity": 10,
           "sku": null,
           "is_active": true
         },
@@ -475,7 +475,7 @@
           "color_hex": "#8A9A78",
           "size": null,
           "price_modifier": "0.00",
-          "stock_quantity": 0,
+          "stock_quantity": 10,
           "sku": null,
           "is_active": true
         }
