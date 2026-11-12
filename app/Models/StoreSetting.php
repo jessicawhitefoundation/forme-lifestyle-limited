@@ -19,7 +19,6 @@ class StoreSetting extends Model
         'vat_enabled' => 'boolean',
         'vat_rate' => 'float',
         'vat_inclusive' => 'boolean',
-        'international_enabled' => 'boolean',
         'international_rates' => 'array',
     ];
 
@@ -31,10 +30,6 @@ class StoreSetting extends Model
      */
     public function internationalCountries(): array
     {
-        if (! $this->international_enabled) {
-            return [];
-        }
-
         $rates = $this->international_rates ?? [];
         $countries = [];
 

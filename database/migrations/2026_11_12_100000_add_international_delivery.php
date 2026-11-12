@@ -10,9 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('store_settings', function (Blueprint $table) {
-            // Off until Jessica sets fees and switches countries on in Store Settings.
-            $table->boolean('international_enabled')->default(false);
-            // {"GB": {"enabled": bool, "fee": naira, "rate": naira per £}, "US": {...}, "CA": {...}}
+            // Each country is offered once switched on with a fee: {"GB": {"enabled": bool, "fee": naira, "rate": naira per £}, "US": {...}, "CA": {...}}
             $table->json('international_rates')->nullable();
             $table->string('international_delivery_time')->default('3–5 business days');
         });
@@ -30,7 +28,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('store_settings', function (Blueprint $table) {
-            $table->dropColumn(['international_enabled', 'international_rates', 'international_delivery_time']);
+            $table->dropColumn(['international_rates', 'international_delivery_time']);
         });
 
         Schema::table('orders', function (Blueprint $table) {

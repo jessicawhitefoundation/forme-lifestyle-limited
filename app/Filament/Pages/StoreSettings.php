@@ -83,17 +83,13 @@ class StoreSettings extends Page implements HasForms
                             ->visible(fn (Forms\Get $get) => (bool) $get('vat_enabled')),
                     ]),
                 Forms\Components\Section::make('International Delivery')
-                    ->description('Lets customers order to the UK, US and Canada, shipped by '.config('store.international_carrier').'. Turn on international payments in your Paystack dashboard first, or their cards will be declined.')
+                    ->description('Switch on each country you deliver to and give it a delivery fee; it then appears at checkout. Parcels go by '.config('store.international_carrier').', and customers pay by card in naira (international payments must be on in Paystack).')
                     ->schema([
-                        Forms\Components\Toggle::make('international_enabled')
-                            ->label('Deliver outside Nigeria')
-                            ->live(),
-                        Forms\Components\TextInput::make('international_delivery_time')
-                            ->label('Delivery time shown to customers')
-                            ->placeholder('3–5 business days')
-                            ->maxLength(100)
-                            ->visible(fn (Forms\Get $get) => (bool) $get('international_enabled')),
                         ...$this->countryFields(),
+                        Forms\Components\TextInput::make('international_delivery_time')
+                            ->label('Delivery time shown to overseas customers')
+                            ->placeholder('3–5 business days')
+                            ->maxLength(100),
                     ]),
             ])
             ->statePath('data');
@@ -117,10 +113,9 @@ class StoreSettings extends Page implements HasForms
 
             $fields[] = Forms\Components\Fieldset::make($country['name'])
                 ->columns(3)
-                ->visible(fn (Forms\Get $get) => (bool) $get('international_enabled'))
                 ->schema([
                     Forms\Components\Toggle::make("international_rates.{$code}.enabled")
-                        ->label('Deliver here')
+                        ->label("Deliver to {$country['name']}")
                         ->live()
                         ->inline(false),
                     Forms\Components\TextInput::make("international_rates.{$code}.fee")

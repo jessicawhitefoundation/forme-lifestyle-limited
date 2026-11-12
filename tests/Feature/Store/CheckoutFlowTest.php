@@ -491,9 +491,8 @@ class CheckoutFlowTest extends TestCase
     {
         StoreSetting::current();
         StoreSetting::findOrFail(1)->update([
-            'international_enabled' => $enabled,
             'international_rates' => [
-                'GB' => ['enabled' => true, 'fee' => 45000, 'rate' => 2000],
+                'GB' => ['enabled' => $enabled, 'fee' => 45000, 'rate' => 2000],
                 'US' => ['enabled' => false, 'fee' => 60000, 'rate' => 1500],
             ],
         ]);
@@ -601,7 +600,6 @@ class CheckoutFlowTest extends TestCase
     {
         StoreSetting::current();
         StoreSetting::findOrFail(1)->update([
-            'international_enabled' => true,
             'international_rates' => [
                 'GB' => ['enabled' => true, 'fee' => 45000, 'rate' => 2100],
                 'US' => ['enabled' => true, 'fee' => 60000, 'rate' => 1600],
