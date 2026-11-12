@@ -2,6 +2,8 @@ import React, { useState, useRef, useCallback } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
 import SizeGuideModal from '@/components/SizeGuideModal';
+import FitFinder from '@/components/FitFinder';
+import { savedRecommendation } from '@/lib/fit-finder';
 
 interface Variant {
     id: number;
@@ -27,6 +29,8 @@ interface Product {
     name: string;
     slug: string;
     gender?: string | null;
+    /** Chart the "Find my size" advisor uses; null for accessories. */
+    size_chart?: 'women' | 'men' | 'kids' | null;
     description: string | null;
     short_description: string | null;
     base_price: number;
@@ -89,7 +93,10 @@ export default function ProductPage({ product, related }: ProductPageProps) {
     const [error, setError] = useState('');
     const [activeTab, setActiveTab] = useState<'details' | 'sizing' | 'care' | 'shipping' | null>('details');
     const [sizeGuideOpen, setSizeGuideOpen] = useState(false);
-    const setting = (usePage().props as any).store_setting as { free_shipping_enabled?: boolean; free_shipping_threshold?: number } | undefined;
+    const [fitOpen, setFitOpen] = useState(false);
+    // Size this device was recommended before (kept in localStorage by the advisor).
+    const [fitSize, setFitSize] = useState<string | null>(() => (product.size_chart ? savedRecommendation(product.size_chart) : null));
+    const setting =(usePage().props as any).store_setting as { free_shipping_enabled?: boolean; free_shipping_threshold?: number } | undefined;
     const freeDeliveryLine = setting?.free_shipping_enabled
         ? ` Delivery is free within Lagos on orders of ₦${Number(setting.free_shipping_threshold).toLocaleString()} or more.`
         : '';
@@ -278,6 +285,14 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                 .product-rich-text li { margin-bottom: 4px; }
                 .product-rich-text strong { color: var(--forme-text); font-weight: 500; }
                 .product-rich-text a { color: var(--forme-accent); }
+                .fit-cta {
+                    width: 100%; display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
+                    padding: 14px 16px; background: var(--forme-surface); color: var(--forme-text);
+                    border: 1px solid var(--forme-border); border-radius: 4px; cursor: pointer; font-family: inherit;
+                    transition: border-color 0.2s;
+                }
+                .fit-cta:hover { border-color: var(--forme-text); }
+                .fit-cta:focus-visible { outline: 2px solid var(--forme-accent); outline-offset: 2px; }
                 /* Phones and tablets can't hover: no zoom hint there. */
                 @media (hover: none) {
                     .zoom-hint { display: none; }
@@ -416,6 +431,25 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                             </div>
                         )}
 
+                        {/* Find my size */}
+                        {product.size_chart && (
+                            <button type="button" className="fit-cta" onClick={() => setFitOpen(true)}>
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                                    <rect x="2.5" y="7.5" width="19" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+                                    <path d="M6 7.5v3M9.5 7.5v4.5M13 7.5v3M16.5 7.5v4.5M20 7.5v3" stroke="currentColor" strokeWidth="1.3" />
+                                </svg>
+                                <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                                    <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: C.text }}>
+                                        {fitSize ? <>Your size: {fitSize}</> : 'Find my size'}
+                                    </span>
+                                    <span style={{ display: 'block', fontSize: '12px', color: C.muted, marginTop: '2px' }}>
+                                        {fitSize ? 'From your saved answers. Tap to check or change.' : 'Height, weight and two quick questions.'}
+                                    </span>
+                                </span>
+                                <span aria-hidden="true" style={{ fontSize: '16px', color: C.text }}>→</span>
+                            </button>
+                        )}
+
                         {/* Quantity */}
                         <div style={{ marginBottom: '24px' }}>
                             <p style={{ fontSize: '11px', letterSpacing: '2px', textTransform: 'uppercase', color: C.muted, marginBottom: '12px' }}>Quantity</p>
@@ -497,6 +531,15 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                                                 </div>
 
                                                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                    {product.size_chart && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setFitOpen(true)}
+                                                            style={{ background: C.text, color: C.bg, border: 'none', padding: '10px 18px', fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 700, borderRadius: '24px', cursor: 'pointer' }}
+                                                        >
+                                                            Find my size
+                                                        </button>
+                                                    )}
                                                     <button
                                                         type="button"
                                                         onClick={() => setSizeGuideOpen(true)}
@@ -568,8 +611,24 @@ export default function ProductPage({ product, related }: ProductPageProps) {
             <SizeGuideModal 
                 isOpen={sizeGuideOpen} 
                 onClose={() => setSizeGuideOpen(false)} 
-                defaultTab={product.gender === 'male' ? 'men' : product.gender === 'kids' ? 'kids' : 'women'} 
+                defaultTab={product.gender === 'male' ? 'men' : product.gender === 'kids' ? 'kids' : 'women'}
             />
+
+            {product.size_chart && (
+                <FitFinder
+                    isOpen={fitOpen}
+                    onClose={() => setFitOpen(false)}
+                    chart={product.size_chart}
+                    product={{ name: product.name, image: product.images[selectedImage]?.url ?? product.images[0]?.url, price: currentPrice }}
+                    sizes={sizes}
+                    isSizeAvailable={isSizeAvailable}
+                    onSelectSize={(size) => {
+                        setSelectedSize(size);
+                        setError('');
+                    }}
+                    onRecommend={(label, chart) => chart === product.size_chart && setFitSize(label)}
+                />
+            )}
         </>
     );
 }

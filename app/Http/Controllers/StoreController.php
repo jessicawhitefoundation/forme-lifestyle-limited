@@ -185,6 +185,13 @@ class StoreController extends Controller
                     'kids' => 'kids',
                     default => 'female',
                 },
+                // Which chart the "Find my size" advisor measures against; null hides it (socks, caps).
+                'size_chart' => match ($product->category?->slug) {
+                    'men' => 'men',
+                    'kids' => 'kids',
+                    'accessories' => null,
+                    default => 'women',
+                },
                 'images' => $product->images->map(function ($img, $index) use ($product) {
                     $color = $img->color;
 

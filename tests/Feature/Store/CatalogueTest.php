@@ -101,4 +101,17 @@ class CatalogueTest extends TestCase
             $this->get($url)->assertOk();
         }
     }
+
+    public function test_the_size_advisor_uses_the_chart_for_the_products_category(): void
+    {
+        $cases = ['women' => 'women', 'men' => 'men', 'kids' => 'kids', 'accessories' => null];
+
+        foreach ($cases as $category => $chart) {
+            $product = $this->makeProduct("Advisor {$category}", $category);
+
+            $this->get("/products/{$product->slug}")
+                ->assertOk()
+                ->assertInertia(fn (Assert $page) => $page->component('Store/Product')->where('product.size_chart', $chart));
+        }
+    }
 }
