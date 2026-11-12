@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\DeliveryUnavailableException;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -143,12 +144,19 @@ class CheckoutController extends Controller
             }
 
             $subtotal = (float) $items->sum(fn ($i) => $i->variant->final_price * $i->quantity);
-            $quote = $pricing->quote($subtotal, [
-                'address' => $validated['shipping_address'],
-                'city' => $validated['shipping_city'],
-                'state' => $validated['shipping_state'],
-                'country' => $validated['shipping_country'],
-            ]);
+
+            try {
+                $quote = $pricing->quote($subtotal, [
+                    'address' => $validated['shipping_address'],
+                    'city' => $validated['shipping_city'],
+                    'state' => $validated['shipping_state'],
+                    'country' => $validated['shipping_country'],
+                    'postcode' => $validated['shipping_postcode'],
+                    'item_count' => (int) $items->sum('quantity'),
+                ]);
+            } catch (DeliveryUnavailableException $e) {
+                return back()->withErrors(['checkout' => $e->getMessage()]);
+            }
 
             $user = auth()->user();
             $saveCard = $user && $request->boolean('save_card');
@@ -277,14 +285,21 @@ class CheckoutController extends Controller
             'address' => 'nullable|string|max:500',
             'city' => 'nullable|string|max:120',
             'country' => ['nullable', 'string', Rule::in(['NG', ...$countries])],
-            // Overseas the fee is per country, so the region doesn't matter for the price.
+            // Overseas the price depends on country and weight, not the region.
             'state' => $abroad ? ['nullable', 'string', 'max:120'] : ['required', 'string', Rule::in(config('store.nigeria_states'))],
+            'postcode' => ['nullable', 'string', 'max:20'],
         ]);
 
         $items = $this->existingCartItems();
         $subtotal = (float) $items->sum(fn ($i) => $i->variant->final_price * $i->quantity);
 
-        return response()->json(['success' => true] + $pricing->quote($subtotal, $validated));
+        try {
+            $quote = $pricing->quote($subtotal, $validated + ['item_count' => (int) $items->sum('quantity')]);
+        } catch (DeliveryUnavailableException $e) {
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 503);
+        }
+
+        return response()->json(['success' => true] + $quote);
     }
 
     /**
@@ -464,7 +479,7 @@ class CheckoutController extends Controller
                 'payment_status' => 'unpaid',
                 'subtotal' => $quote['subtotal'],
                 'shipping_fee' => $quote['shipping_fee'],
-                'routely_fee' => $quote['is_international'] ? null : $quote['courier_fee'],
+                'routely_fee' => $quote['courier_fee'],
                 'free_shipping' => $quote['free_shipping'],
                 'vat_amount' => $quote['vat_amount'],
                 'vat_inclusive' => $quote['vat_inclusive'],
@@ -477,7 +492,8 @@ class CheckoutController extends Controller
                 'shipping_state' => $details['shipping_state'],
                 'shipping_postcode' => $details['shipping_postcode'],
                 'shipping_country' => $details['shipping_country'],
-                'shipping_carrier' => $quote['is_international'] ? $quote['carrier'] : null,
+                // Booked by hand in the Routely dashboard, then marked shipped in the admin.
+                'shipping_carrier' => $quote['is_international'] ? config('store.international_carrier') : null,
                 'notes' => $details['notes'] ?? null,
                 'save_card' => $saveCard,
             ]);

@@ -24,9 +24,11 @@ class StoreSetting extends Model
 
     /**
      * Overseas countries customers can choose at checkout, keyed by code, each
-     * with its config (config/store.php countries) plus the admin's fee and rate.
+     * with its config (config/store.php countries) plus the admin's settings.
+     * Delivery is priced live by Routely; `fee` is the optional backup price
+     * used when Routely can't give one.
      *
-     * @return array<string, array{code: string, name: string, currency: string, symbol: string, region_label: string, region_required: bool, postcode_label: string, fee: float, rate: ?float}>
+     * @return array<string, array{code: string, name: string, currency: string, symbol: string, region_label: string, region_required: bool, postcode_label: string, coordinates: string, sample_postcode: string, sample_city: string, fee: ?float, rate: ?float}>
      */
     public function internationalCountries(): array
     {
@@ -36,19 +38,26 @@ class StoreSetting extends Model
         foreach (config('store.countries') as $code => $country) {
             $rate = $rates[$code] ?? [];
 
-            // A country is offered only when it's switched on and has a delivery fee.
-            if ($code === 'NG' || empty($rate['enabled']) || ! is_numeric($rate['fee'] ?? null) || (float) $rate['fee'] <= 0) {
+            if ($code === 'NG' || empty($rate['enabled'])) {
                 continue;
             }
 
             $countries[$code] = $country + [
                 'code' => $code,
-                'fee' => (float) $rate['fee'],
+                'fee' => is_numeric($rate['fee'] ?? null) && (float) $rate['fee'] > 0 ? (float) $rate['fee'] : null,
                 'rate' => is_numeric($rate['rate'] ?? null) && (float) $rate['rate'] > 0 ? (float) $rate['rate'] : null,
             ];
         }
 
         return $countries;
+    }
+
+    /** Estimated weight of one item for overseas quotes (products have no weights yet). */
+    public function internationalItemWeight(): float
+    {
+        $weight = (float) ($this->international_item_weight ?? 0);
+
+        return $weight > 0 ? $weight : (float) config('store.international_item_weight_kg', 0.7);
     }
 
     /** The overseas country with this name or code, if customers can order to it. */

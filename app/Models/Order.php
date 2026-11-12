@@ -91,7 +91,11 @@ class Order extends Model
             return null;
         }
 
-        return str_contains(strtolower((string) $this->shipping_carrier), 'dhl')
+        $carrier = strtolower((string) $this->shipping_carrier);
+
+        // A DHL waybill. Routely bookings carry Routely's own tracking number,
+        // which DHL's site wouldn't recognise, so no link for those.
+        return str_contains($carrier, 'dhl') && ! str_contains($carrier, 'routely')
             ? 'https://www.dhl.com/global-en/home/tracking/tracking-express.html?submit=1&tracking-id='.rawurlencode($this->tracking_number)
             : null;
     }

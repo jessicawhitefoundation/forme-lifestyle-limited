@@ -83,11 +83,20 @@ class StoreSettings extends Page implements HasForms
                             ->visible(fn (Forms\Get $get) => (bool) $get('vat_enabled')),
                     ]),
                 Forms\Components\Section::make('International Delivery')
-                    ->description('Switch on each country you deliver to and give it a delivery fee; it then appears at checkout. Parcels go by '.config('store.international_carrier').', and customers pay by card in naira (international payments must be on in Paystack).')
+                    ->description('Switch on each country you deliver to and it appears at checkout. Routely prices each order live (DHL Express through Routely, by country and parcel weight), and the customer pays that price by card in naira. Book the parcel in your Routely dashboard, then use "Mark as shipped" on the order.')
                     ->schema([
                         ...$this->countryFields(),
+                        Forms\Components\TextInput::make('international_item_weight')
+                            ->label('Typical weight of one item')
+                            ->helperText('Products have no weights yet, so each overseas parcel is estimated as this × the number of items. Routely prices by weight: weigh a typical packed set and enter it here.')
+                            ->numeric()
+                            ->minValue(0.1)
+                            ->maxValue(20)
+                            ->step(0.1)
+                            ->placeholder((string) config('store.international_item_weight_kg'))
+                            ->suffix('kg'),
                         Forms\Components\TextInput::make('international_delivery_time')
-                            ->label('Delivery time shown to overseas customers')
+                            ->label('Delivery time shown if Routely is unavailable')
                             ->placeholder('3–5 business days')
                             ->maxLength(100),
                     ]),
@@ -96,7 +105,7 @@ class StoreSettings extends Page implements HasForms
     }
 
     /**
-     * One row per overseas country: on/off, flat delivery fee, exchange rate.
+     * One row per overseas country: on/off, backup delivery fee, exchange rate.
      *
      * @return array<int, Forms\Components\Component>
      */
@@ -109,22 +118,18 @@ class StoreSettings extends Page implements HasForms
                 continue;
             }
 
-            $on = fn (Forms\Get $get) => (bool) $get("international_rates.{$code}.enabled");
-
             $fields[] = Forms\Components\Fieldset::make($country['name'])
                 ->columns(3)
                 ->schema([
                     Forms\Components\Toggle::make("international_rates.{$code}.enabled")
                         ->label("Deliver to {$country['name']}")
-                        ->live()
                         ->inline(false),
                     Forms\Components\TextInput::make("international_rates.{$code}.fee")
-                        ->label('Delivery fee per order')
-                        ->helperText('What the customer pays for delivery, in naira.')
+                        ->label('Backup delivery fee (optional)')
+                        ->helperText('Only used if Routely can\'t give a price. Leave empty and checkout asks the customer to try again instead.')
                         ->numeric()
                         ->minValue(1)
-                        ->prefix('₦')
-                        ->required($on),
+                        ->prefix('₦'),
                     Forms\Components\TextInput::make("international_rates.{$code}.rate")
                         ->label("Naira per 1 {$country['symbol']}")
                         ->helperText("Used to show prices roughly in {$country['currency']}. Leave empty to hide the estimate.")

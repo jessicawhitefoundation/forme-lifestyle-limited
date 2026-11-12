@@ -132,12 +132,13 @@ Use real small payments and refund them afterwards.
 
 ## International delivery (UK, US, Canada)
 
-Built, and off until switched on. Customers pay by card in naira; checkout shows a rough £ / $ / C$ total, says import duties may be due on delivery, and adds no VAT (exports are zero-rated). Parcels go by DHL Express, booked by hand.
+Live, and off until a country is switched on. Routely prices each overseas order at checkout (DHL Express through Routely, 2–4 working days), by country and parcel weight; the city doesn't change the price. Customers pay that price by card in naira, rounded up to the whole naira; checkout shows a rough £ / $ / C$ total, says import duties may be due on delivery, and adds no VAT (exports are zero-rated). Routely's quotes on 13 November for one item: UK about ₦96,000, US and Canada about ₦114,000.
 
 - [x] Paystack: international payments switched on (12 November). Turn on American Express too if wanted.
-- [ ] Open a DHL Express business account and get real prices to each country for a typical parcel.
-- [ ] Admin > Store Settings > International Delivery: switch it on, then for each country set the delivery fee (₦) and the exchange rate (₦ per £ / $ / C$). Update the rates now and then; they only affect the estimate shown.
-- [ ] For each overseas order: book DHL, then use **Mark as shipped** in Admin > Orders and enter the tracking number. The customer gets it by email with a DHL tracking link.
+- [ ] Admin > Store Settings > International Delivery: switch on each country. Optional: a backup fee (used only if Routely can't give a price; without one, checkout asks the customer to try again) and the exchange rate (₦ per £ / $ / C$) for the rough total.
+- [ ] Weigh a typical packed set and enter it as **Typical weight of one item** (default 0.7 kg). Products have no weights, so parcels are estimated as this × the number of items, and Routely prices by weight.
+- [ ] For each overseas order: book it in the Routely dashboard (the order shows what the customer paid for delivery), then use **Mark as shipped** in Admin > Orders with Routely's tracking number. The customer gets it by email.
+- [ ] Later: request Routely's API documents at routely.co/api, so "Dispatch Routely" can book overseas parcels too. Quotes already work with the store's key; booking overseas through the API is not built.
 
 ## Not in this release
 

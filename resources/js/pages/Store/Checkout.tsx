@@ -87,6 +87,8 @@ export default function Checkout({ cartItems, quote: initialQuote, states, count
     // matches what the customer is charged.
     const [quote, setQuote] = useState<Quote>(initialQuote);
     const [calculatingRate, setCalculatingRate] = useState<boolean>(false);
+    // Overseas prices come live from Routely; when there's none, paying is paused.
+    const [rateError, setRateError] = useState<string | null>(null);
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
@@ -107,13 +109,18 @@ export default function Checkout({ cartItems, quote: initialQuote, states, count
                     city: form.shipping_city,
                     state: form.shipping_state,
                     country: form.shipping_country,
+                    postcode: form.shipping_postcode,
                 });
 
                 if (response.data && response.data.success) {
                     setQuote(response.data);
+                    setRateError(null);
                 }
-            } catch {
-                // Keep showing the last quote; the server recalculates it at payment.
+            } catch (error) {
+                // No overseas price available: say so and pause paying. Other
+                // errors keep the last quote; the server recalculates at payment.
+                const message = axios.isAxiosError(error) && error.response?.status === 503 ? error.response.data?.message : null;
+                setRateError(message ?? null);
             } finally {
                 setCalculatingRate(false);
             }
@@ -349,7 +356,10 @@ export default function Checkout({ cartItems, quote: initialQuote, states, count
                             </div>
                         </div>
 
-                        <button type="submit" disabled={submitting || calculatingRate}
+                        {rateError && (
+                            <p role="alert" style={{ color: 'var(--forme-accent)', fontSize: '13px', marginBottom: '12px' }}>{rateError}</p>
+                        )}
+                        <button type="submit" disabled={submitting || calculatingRate || !!rateError}
                             style={{ width: '100%', background: 'var(--forme-accent)', color: '#fff', border: 'none', padding: '18px', fontSize: '12px', letterSpacing: '3px', textTransform: 'uppercase', cursor: (submitting || calculatingRate) ? 'wait' : 'pointer', opacity: (submitting || calculatingRate) ? 0.7 : 1, transition: 'opacity 0.2s' }}>
                             {submitting ? 'Connecting to Secure Checkout...' : calculatingRate ? 'Calculating Delivery...' : `Pay ₦${Number(quote.total).toLocaleString()}`}
                         </button>

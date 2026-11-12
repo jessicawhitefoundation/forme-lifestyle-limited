@@ -364,6 +364,99 @@ class RoutelyService
     }
 
     /**
+     * Routely's price for sending a parcel abroad. Routely prices by country and
+     * weight; this picks DHL Express (2–4 working days) when offered, otherwise
+     * the cheapest express service. Quotes don't book or charge anything.
+     *
+     * @param  array{name: string, coordinates: string, sample_postcode: string, sample_city: string}  $country
+     * @param  array{address?: ?string, city?: ?string, state?: ?string, postcode?: ?string, weight: float, item_value: float}  $parcel
+     * @return array{success: bool, rate: ?float, carrier: ?string, delivery_time: ?string, error?: string}
+     */
+    public function getInternationalFee(array $country, array $parcel): array
+    {
+        $failed = fn (string $error) => ['success' => false, 'rate' => null, 'carrier' => null, 'delivery_time' => null, 'error' => $error];
+
+        if (empty($this->apiKey)) {
+            return $failed('Routely is not configured.');
+        }
+
+        $weight = round(max((float) config('store.international_min_weight_kg', 0.5), $parcel['weight']), 1);
+        $itemValue = (float) $parcel['item_value'];
+        $postcode = trim((string) ($parcel['postcode'] ?? '')) ?: $country['sample_postcode'];
+        $city = trim((string) ($parcel['city'] ?? '')) ?: $country['sample_city'];
+
+        // The price doesn't depend on the street or city, so one cached quote per
+        // country, weight and rough order value serves every customer for a while.
+        $cacheKey = 'routely_intl_fee_'.md5(implode('|', [$country['name'], $weight, round($itemValue, -4)]));
+        $cached = Cache::get($cacheKey);
+
+        if (is_array($cached)) {
+            return $cached;
+        }
+
+        $payload = [
+            'from' => $this->sender['address'] ?? 'Lekki Phase 1, Lagos',
+            'from_state' => 'Lagos',
+            'from_city' => 'Lekki',
+            'from_country' => 'Nigeria',
+            'from_coordinates' => $this->sender['coordinates'] ?? '6.4426,3.4833',
+            'to' => trim((string) ($parcel['address'] ?? '')) ?: "{$city}, {$country['name']}",
+            'to_city' => $city,
+            'to_state' => trim((string) ($parcel['state'] ?? '')) ?: $city,
+            'to_country' => $country['name'],
+            'to_postal_code' => $postcode,
+            'to_coordinates' => $country['coordinates'],
+            'package_type' => 'package',
+            'weight' => $weight,
+            'has_packaging' => false,
+            'item_value' => $itemValue,
+            'has_insurance' => false,
+            'has_pickup' => true,
+            'service_station' => 82, // Required by Routely for Lagos origin
+        ];
+
+        try {
+            $response = Http::withHeaders([
+                'Accept' => 'application/json',
+                'x-api-key' => $this->apiKey,
+            ])->timeout(15)->post("{$this->baseUrl}/v1/business/shipments/fee", $payload);
+        } catch (\Throwable $e) {
+            Log::warning("Routely overseas quote to {$country['name']} could not be reached: {$e->getMessage()}");
+
+            return $failed($e->getMessage());
+        }
+
+        $express = collect($response->json('data.rates.express') ?? [])
+            ->filter(fn ($rate) => is_array($rate) && is_numeric($rate['selling_price'] ?? null) && empty($rate['is_restricted_country']));
+
+        if (! $response->successful() || $express->isEmpty()) {
+            Log::warning("Routely gave no overseas quote to {$country['name']}", [
+                'status' => $response->status(),
+                'message' => $response->json('message'),
+            ]);
+
+            return $failed((string) ($response->json('message') ?? 'No express rate offered.'));
+        }
+
+        $chosen = $express->first(fn ($rate) => str_contains(strtolower((string) ($rate['carrier_name'] ?? '')), 'dhl'))
+            ?? $express->sortBy(fn ($rate) => (float) $rate['selling_price'])->first();
+
+        // "Premium - DHL Express" → "DHL Express"
+        $carrier = trim((string) preg_replace('/^[^-]*-\s*/', '', (string) ($chosen['carrier_name'] ?? 'Express')));
+
+        $quote = [
+            'success' => true,
+            'rate' => round((float) $chosen['selling_price'], 2),
+            'carrier' => $carrier !== '' ? $carrier : 'Express',
+            'delivery_time' => $chosen['delivery_time'] ?? null,
+        ];
+
+        Cache::put($cacheKey, $quote, now()->addHours(6));
+
+        return $quote;
+    }
+
+    /**
      * Create a shipment with Routely for a placed order.
      *
      * @param  array<string, mixed>  $options

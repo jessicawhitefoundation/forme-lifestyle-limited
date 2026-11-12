@@ -37,6 +37,15 @@ class CheckoutFlowTest extends TestCase
     /** @var list<string> */
     private array $initializedReferences = [];
 
+    /**
+     * What the fake Routely answers for overseas quotes: express rates, or
+     * 'down' for an error. Null (the default) gives no overseas rates, so the
+     * backup fee is used.
+     *
+     * @var list<array<string, mixed>>|string|null
+     */
+    private array|string|null $routelyOverseas = null;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -52,7 +61,17 @@ class CheckoutFlowTest extends TestCase
 
         $this->initializedReferences = [];
 
+        $this->routelyOverseas = null;
+
         Http::fake(function (HttpRequest $request) {
+            if (str_contains($request->url(), '/shipments/fee') && isset($request['to_country'])) {
+                if ($this->routelyOverseas === 'down') {
+                    return Http::response(['success' => false, 'message' => 'Service unavailable'], 500);
+                }
+
+                return Http::response(['success' => true, 'data' => ['rates' => ['express' => $this->routelyOverseas ?? []]]]);
+            }
+
             if (str_contains($request->url(), '/shipments/fee')) {
                 return Http::response(['success' => true, 'data' => ['rates' => [[
                     'selling_price' => self::COURIER_FEE,
@@ -524,7 +543,7 @@ class CheckoutFlowTest extends TestCase
         $this->assertSame(0, Order::count());
     }
 
-    public function test_a_uk_quote_uses_the_flat_fee_without_asking_routely(): void
+    public function test_a_uk_quote_falls_back_to_the_backup_fee_when_routely_has_no_price(): void
     {
         $this->enableUk();
         $this->addToCart($this->makeVariant(50000));
@@ -544,7 +563,7 @@ class CheckoutFlowTest extends TestCase
         // A country the store hasn't switched on can't be quoted.
         $this->postJson('/checkout/shipping-rate', ['country' => 'US'])->assertUnprocessable();
 
-        Http::assertNotSent(fn (HttpRequest $request) => str_contains($request->url(), '/shipments/fee'));
+        Http::assertNotSent(fn (HttpRequest $request) => str_contains($request->url(), '/shipments/fee') && ! isset($request['to_country']));
     }
 
     public function test_a_uk_customer_can_check_out_and_pays_by_card_in_naira(): void
@@ -557,10 +576,10 @@ class CheckoutFlowTest extends TestCase
         $order = Order::sole();
         $this->assertSame('United Kingdom', $order->shipping_country);
         $this->assertSame('NW1 6XE', $order->shipping_postcode);
-        $this->assertSame('DHL Express', $order->shipping_carrier);
+        $this->assertSame('DHL Express via Routely', $order->shipping_carrier);
         $this->assertSame(45000.0, (float) $order->shipping_fee);
         $this->assertSame(95000.0, (float) $order->total_amount);
-        $this->assertNull($order->routely_fee);
+        $this->assertSame(45000.0, (float) $order->routely_fee);
         $this->assertTrue($order->isInternational());
         $this->assertSame('221B Baker Street, London, NW1 6XE, United Kingdom', $order->fullAddress());
 
@@ -568,7 +587,7 @@ class CheckoutFlowTest extends TestCase
             && $request['amount'] === 9500000
             && $request['currency'] === 'NGN'
             && $request['channels'] === ['card']);
-        Http::assertNotSent(fn (HttpRequest $request) => str_contains($request->url(), '/shipments/fee'));
+        Http::assertNotSent(fn (HttpRequest $request) => str_contains($request->url(), '/shipments/fee') && ! isset($request['to_country']));
 
         // Paying again with the same details reuses the order.
         $this->initiate($this->ukAddress())->assertStatus(409);
@@ -678,6 +697,61 @@ class CheckoutFlowTest extends TestCase
                 && str_contains($html, 'tracking-id=1234567890')
                 && str_contains($html, 'United Kingdom');
         });
+    }
+
+    public function test_overseas_delivery_is_priced_live_by_routely(): void
+    {
+        $this->enableUk();
+        $this->routelyOverseas = [
+            ['carrier_name' => 'Economy - UPS Express', 'selling_price' => 81766.10, 'delivery_time' => '4 to 6 working days'],
+            ['carrier_name' => 'Premium - DHL Express', 'selling_price' => 95983.40, 'delivery_time' => '2 to 4 working days'],
+        ];
+        $this->addToCart($this->makeVariant(50000), 2);
+
+        // DHL Express is preferred, even though UPS is cheaper.
+        $this->postJson('/checkout/shipping-rate', ['country' => 'GB'])
+            ->assertOk()
+            ->assertJson(['carrier' => 'DHL Express', 'delivery_time' => '2 to 4 working days', 'shipping_fee' => 95984, 'total' => 195984]);
+
+        // Two items at 0.7 kg; before the postcode is typed, a sample one stands in.
+        Http::assertSent(fn (HttpRequest $request) => str_contains($request->url(), '/shipments/fee')
+            && $request['to_country'] === 'United Kingdom'
+            && $request['from_country'] === 'Nigeria'
+            && (float) $request['weight'] === 1.4
+            && $request['to_postal_code'] === 'SW1A 1AA');
+
+        $this->initiate($this->ukAddress())->assertStatus(409);
+        $order = Order::sole();
+        $this->assertSame(95984.0, (float) $order->shipping_fee);
+        $this->assertSame(95984.0, (float) $order->routely_fee);
+        Http::assertSent(fn (HttpRequest $request) => str_contains($request->url(), 'transaction/initialize')
+            && $request['amount'] === 19598400);
+    }
+
+    public function test_the_weight_per_item_can_be_changed_in_store_settings(): void
+    {
+        $this->enableUk();
+        StoreSetting::findOrFail(1)->update(['international_item_weight' => 1.5]);
+        $this->routelyOverseas = [['carrier_name' => 'Premium - DHL Express', 'selling_price' => 98785, 'delivery_time' => '2 to 4 working days']];
+        $this->addToCart($this->makeVariant());
+
+        $this->postJson('/checkout/shipping-rate', ['country' => 'GB'])->assertJson(['shipping_fee' => 98785]);
+        Http::assertSent(fn (HttpRequest $request) => isset($request['to_country']) && (float) $request['weight'] === 1.5);
+    }
+
+    public function test_without_routely_or_a_backup_fee_overseas_checkout_waits(): void
+    {
+        StoreSetting::current();
+        StoreSetting::findOrFail(1)->update(['international_rates' => ['GB' => ['enabled' => true, 'fee' => null, 'rate' => 2000]]]);
+        $this->routelyOverseas = 'down';
+        $this->addToCart($this->makeVariant());
+
+        $this->postJson('/checkout/shipping-rate', ['country' => 'GB'])
+            ->assertStatus(503)
+            ->assertJson(['success' => false, 'message' => "We can't get a delivery price to United Kingdom right now. Please try again in a few minutes."]);
+
+        $this->initiate($this->ukAddress())->assertSessionHasErrors('checkout');
+        $this->assertSame(0, Order::count());
     }
 
     public function test_the_last_piece_is_held_for_the_shopper_who_is_paying(): void

@@ -40,15 +40,20 @@ class StoreSettingsTest extends TestCase
         $this->assertNull($settings->internationalCountry('US')['rate']);
     }
 
-    public function test_a_country_needs_a_fee_before_it_can_be_switched_on(): void
+    public function test_a_country_can_be_switched_on_without_a_backup_fee(): void
     {
         StoreSetting::current();
         $this->actingAs(User::factory()->create(['role' => 'admin']));
 
+        // Routely prices it live, so a switch is all it takes.
         Livewire::test(StoreSettings::class)
-            ->fillForm(['international_rates.US.enabled' => true, 'international_rates.US.fee' => null])
-            ->call('save');
+            ->fillForm(['international_rates.US.enabled' => true, 'international_rates.US.fee' => null, 'international_item_weight' => 0.9])
+            ->call('save')
+            ->assertHasNoFormErrors();
 
-        $this->assertSame([], StoreSetting::current()->internationalCountries());
+        $settings = StoreSetting::current();
+        $this->assertSame(['US'], array_keys($settings->internationalCountries()));
+        $this->assertNull($settings->internationalCountry('US')['fee']);
+        $this->assertSame(0.9, $settings->internationalItemWeight());
     }
 }

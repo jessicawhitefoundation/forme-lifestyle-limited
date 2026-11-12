@@ -209,15 +209,16 @@ class OrderResource extends Resource
                     ->color('success')
                     ->visible(fn (Order $record) => $record->isInternational() && $record->payment_status === 'paid' && empty($record->tracking_number))
                     ->modalHeading(fn (Order $record) => "Order #{$record->order_number} shipped to {$record->shipping_country}")
-                    ->modalDescription('The customer gets an email with the tracking number.')
+                    ->modalDescription(fn (Order $record) => 'Book the parcel in your Routely dashboard first (the customer paid ₦'.number_format((float) $record->shipping_fee, 2).' for delivery). The customer then gets an email with the tracking number.')
                     ->form([
                         Forms\Components\TextInput::make('shipping_carrier')
                             ->label('Courier')
+                            ->helperText('If you enter a DHL waybill number, write "DHL Express" here and the email links to DHL tracking.')
                             ->default(fn (Order $record) => $record->shipping_carrier ?: config('store.international_carrier'))
                             ->required()
                             ->maxLength(100),
                         Forms\Components\TextInput::make('tracking_number')
-                            ->label('Tracking number')
+                            ->label('Tracking number (from Routely)')
                             ->required()
                             ->maxLength(100),
                     ])

@@ -42,7 +42,7 @@
         <p style="margin: 6px 0 0 0; font-size: 13px; color: #333; line-height: 1.5;">
             {{ $order->fullAddress() }}
             @if($order->isInternational())
-                <br><strong style="color: #B45309;">Overseas order: ship with {{ $order->shipping_carrier ?: config('store.international_carrier') }}, then use “Mark as shipped” in the admin.</strong>
+                <br><strong style="color: #B45309;">Overseas order: book it in your Routely dashboard ({{ $order->shipping_carrier ?: config('store.international_carrier') }}; the customer paid ₦{{ number_format((float) $order->shipping_fee, 2) }} for delivery, Routely's price at checkout), then use “Mark as shipped” in the admin.</strong>
             @endif
             @if($order->notes)
                 <br><em>Customer Notes: {{ $order->notes }}</em>
