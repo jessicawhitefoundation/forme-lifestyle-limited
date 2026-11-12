@@ -1,8 +1,9 @@
 import React, { useState, useRef, useCallback } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
-import SizeGuideModal from '@/components/SizeGuideModal';
 import FitFinder from '@/components/FitFinder';
+import SizeGuideModal from '@/components/SizeGuideModal';
+import MetallicButton from '@/components/ui/metallic-button';
 import { savedRecommendation } from '@/lib/fit-finder';
 
 interface Variant {
@@ -285,14 +286,26 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                 .product-rich-text li { margin-bottom: 4px; }
                 .product-rich-text strong { color: var(--forme-text); font-weight: 500; }
                 .product-rich-text a { color: var(--forme-accent); }
+                /* "Find my size": a softly glowing card with the metallic button. */
                 .fit-cta {
-                    width: 100%; display: flex; align-items: center; gap: 14px; margin-bottom: 24px;
-                    padding: 14px 16px; background: var(--forme-surface); color: var(--forme-text);
-                    border: 1px solid var(--forme-border); border-radius: 4px; cursor: pointer; font-family: inherit;
-                    transition: border-color 0.2s;
+                    width: 100%; display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
+                    padding: 12px 12px 12px 16px; background: var(--forme-surface); color: var(--forme-text);
+                    border: 1px solid color-mix(in srgb, var(--forme-accent) 55%, var(--forme-border));
+                    border-radius: 6px; animation: fit-glow 2.8s ease-in-out infinite;
                 }
-                .fit-cta:hover { border-color: var(--forme-text); }
-                .fit-cta:focus-visible { outline: 2px solid var(--forme-accent); outline-offset: 2px; }
+                @keyframes fit-glow {
+                    0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--forme-accent) 25%, transparent), 0 0 16px 2px color-mix(in srgb, var(--forme-accent) 30%, transparent); }
+                    50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--forme-accent) 55%, transparent), 0 0 30px 6px color-mix(in srgb, var(--forme-accent) 50%, transparent); }
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .fit-cta { animation: none; box-shadow: 0 0 18px 2px color-mix(in srgb, var(--forme-accent) 28%, transparent); }
+                }
+                .fit-cta-text { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 0; background: none; border: none; color: inherit; cursor: pointer; font-family: inherit; text-align: left; }
+                .fit-cta-button { flex-shrink: 0; }
+                /* The store layout's reset zeroes margins; the button's face needs its
+                   2px inset so the metallic rim shows evenly all the way round. */
+                .fit-cta-button .m-0\\.5 { margin: 2px; }
+                .fit-cta-text:focus-visible, .fit-cta-button button:focus-visible { outline: 2px solid var(--forme-accent); outline-offset: 3px; }
                 /* Phones and tablets can't hover: no zoom hint there. */
                 @media (hover: none) {
                     .zoom-hint { display: none; }
@@ -433,21 +446,27 @@ export default function ProductPage({ product, related }: ProductPageProps) {
 
                         {/* Find my size */}
                         {product.size_chart && (
-                            <button type="button" className="fit-cta" onClick={() => setFitOpen(true)}>
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
-                                    <rect x="2.5" y="7.5" width="19" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
-                                    <path d="M6 7.5v3M9.5 7.5v4.5M13 7.5v3M16.5 7.5v4.5M20 7.5v3" stroke="currentColor" strokeWidth="1.3" />
-                                </svg>
-                                <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
-                                    <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: C.text }}>
-                                        {fitSize ? <>Your size: {fitSize}</> : 'Find my size'}
+                            <div className="fit-cta">
+                                <button type="button" className="fit-cta-text" onClick={() => setFitOpen(true)}>
+                                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true" style={{ flexShrink: 0 }}>
+                                        <rect x="2.5" y="7.5" width="19" height="9" rx="1.5" stroke="currentColor" strokeWidth="1.3" />
+                                        <path d="M6 7.5v3M9.5 7.5v4.5M13 7.5v3M16.5 7.5v4.5M20 7.5v3" stroke="currentColor" strokeWidth="1.3" />
+                                    </svg>
+                                    <span style={{ flex: 1, minWidth: 0, textAlign: 'left' }}>
+                                        <span style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: C.text }}>
+                                            {fitSize ? <>Your size: {fitSize}</> : 'Not sure of your size?'}
+                                        </span>
+                                        <span style={{ display: 'block', fontSize: '12px', color: C.muted, marginTop: '2px' }}>
+                                            {fitSize ? 'From your saved answers.' : 'Height, weight and two quick questions.'}
+                                        </span>
                                     </span>
-                                    <span style={{ display: 'block', fontSize: '12px', color: C.muted, marginTop: '2px' }}>
-                                        {fitSize ? 'From your saved answers. Tap to check or change.' : 'Height, weight and two quick questions.'}
-                                    </span>
-                                </span>
-                                <span aria-hidden="true" style={{ fontSize: '16px', color: C.text }}>→</span>
-                            </button>
+                                </button>
+                                <MetallicButton
+                                    className="fit-cta-button"
+                                    label={fitSize ? 'Check my size' : 'Find my size'}
+                                    onClick={() => setFitOpen(true)}
+                                />
+                            </div>
                         )}
 
                         {/* Quantity */}

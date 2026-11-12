@@ -1,5 +1,6 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import FormeSelect from '@/components/FormeSelect';
 import type { ApproxTotal } from '@/lib/approx';
 import { formatApprox } from '@/lib/approx';
 
@@ -21,17 +22,6 @@ interface DeliveryEstimatorProps {
     /** Changes when the bag changes, so the estimate is worked out again. */
     subtotal: number;
 }
-
-const fieldStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '10px 12px',
-    border: '1px solid var(--forme-border)',
-    background: 'var(--forme-bg)',
-    color: 'var(--forme-text)',
-    fontSize: '14px',
-    borderRadius: '2px',
-    marginBottom: '10px',
-};
 
 // Overseas countries share the state dropdown, marked with this prefix.
 const COUNTRY = 'country:';
@@ -81,47 +71,37 @@ export default function DeliveryEstimator({ states, lagosAreas, countries = [], 
         <div style={{ borderTop: '1px solid var(--forme-border)', paddingTop: '16px', marginBottom: '20px' }}>
             <p style={{ fontSize: '11px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--forme-muted)', marginBottom: '10px' }}>Estimate delivery</p>
 
-            <label htmlFor="estimate-state" className="sr-only">Delivery state</label>
-            <select
+            <FormeSelect
                 id="estimate-state"
+                aria-label="Delivery state or country"
+                compact
                 value={state}
-                onChange={(e) => {
-                    setState(e.target.value);
+                onChange={(value) => {
+                    setState(value);
                     setArea('');
                 }}
-                style={fieldStyle}
-            >
-                <option value="">{countries.length ? 'Select your state or country' : 'Select your state'}</option>
-                {countries.length ? (
-                    <>
-                        <optgroup label="Nigeria">
-                            {states.map((s) => (
-                                <option key={s} value={s}>{s}</option>
-                            ))}
-                        </optgroup>
-                        <optgroup label="Outside Nigeria">
-                            {countries.map((c) => (
-                                <option key={c.code} value={COUNTRY + c.code}>{c.name}</option>
-                            ))}
-                        </optgroup>
-                    </>
-                ) : (
-                    states.map((s) => (
-                        <option key={s} value={s}>{s}</option>
-                    ))
-                )}
-            </select>
+                placeholder={countries.length ? 'Select your state or country' : 'Select your state'}
+                options={countries.length ? undefined : states.map((s) => ({ value: s, label: s }))}
+                groups={
+                    countries.length
+                        ? [
+                              { label: 'Nigeria', options: states.map((s) => ({ value: s, label: s })) },
+                              { label: 'Outside Nigeria', options: countries.map((c) => ({ value: COUNTRY + c.code, label: c.name })) },
+                          ]
+                        : undefined
+                }
+            />
 
             {needsArea && (
-                <>
-                    <label htmlFor="estimate-area" className="sr-only">Lagos area</label>
-                    <select id="estimate-area" value={area} onChange={(e) => setArea(e.target.value)} style={fieldStyle}>
-                        <option value="">Select your area</option>
-                        {lagosAreas.map((a) => (
-                            <option key={a} value={a}>{a}</option>
-                        ))}
-                    </select>
-                </>
+                <FormeSelect
+                    id="estimate-area"
+                    aria-label="Lagos area"
+                    compact
+                    value={area}
+                    onChange={setArea}
+                    placeholder="Select your area"
+                    options={lagosAreas.map((a) => ({ value: a, label: a }))}
+                />
             )}
 
             <div aria-live="polite">

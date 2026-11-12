@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
+import FormeSelect from '@/components/FormeSelect';
 import type { ApproxTotal } from '@/lib/approx';
 import { formatApprox } from '@/lib/approx';
 
@@ -131,8 +132,7 @@ export default function Checkout({ cartItems, quote: initialQuote, states, count
         };
     }, [form.shipping_state, form.shipping_city, form.shipping_address, form.shipping_country, abroad]);
 
-    const handleCountry = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const code = e.target.value;
+    const handleCountry = (code: string) => {
         // The state list only fits Nigeria; overseas the region is typed in.
         setForm(f => ({ ...f, shipping_country: code, shipping_state: code === 'NG' ? 'Lagos' : '', shipping_postcode: '' }));
         setErrors(err => ({ ...err, shipping_country: '', shipping_state: '', shipping_postcode: '' }));
@@ -160,14 +160,6 @@ export default function Checkout({ cartItems, quote: initialQuote, states, count
         width: '100%', padding: '12px 16px', border: '1px solid var(--forme-border)', background: 'var(--forme-bg)',
         fontSize: '16px', color: 'var(--forme-text)', outline: 'none', borderRadius: '2px',
         fontFamily: "'DM Sans', sans-serif",
-    };
-
-    const selectArrow: React.CSSProperties = {
-        appearance: 'none',
-        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'right 12px center',
-        cursor: 'pointer',
     };
 
     const labelStyle: React.CSSProperties = {
@@ -244,9 +236,13 @@ export default function Checkout({ cartItems, quote: initialQuote, states, count
                             {countries.length > 1 && (
                                 <div style={{ marginBottom: '16px' }}>
                                     <label style={labelStyle} htmlFor="shipping_country">Country *</label>
-                                    <select id="shipping_country" name="shipping_country" value={form.shipping_country} onChange={handleCountry} style={{ ...inputStyle, ...selectArrow }} required>
-                                        {countries.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
-                                    </select>
+                                    <FormeSelect
+                                        id="shipping_country"
+                                        value={form.shipping_country}
+                                        onChange={handleCountry}
+                                        options={countries.map(c => ({ value: c.code, label: c.name }))}
+                                        invalid={!!errors.shipping_country}
+                                    />
                                     {errors.shipping_country && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.shipping_country}</p>}
                                 </div>
                             )}
@@ -271,11 +267,18 @@ export default function Checkout({ cartItems, quote: initialQuote, states, count
                                     </div>
                                 ) : (
                                     <div>
-                                        <label style={labelStyle}>State *</label>
-                                        <select name="shipping_state" value={form.shipping_state} onChange={handleChange} style={{ ...inputStyle, ...selectArrow }} required>
-                                            <option value="">Select State</option>
-                                            {states.map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
+                                        <label style={labelStyle} htmlFor="shipping_state">State *</label>
+                                        <FormeSelect
+                                            id="shipping_state"
+                                            value={form.shipping_state}
+                                            onChange={(value) => {
+                                                setForm(f => ({ ...f, shipping_state: value }));
+                                                setErrors(err => ({ ...err, shipping_state: '' }));
+                                            }}
+                                            options={states.map(s => ({ value: s, label: s }))}
+                                            placeholder="Select State"
+                                            invalid={!!errors.shipping_state}
+                                        />
                                         {errors.shipping_state && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.shipping_state}</p>}
                                     </div>
                                 )}
