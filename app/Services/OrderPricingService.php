@@ -12,7 +12,7 @@ use App\Models\StoreSetting;
  */
 class OrderPricingService
 {
-    public function __construct(private RoutelyService $routely) {}
+    public function __construct(private RoutelyService $routely, private ExchangeRates $exchange) {}
 
     /**
      * @param  array{address?: ?string, city?: ?string, state?: ?string, country?: ?string, postcode?: ?string, item_count?: int}  $destination
@@ -84,7 +84,7 @@ class OrderPricingService
      * Exports are zero-rated for Nigerian VAT, so no VAT is added or recorded,
      * even when VAT is switched on for Nigerian orders.
      *
-     * @param  array{name: string, currency: string, symbol: string, coordinates: string, sample_postcode: string, sample_city: string, fee: ?float, rate: ?float}  $country
+     * @param  array{name: string, currency: string, symbol: string, coordinates: string, sample_postcode: string, sample_city: string, fee: ?float}  $country
      * @param  array<string, mixed>  $destination
      */
     private function internationalQuote(float $subtotal, array $country, StoreSetting $settings, array $destination): array
@@ -124,10 +124,10 @@ class OrderPricingService
             'vat_inclusive' => (bool) $settings->vat_inclusive,
             'subtotal' => $subtotal,
             'total' => $total,
-            'approx' => $country['rate'] ? [
+            'approx' => ($local = $this->exchange->convert($total, $country['currency'])) !== null ? [
                 'currency' => $country['currency'],
                 'symbol' => $country['symbol'],
-                'total' => round($total / $country['rate'], 2),
+                'total' => $local,
             ] : null,
         ];
     }

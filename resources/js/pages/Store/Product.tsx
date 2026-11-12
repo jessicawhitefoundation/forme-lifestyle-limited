@@ -5,6 +5,7 @@ import FitFinder from '@/components/FitFinder';
 import SizeGuideModal from '@/components/SizeGuideModal';
 import MetallicButton from '@/components/ui/metallic-button';
 import { savedRecommendation } from '@/lib/fit-finder';
+import { OVERSEAS_DELIVERY_TIME, overseasCountryCount } from '@/lib/overseas';
 
 interface Variant {
     id: number;
@@ -97,9 +98,12 @@ export default function ProductPage({ product, related }: ProductPageProps) {
     const [fitOpen, setFitOpen] = useState(false);
     // Size this device was recommended before (kept in localStorage by the advisor).
     const [fitSize, setFitSize] = useState<string | null>(() => (product.size_chart ? savedRecommendation(product.size_chart) : null));
-    const setting =(usePage().props as any).store_setting as { free_shipping_enabled?: boolean; free_shipping_threshold?: number } | undefined;
+    const setting = (usePage().props as any).store_setting as { free_shipping_enabled?: boolean; free_shipping_threshold?: number; international_rates?: Record<string, { enabled?: boolean } | null> | null } | undefined;
     const freeDeliveryLine = setting?.free_shipping_enabled
         ? ` Delivery is free within Lagos on orders of ₦${Number(setting.free_shipping_threshold).toLocaleString()} or more.`
+        : '';
+    const overseasLine = overseasCountryCount(setting)
+        ? `</p><p>We also deliver outside Nigeria: choose your country at checkout to see the delivery price and order directly. ${OVERSEAS_DELIVERY_TIME}`
         : '';
     // Touch screens fire mouseenter on tap, which would leave the photo stuck zoomed in.
     const canHover = typeof window !== 'undefined' && window.matchMedia('(hover: hover)').matches;
@@ -496,7 +500,7 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                             { key: 'details' as const, label: 'Details', isSizing: false, content: product.description || 'No additional details.' },
                             { key: 'sizing' as const, label: 'Size & Fit Guide', isSizing: true, content: '' },
                             { key: 'care' as const, label: 'Care Instructions', isSizing: false, content: product.care_instructions || 'Follow the care label inside your garment.' },
-                            { key: 'shipping' as const, label: 'Shipping & Returns', isSizing: false, content: `<p>Orders are processed in 1–2 business days. Delivery within Lagos takes 2–5 business days, and 3–7 business days to other states.${freeDeliveryLine}</p><p>Unused items in their original condition, with tags attached, can be returned or exchanged within 3 days of delivery. <a href="/policy">Read the full policy</a>.</p>` },
+                            { key: 'shipping' as const, label: 'Shipping & Returns', isSizing: false, content: `<p>Orders are processed in 1–2 business days. Delivery within Lagos takes 2–5 business days, and 3–7 business days to other states.${freeDeliveryLine}${overseasLine}</p><p>Unused items in their original condition, with tags attached, can be returned or exchanged within 3 days of delivery. <a href="/policy">Read the full policy</a>.</p>` },
                         ].map(tab => (
                             <div key={tab.key} style={{ borderBottom: `1px solid ${C.border}` }}>
                                 <button onClick={() => setActiveTab(activeTab === tab.key ? null : tab.key)} style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 0', background: 'none', border: 'none', cursor: 'pointer' }}>

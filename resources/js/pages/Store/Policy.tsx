@@ -1,4 +1,5 @@
 import { Head, usePage } from '@inertiajs/react';
+import { OVERSEAS_DELIVERY_TIME, overseasCountryCount } from '@/lib/overseas';
 
 const C = {
     bg: 'var(--forme-bg)',
@@ -67,6 +68,10 @@ export default function Policy() {
     const { store_contact: contact, store_setting: setting } = usePage().props as any;
     const freeDelivery = setting?.free_shipping_enabled
         ? ` Orders of ₦${Number(setting.free_shipping_threshold).toLocaleString()} or more delivered within Lagos ship free. This does not apply outside Lagos.`
+        : '';
+    const overseas = overseasCountryCount(setting);
+    const overseasTimeline = overseas
+        ? ` We also deliver to ${overseas === 1 ? 'one country' : `${overseas} countries`} outside Nigeria: choose yours at checkout to see the delivery price and order directly. ${OVERSEAS_DELIVERY_TIME}`
         : '';
 
     return (
@@ -163,7 +168,7 @@ export default function Policy() {
                                             color: C.muted,
                                             lineHeight: '1.85',
                                             margin: 0,
-                                        }}>{item.body}{item.title === 'Shipping Rates' ? freeDelivery : ''}</p>
+                                        }}>{item.body}{item.title === 'Shipping Rates' ? freeDelivery : ''}{item.title === 'Delivery Timelines' ? overseasTimeline : ''}</p>
                                     </div>
                                 </div>
                             ))}

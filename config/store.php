@@ -34,19 +34,30 @@ return [
     | Countries the store can deliver to
     |--------------------------------------------------------------------------
     |
-    | Nigeria is always on and priced by Routely. The others are switched on,
-    | and given a flat delivery fee and exchange rate, in Store Settings.
+    | Nigeria is always on and priced by Routely. The overseas list comes from
+    | config/countries.php (every country Routely quotes); Store Settings
+    | chooses which of them appear at checkout.
     |
     */
 
     'countries' => [
-        'NG' => ['name' => 'Nigeria', 'currency' => 'NGN', 'symbol' => '₦', 'region_label' => 'State', 'region_required' => true, 'postcode_label' => 'Postcode'],
-        // Routely prices overseas parcels by country and weight, not by city, so a
-        // central point and a sample postcode stand in until the customer types theirs.
-        'GB' => ['name' => 'United Kingdom', 'currency' => 'GBP', 'symbol' => '£', 'region_label' => 'County', 'region_required' => false, 'postcode_label' => 'Postcode', 'coordinates' => '51.5072,-0.1276', 'sample_postcode' => 'SW1A 1AA', 'sample_city' => 'London'],
-        'US' => ['name' => 'United States', 'currency' => 'USD', 'symbol' => '$', 'region_label' => 'State', 'region_required' => true, 'postcode_label' => 'ZIP code', 'coordinates' => '40.7128,-74.0060', 'sample_postcode' => '10001', 'sample_city' => 'New York'],
-        'CA' => ['name' => 'Canada', 'currency' => 'CAD', 'symbol' => 'C$', 'region_label' => 'Province', 'region_required' => true, 'postcode_label' => 'Postal code', 'coordinates' => '43.6532,-79.3832', 'sample_postcode' => 'M5V 3L9', 'sample_city' => 'Toronto'],
-    ],
+        'NG' => ['name' => 'Nigeria', 'currency' => 'NGN', 'symbol' => '₦', 'dial' => '+234', 'region_label' => 'State', 'region_required' => true, 'postcode_label' => 'Postcode', 'postcode_required' => false],
+    ] + array_map(fn (array $c) => [
+        'name' => $c['name'],
+        'currency' => $c['currency'],
+        'symbol' => $c['symbol'],
+        'dial' => $c['dial'],
+        'region_label' => $c['region_label'],
+        'region_required' => $c['region_required'],
+        'postcode_label' => $c['postcode_label'],
+        'postcode_required' => $c['postcode'] !== null,
+        // Routely prices by country and weight, not city: a central point and a
+        // sample postcode stand in until the customer types theirs. Routely
+        // needs some postcode, so countries without them send "00000".
+        'coordinates' => $c['coordinates'],
+        'sample_postcode' => $c['postcode'] ?? '00000',
+        'sample_city' => $c['city'],
+    ], require __DIR__.'/countries.php'),
 
     // Overseas parcels are priced by Routely and sent with DHL Express through Routely.
     'international_carrier' => 'DHL Express via Routely',

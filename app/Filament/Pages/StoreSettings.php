@@ -28,7 +28,11 @@ class StoreSettings extends Page implements HasForms
 
     public function mount(): void
     {
-        $this->form->fill(StoreSetting::current()->attributesToArray());
+        $settings = StoreSetting::current();
+
+        $this->form->fill($settings->attributesToArray() + [
+            'international_country_codes' => $settings->enabledCountryCodes(),
+        ]);
     }
 
     public function form(Form $form): Form
@@ -83,9 +87,21 @@ class StoreSettings extends Page implements HasForms
                             ->visible(fn (Forms\Get $get) => (bool) $get('vat_enabled')),
                     ]),
                 Forms\Components\Section::make('International Delivery')
-                    ->description('Switch on each country you deliver to and it appears at checkout. Routely prices each order live (DHL Express through Routely, by country and parcel weight), and the customer pays that price by card in naira. Book the parcel in your Routely dashboard, then use "Mark as shipped" on the order.')
+                    ->description('Tick each country you deliver to and it appears at checkout. Routely prices every overseas order live (DHL Express through Routely, by country and parcel weight), and the customer pays that price by card in naira. Book the parcel in your Routely dashboard, then use "Mark as shipped" on the order. All '.(count(config('store.countries')) - 1).' countries here were checked with Routely.')
                     ->schema([
-                        ...$this->countryFields(),
+                        Forms\Components\CheckboxList::make('international_country_codes')
+                            ->label('Countries you deliver to')
+                            ->options(fn () => collect(config('store.countries'))->except('NG')->map(fn ($c) => $c['name'])->sort()->all())
+                            ->columns(['default' => 2, 'md' => 3, 'xl' => 4])
+                            ->searchable()
+                            ->bulkToggleable()
+                            ->helperText('Use "Select all" to deliver everywhere listed, or search for a country.'),
+                        Forms\Components\TextInput::make('international_backup_fee')
+                            ->label('Backup delivery fee (optional)')
+                            ->helperText('Used for any country only if Routely can’t give a price. Leave empty and checkout asks the customer to try again instead.')
+                            ->numeric()
+                            ->minValue(1)
+                            ->prefix('₦'),
                         Forms\Components\TextInput::make('international_item_weight')
                             ->label('Typical weight of one item')
                             ->helperText('Products have no weights yet, so each overseas parcel is estimated as this × the number of items. Routely prices by weight: weigh a typical packed set and enter it here.')
@@ -104,48 +120,15 @@ class StoreSettings extends Page implements HasForms
             ->statePath('data');
     }
 
-    /**
-     * One row per overseas country: on/off, backup delivery fee, exchange rate.
-     *
-     * @return array<int, Forms\Components\Component>
-     */
-    private function countryFields(): array
-    {
-        $fields = [];
-
-        foreach (config('store.countries') as $code => $country) {
-            if ($code === 'NG') {
-                continue;
-            }
-
-            $fields[] = Forms\Components\Fieldset::make($country['name'])
-                ->columns(3)
-                ->schema([
-                    Forms\Components\Toggle::make("international_rates.{$code}.enabled")
-                        ->label("Deliver to {$country['name']}")
-                        ->inline(false),
-                    Forms\Components\TextInput::make("international_rates.{$code}.fee")
-                        ->label('Backup delivery fee (optional)')
-                        ->helperText('Only used if Routely can\'t give a price. Leave empty and checkout asks the customer to try again instead.')
-                        ->numeric()
-                        ->minValue(1)
-                        ->prefix('₦'),
-                    Forms\Components\TextInput::make("international_rates.{$code}.rate")
-                        ->label("Naira per 1 {$country['symbol']}")
-                        ->helperText("Used to show prices roughly in {$country['currency']}. Leave empty to hide the estimate.")
-                        ->numeric()
-                        ->minValue(1)
-                        ->prefix('₦'),
-                ]);
-        }
-
-        return $fields;
-    }
-
     public function save(): void
     {
         try {
             $data = $this->form->getState();
+
+            // The country checklist is stored as {"GB": {"enabled": true}, ...}.
+            $codes = array_values(array_intersect((array) ($data['international_country_codes'] ?? []), array_keys(config('store.countries'))));
+            unset($data['international_country_codes']);
+            $data['international_rates'] = collect($codes)->reject(fn ($code) => $code === 'NG')->mapWithKeys(fn ($code) => [$code => ['enabled' => true]])->all();
 
             StoreSetting::firstOrFail()->update($data);
 

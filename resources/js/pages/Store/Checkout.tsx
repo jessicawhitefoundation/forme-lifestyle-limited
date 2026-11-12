@@ -47,6 +47,8 @@ interface Country {
     region_label: string;
     region_required: boolean;
     postcode_label: string;
+    postcode_required?: boolean;
+    dial?: string;
 }
 
 interface CheckoutProps {
@@ -58,7 +60,6 @@ interface CheckoutProps {
     savedCard?: SavedCard | null;
 }
 
-const PHONE_HINT: Record<string, string> = { NG: '+234...', GB: '+44...', US: '+1...', CA: '+1...' };
 
 export default function Checkout({ cartItems, quote: initialQuote, states, countries = [], user, savedCard }: CheckoutProps) {
     const pageErrors = usePage().props.errors as Record<string, string>;
@@ -219,7 +220,7 @@ export default function Checkout({ cartItems, quote: initialQuote, states, count
 
                             <div>
                                 <label style={labelStyle}>Phone Number *</label>
-                                <input name="customer_phone" type="tel" value={form.customer_phone} onChange={handleChange} placeholder={PHONE_HINT[form.shipping_country] ?? '+234...'} style={{ ...inputStyle, borderColor: errors.customer_phone ? 'var(--forme-accent)' : 'var(--forme-border)' }} required />
+                                <input name="customer_phone" type="tel" value={form.customer_phone} onChange={handleChange} placeholder={`${country?.dial ?? '+234'}...`} style={{ ...inputStyle, borderColor: errors.customer_phone ? 'var(--forme-accent)' : 'var(--forme-border)' }} required />
                                 <p style={{ fontSize: '12px', color: 'var(--forme-muted)', marginTop: '4px' }}>The courier uses this to reach you.</p>
                                 {errors.customer_phone && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.customer_phone}</p>}
                             </div>
@@ -282,7 +283,7 @@ export default function Checkout({ cartItems, quote: initialQuote, states, count
                                         {errors.shipping_state && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.shipping_state}</p>}
                                     </div>
                                 )}
-                                {abroad && country && (
+                                {abroad && country && country.postcode_required !== false && (
                                     <div>
                                         <label style={labelStyle} htmlFor="shipping_postcode">{country.postcode_label} *</label>
                                         <input id="shipping_postcode" name="shipping_postcode" value={form.shipping_postcode} onChange={handleChange} autoComplete="postal-code" style={{ ...inputStyle, textTransform: 'uppercase', borderColor: errors.shipping_postcode ? 'var(--forme-accent)' : 'var(--forme-border)' }} required />

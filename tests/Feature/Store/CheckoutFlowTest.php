@@ -90,6 +90,11 @@ class CheckoutFlowTest extends TestCase
                 return Http::response(['status' => true, 'data' => ['authorization_url' => 'https://checkout.paystack.com/test']]);
             }
 
+            // Exchange rates from the naira: ₦2,000 to the pound, ₦1,600 to the dollar.
+            if (str_contains($request->url(), 'open.er-api.com')) {
+                return Http::response(['result' => 'success', 'rates' => ['GBP' => 1 / 2000, 'USD' => 1 / 1600, 'CAD' => 1 / 1150, 'AED' => 1 / 435]]);
+            }
+
             return Http::response(['status' => false], 500);
         });
     }
@@ -505,15 +510,19 @@ class CheckoutFlowTest extends TestCase
         Mail::assertSent(OrderShippedMail::class, 1);
     }
 
-    /** Delivers to the UK for ₦45,000 at ₦2,000 to the pound. */
+    /** Delivers to the UK, with a ₦45,000 backup fee (the fake Routely gives no overseas price by default). */
     private function enableUk(bool $enabled = true): void
+    {
+        $this->enableCountries($enabled ? ['GB'] : []);
+    }
+
+    /** @param  list<string>  $codes */
+    private function enableCountries(array $codes, ?float $backupFee = 45000): void
     {
         StoreSetting::current();
         StoreSetting::findOrFail(1)->update([
-            'international_rates' => [
-                'GB' => ['enabled' => $enabled, 'fee' => 45000, 'rate' => 2000],
-                'US' => ['enabled' => false, 'fee' => 60000, 'rate' => 1500],
-            ],
+            'international_rates' => collect($codes)->mapWithKeys(fn ($code) => [$code => ['enabled' => true]])->all(),
+            'international_backup_fee' => $backupFee,
         ]);
     }
 
@@ -617,33 +626,66 @@ class CheckoutFlowTest extends TestCase
 
     public function test_the_us_and_canada_work_once_switched_on(): void
     {
-        StoreSetting::current();
-        StoreSetting::findOrFail(1)->update([
-            'international_rates' => [
-                'GB' => ['enabled' => true, 'fee' => 45000, 'rate' => 2100],
-                'US' => ['enabled' => true, 'fee' => 60000, 'rate' => 1600],
-                'CA' => ['enabled' => true, 'fee' => 65000, 'rate' => 1150],
-            ],
-        ]);
+        $this->enableCountries(['GB', 'US', 'CA']);
         $this->addToCart($this->makeVariant(50000));
 
+        // Nigeria first, then A to Z, with each country's own address words.
         $this->get('/checkout')->assertInertia(fn (Assert $page) => $page
             ->has('countries', 4)
-            ->where('countries.2.name', 'United States')
-            ->where('countries.2.postcode_label', 'ZIP code')
-            ->where('countries.3.name', 'Canada')
-            ->where('countries.3.region_label', 'Province'));
+            ->where('countries.1.name', 'Canada')
+            ->where('countries.1.region_label', 'Province')
+            ->where('countries.1.dial', '+1')
+            ->where('countries.3.name', 'United States')
+            ->where('countries.3.postcode_label', 'ZIP code'));
 
+        // The rough total comes from today's exchange rate.
         $this->postJson('/checkout/shipping-rate', ['country' => 'US'])
-            ->assertJson(['shipping_fee' => 60000, 'approx' => ['currency' => 'USD', 'symbol' => '$', 'total' => 68.75]]);
+            ->assertJson(['shipping_fee' => 45000, 'approx' => ['currency' => 'USD', 'symbol' => '$', 'total' => 59.38]]);
         $this->postJson('/checkout/shipping-rate', ['country' => 'CA'])
-            ->assertJson(['shipping_fee' => 65000, 'approx' => ['currency' => 'CAD', 'symbol' => 'C$']]);
+            ->assertJson(['shipping_fee' => 45000, 'approx' => ['currency' => 'CAD', 'symbol' => 'C$']]);
 
         // The US and Canada need a state or province; the UK's county is optional.
         $this->initiate($this->ukAddress(['shipping_country' => 'US', 'shipping_postcode' => '10001']))->assertSessionHasErrors('shipping_state');
         $this->initiate($this->ukAddress(['shipping_country' => 'CA', 'shipping_state' => 'Ontario', 'shipping_city' => 'Toronto', 'shipping_postcode' => 'M5V 2T6']))->assertStatus(409);
         $this->assertSame('Canada', Order::sole()->shipping_country);
-        $this->assertSame(115000.0, (float) Order::sole()->total_amount);
+        $this->assertSame(95000.0, (float) Order::sole()->total_amount);
+    }
+
+    public function test_every_listed_country_can_be_offered(): void
+    {
+        $all = array_keys(config('countries'));
+        $this->enableCountries($all);
+        $this->addToCart($this->makeVariant());
+
+        $this->assertCount(76, $all);
+        $this->assertNotContains('RU', $all);
+        $this->get('/checkout')->assertInertia(fn (Assert $page) => $page->has('countries', 77)->where('countries.0.code', 'NG'));
+    }
+
+    public function test_countries_without_postcodes_check_out_without_one(): void
+    {
+        $this->enableCountries(['AE']);
+        $this->routelyOverseas = [['carrier_name' => 'Premium - DHL Express', 'selling_price' => 142239, 'delivery_time' => '2 to 4 working days']];
+        $this->addToCart($this->makeVariant(50000));
+
+        $this->get('/checkout')->assertInertia(fn (Assert $page) => $page
+            ->where('countries.1.name', 'United Arab Emirates')
+            ->where('countries.1.postcode_required', false)
+            ->where('countries.1.region_label', 'Emirate'));
+
+        // No postcode needed; Routely is sent its placeholder.
+        $this->initiate([
+            'shipping_country' => 'AE',
+            'shipping_address' => 'Villa 12, Al Wasl Road',
+            'shipping_city' => 'Dubai',
+            'shipping_state' => 'Dubai',
+            'customer_phone' => '+971501234567',
+        ])->assertStatus(409);
+
+        $order = Order::sole();
+        $this->assertNull($order->shipping_postcode);
+        $this->assertSame(142239.0, (float) $order->shipping_fee);
+        Http::assertSent(fn (HttpRequest $request) => ($request['to_country'] ?? null) === 'United Arab Emirates' && $request['to_postal_code'] === '00000');
     }
 
     public function test_overseas_checkout_needs_a_postcode(): void
@@ -741,8 +783,7 @@ class CheckoutFlowTest extends TestCase
 
     public function test_without_routely_or_a_backup_fee_overseas_checkout_waits(): void
     {
-        StoreSetting::current();
-        StoreSetting::findOrFail(1)->update(['international_rates' => ['GB' => ['enabled' => true, 'fee' => null, 'rate' => 2000]]]);
+        $this->enableCountries(['GB'], backupFee: null);
         $this->routelyOverseas = 'down';
         $this->addToCart($this->makeVariant());
 

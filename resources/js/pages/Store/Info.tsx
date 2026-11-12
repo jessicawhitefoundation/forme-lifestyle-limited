@@ -1,5 +1,6 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import React from 'react';
+import { OVERSEAS_DELIVERY_TIME, overseasCountryCount } from '@/lib/overseas';
 
 type PageKey = 'faq' | 'contact' | 'privacy' | 'terms';
 
@@ -14,7 +15,7 @@ interface StoreContact {
     whatsapp_number: string;
 }
 
-function buildPages(contact: StoreContact, threshold: string, freeDelivery: boolean): Record<PageKey, { title: string; intro: string; sections: Section[] }> {
+function buildPages(contact: StoreContact, threshold: string, freeDelivery: boolean, overseas: number): Record<PageKey, { title: string; intro: string; sections: Section[] }> {
     const emailLink = <a href={`mailto:${contact.email}`} style={{ color: 'var(--forme-accent)' }}>{contact.email}</a>;
     const whatsappLink = <a href={`https://wa.me/${contact.whatsapp_number}`} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--forme-accent)' }}>{contact.whatsapp_display}</a>;
 
@@ -24,11 +25,16 @@ function buildPages(contact: StoreContact, threshold: string, freeDelivery: bool
             intro: 'Quick answers about ordering, delivery and returns.',
             sections: [
                 { title: 'Do I need an account to order?', body: 'No. You can check out as a guest with your email and delivery details. An account is optional and lets you see past orders and save a card for faster checkout.' },
-                { title: 'How can I pay?', body: 'We accept debit and credit cards, bank transfer and USSD. Payments are processed securely by Paystack.' },
+                { title: 'How can I pay?', body: `We accept debit and credit cards, bank transfer and USSD. Payments are processed securely by Paystack.${overseas ? ' Cards issued abroad (Visa and Mastercard) are accepted too; you pay in naira and your bank converts it.' : ''}` },
                 { title: 'How much is delivery?', body: 'Delivery depends on your location. You can estimate it in your bag, and you will see the exact cost at checkout before you pay.' },
                 ...(freeDelivery ? [{ title: 'Do you offer free delivery?', body: `Yes, on orders of ₦${threshold} or more delivered within Lagos. It does not apply to deliveries outside Lagos.` }] : []),
-                { title: 'How long does delivery take?', body: 'Orders take 1–2 business days to process. Delivery then takes 2–5 business days within Lagos and 3–7 business days to other states.' },
-                { title: 'Do you ship outside Nigeria?', body: <>We currently deliver within Nigeria. For an international order, please contact us at {emailLink}.</> },
+                { title: 'How long does delivery take?', body: `Orders take 1–2 business days to process. Delivery then takes 2–5 business days within Lagos and 3–7 business days to other states.${overseas ? ` ${OVERSEAS_DELIVERY_TIME}` : ''}` },
+                {
+                    title: 'Do you ship outside Nigeria?',
+                    body: overseas
+                        ? `Yes. We deliver to ${overseas === 1 ? 'one country' : `${overseas} countries`} outside Nigeria${overseas > 3 ? ', including the UK, the US and Canada' : ''}. Choose your country at checkout to see the delivery price before you pay, then order directly on the website. ${OVERSEAS_DELIVERY_TIME}`
+                        : 'Not yet. We currently deliver within Nigeria.',
+                },
                 { title: 'How do I track my order?', body: <>Use the <Link href="/track-order" style={{ color: 'var(--forme-accent)' }}>Track Your Order</Link> page with your order reference and email address.</> },
                 { title: 'Can I return or exchange an item?', body: <>Yes, unused items in their original condition with tags attached can be returned or exchanged within 3 days of delivery. See our <Link href="/policy" style={{ color: 'var(--forme-accent)' }}>Shipping &amp; Returns policy</Link>.</> },
             ],
@@ -75,9 +81,9 @@ function buildPages(contact: StoreContact, threshold: string, freeDelivery: bool
 export default function Info({ page }: { page: PageKey }) {
     const { props } = usePage();
     const contact = (props as any).store_contact as StoreContact;
-    const setting = (props as any).store_setting as { free_shipping_enabled: boolean; free_shipping_threshold: number };
+    const setting = (props as any).store_setting as { free_shipping_enabled: boolean; free_shipping_threshold: number; international_rates?: Record<string, { enabled?: boolean } | null> | null };
     const threshold = Number(setting?.free_shipping_threshold ?? 0).toLocaleString();
-    const content = buildPages(contact, threshold, !!setting?.free_shipping_enabled)[page];
+    const content = buildPages(contact, threshold, !!setting?.free_shipping_enabled, overseasCountryCount(setting))[page];
 
     return (
         <>

@@ -74,18 +74,19 @@ class CheckoutController extends Controller
     }
 
     /**
-     * Countries for the checkout and cart pickers: Nigeria first, then any the
-     * store has switched on. Fees and rates stay on the server.
+     * Countries for the checkout and cart pickers: Nigeria first, then the ones
+     * the store has switched on, A to Z. Fees stay on the server.
      *
-     * @return list<array{code: string, name: string, region_label: string, region_required: bool, postcode_label: string}>
+     * @return list<array{code: string, name: string, dial: string, region_label: string, region_required: bool, postcode_label: string, postcode_required: bool}>
      */
     public static function countryOptions(): array
     {
         $nigeria = ['code' => 'NG'] + config('store.countries.NG');
+        $abroad = collect(StoreSetting::current()->internationalCountries())->sortBy('name')->values()->all();
         $options = [];
 
-        foreach ([$nigeria, ...array_values(StoreSetting::current()->internationalCountries())] as $country) {
-            $options[] = collect($country)->only(['code', 'name', 'region_label', 'region_required', 'postcode_label'])->all();
+        foreach ([$nigeria, ...$abroad] as $country) {
+            $options[] = collect($country)->only(['code', 'name', 'dial', 'region_label', 'region_required', 'postcode_label', 'postcode_required'])->all();
         }
 
         return $options;
@@ -321,7 +322,8 @@ class CheckoutController extends Controller
 
         if ($abroad) {
             $rules['shipping_state'] = [$abroad['region_required'] ? 'required' : 'nullable', 'string', 'max:120'];
-            $rules['shipping_postcode'] = ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9][A-Za-z0-9 \-]{1,18}$/'];
+            // Some countries (UAE, Ghana, Hong Kong...) don't use postcodes.
+            $rules['shipping_postcode'] = [$abroad['postcode_required'] ? 'required' : 'nullable', 'string', 'max:20', 'regex:/^[A-Za-z0-9][A-Za-z0-9 \-]{1,18}$/'];
             $messages['shipping_state.required'] = "Please enter your {$abroad['region_label']}.";
             $messages['shipping_postcode.required'] = "Please enter your {$abroad['postcode_label']}.";
             $messages['shipping_postcode.regex'] = "Please enter a valid {$abroad['postcode_label']}.";
@@ -336,7 +338,7 @@ class CheckoutController extends Controller
         $validated['shipping_country_code'] = $abroad ? $code : 'NG';
         $validated['shipping_country'] = $abroad ? $abroad['name'] : 'Nigeria';
         $validated['shipping_state'] = (string) ($validated['shipping_state'] ?? '');
-        $validated['shipping_postcode'] = isset($validated['shipping_postcode']) ? strtoupper(trim($validated['shipping_postcode'])) : null;
+        $validated['shipping_postcode'] = filled($validated['shipping_postcode'] ?? null) ? strtoupper(trim($validated['shipping_postcode'])) : null;
 
         return $validated;
     }
