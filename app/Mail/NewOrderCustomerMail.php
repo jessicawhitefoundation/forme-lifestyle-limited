@@ -21,6 +21,8 @@ class NewOrderCustomerMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
+            from: OrderMailSender::from(),
+            replyTo: [OrderMailSender::storeContact()],
             subject: "Order Confirmation #{$this->order->order_number} — FORMÉ",
         );
     }

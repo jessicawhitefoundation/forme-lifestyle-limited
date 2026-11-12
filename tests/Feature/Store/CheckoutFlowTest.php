@@ -217,6 +217,31 @@ class CheckoutFlowTest extends TestCase
         Mail::assertSent(NewOrderAdminMail::class, 1);
     }
 
+    public function test_order_emails_come_from_the_orders_mailbox(): void
+    {
+        Mail::fake();
+        config([
+            'mail.orders_from.address' => 'orders@shopforme.net',
+            'mail.admin_address' => 'hello@shopforme.net',
+            'store.email' => 'hello@shopforme.net',
+        ]);
+        $this->addToCart($this->makeVariant());
+        $this->initiate();
+        $order = Order::sole();
+
+        $this->sendWebhook($this->chargeData($order))->assertOk();
+
+        // The customer can reply to the store's contact address.
+        Mail::assertSent(NewOrderCustomerMail::class, fn ($mail) => $mail->hasTo($order->customer_email)
+            && $mail->hasFrom('orders@shopforme.net')
+            && $mail->hasReplyTo('hello@shopforme.net'));
+
+        // The store's alert: replying writes to the customer.
+        Mail::assertSent(NewOrderAdminMail::class, fn ($mail) => $mail->hasTo('hello@shopforme.net')
+            && $mail->hasFrom('orders@shopforme.net')
+            && $mail->hasReplyTo($order->customer_email));
+    }
+
     public function test_a_repeated_payment_notice_does_not_deduct_stock_or_notify_twice(): void
     {
         Mail::fake();

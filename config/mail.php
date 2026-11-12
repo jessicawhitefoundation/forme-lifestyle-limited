@@ -116,6 +116,16 @@ return [
         'name' => env('MAIL_FROM_NAME', env('APP_NAME', 'FORMÉ')),
     ],
 
+    /*
+    | Order emails (confirmation, shipped, and the new-order alert to the store)
+    | go out from their own mailbox. Customer replies are pointed at the store's
+    | contact address (config/store.php); the alert's replies go to the customer.
+    */
+    'orders_from' => [
+        'address' => env('MAIL_ORDERS_FROM_ADDRESS', 'orders@shopforme.net'),
+        'name' => env('MAIL_ORDERS_FROM_NAME', env('MAIL_FROM_NAME', 'FORMÉ')),
+    ],
+
     'admin_address' => env('ADMIN_NOTIFICATION_EMAIL', 'hello@shopforme.net'),
 
 ];

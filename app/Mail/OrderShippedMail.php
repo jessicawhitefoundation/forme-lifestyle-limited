@@ -21,6 +21,8 @@ class OrderShippedMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
+            from: OrderMailSender::from(),
+            replyTo: [OrderMailSender::storeContact()],
             subject: "Your FORMÉ Order #{$this->order->order_number} Has Shipped!",
         );
     }
