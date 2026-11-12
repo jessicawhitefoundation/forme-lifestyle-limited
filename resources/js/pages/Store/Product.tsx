@@ -290,15 +290,16 @@ export default function ProductPage({ product, related }: ProductPageProps) {
                 .fit-cta {
                     width: 100%; display: flex; align-items: center; gap: 12px; margin-bottom: 24px;
                     padding: 12px 12px 12px 16px; background: var(--forme-surface); color: var(--forme-text);
-                    border: 1px solid color-mix(in srgb, var(--forme-accent) 55%, var(--forme-border));
-                    border-radius: 6px; animation: fit-glow 2.8s ease-in-out infinite;
+                    border: 1px solid color-mix(in srgb, var(--forme-accent) 35%, var(--forme-border));
+                    border-radius: 6px; animation: fit-glow 3.6s ease-in-out infinite;
                 }
+                /* A faint pulse: enough to catch the eye, not a halo. */
                 @keyframes fit-glow {
-                    0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--forme-accent) 25%, transparent), 0 0 16px 2px color-mix(in srgb, var(--forme-accent) 30%, transparent); }
-                    50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--forme-accent) 55%, transparent), 0 0 30px 6px color-mix(in srgb, var(--forme-accent) 50%, transparent); }
+                    0%, 100% { box-shadow: 0 0 8px 0 color-mix(in srgb, var(--forme-accent) 8%, transparent); }
+                    50% { box-shadow: 0 0 12px 0 color-mix(in srgb, var(--forme-accent) 16%, transparent); }
                 }
                 @media (prefers-reduced-motion: reduce) {
-                    .fit-cta { animation: none; box-shadow: 0 0 18px 2px color-mix(in srgb, var(--forme-accent) 28%, transparent); }
+                    .fit-cta { animation: none; box-shadow: 0 0 10px 0 color-mix(in srgb, var(--forme-accent) 12%, transparent); }
                 }
                 .fit-cta-text { flex: 1; min-width: 0; display: flex; align-items: center; gap: 12px; padding: 0; background: none; border: none; color: inherit; cursor: pointer; font-family: inherit; text-align: left; }
                 .fit-cta-button { flex-shrink: 0; }
