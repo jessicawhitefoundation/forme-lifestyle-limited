@@ -97,7 +97,7 @@
         </h4>
         <p style="margin: 0; font-size: 13px; color: #333; line-height: 1.6;">
             <strong>Recipient:</strong> {{ $order->customer_name }} ({{ $order->customer_phone ?? 'No phone' }})<br>
-            <strong>Address:</strong> {{ $order->shipping_address }}, {{ $order->shipping_city }}, {{ $order->shipping_state }}, {{ $order->shipping_country }}
+            <strong>Address:</strong> {{ $order->fullAddress() }}
             @if($order->notes)
                 <br><strong>Notes:</strong> <em>{{ $order->notes }}</em>
             @endif

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
+import type { ApproxTotal } from '@/lib/approx';
+import { formatApprox } from '@/lib/approx';
 
 interface CartItem {
     product_name: string;
@@ -34,17 +36,30 @@ interface Quote {
     vat_amount: number;
     vat_inclusive: boolean;
     total: number;
+    is_international?: boolean;
+    approx?: ApproxTotal | null;
+}
+
+interface Country {
+    code: string;
+    name: string;
+    region_label: string;
+    region_required: boolean;
+    postcode_label: string;
 }
 
 interface CheckoutProps {
     cartItems: CartItem[];
     quote: Quote;
     states: string[];
+    countries?: Country[];
     user: User | null;
     savedCard?: SavedCard | null;
 }
 
-export default function Checkout({ cartItems, quote: initialQuote, states, user, savedCard }: CheckoutProps) {
+const PHONE_HINT: Record<string, string> = { NG: '+234...', GB: '+44...', US: '+1...', CA: '+1...' };
+
+export default function Checkout({ cartItems, quote: initialQuote, states, countries = [], user, savedCard }: CheckoutProps) {
     const pageErrors = usePage().props.errors as Record<string, string>;
     const [form, setForm] = useState({
         customer_name: user?.name ?? '',
@@ -53,8 +68,12 @@ export default function Checkout({ cartItems, quote: initialQuote, states, user,
         shipping_address: user?.shipping_address ?? '',
         shipping_city: user?.shipping_city ?? '',
         shipping_state: states.includes(user?.shipping_state ?? '') ? (user?.shipping_state as string) : 'Lagos',
+        shipping_postcode: '',
+        shipping_country: 'NG',
         notes: '',
     });
+    const country = countries.find(c => c.code === form.shipping_country);
+    const abroad = form.shipping_country !== 'NG' && !!country;
     const [useSavedCard, setUseSavedCard] = useState(false);
     const [saveCard, setSaveCard] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>(pageErrors ?? {});
@@ -71,7 +90,8 @@ export default function Checkout({ cartItems, quote: initialQuote, states, user,
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        if (!form.shipping_state) {
+        // Nigerian delivery is priced by state; overseas it's one fee per country.
+        if (!abroad && !form.shipping_state) {
             return;
         }
 
@@ -86,6 +106,7 @@ export default function Checkout({ cartItems, quote: initialQuote, states, user,
                     address: form.shipping_address,
                     city: form.shipping_city,
                     state: form.shipping_state,
+                    country: form.shipping_country,
                 });
 
                 if (response.data && response.data.success) {
@@ -101,7 +122,14 @@ export default function Checkout({ cartItems, quote: initialQuote, states, user,
         return () => {
             if (debounceTimer.current) clearTimeout(debounceTimer.current);
         };
-    }, [form.shipping_state, form.shipping_city, form.shipping_address]);
+    }, [form.shipping_state, form.shipping_city, form.shipping_address, form.shipping_country, abroad]);
+
+    const handleCountry = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        const code = e.target.value;
+        // The state list only fits Nigeria; overseas the region is typed in.
+        setForm(f => ({ ...f, shipping_country: code, shipping_state: code === 'NG' ? 'Lagos' : '', shipping_postcode: '' }));
+        setErrors(err => ({ ...err, shipping_country: '', shipping_state: '', shipping_postcode: '' }));
+    };
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -125,6 +153,14 @@ export default function Checkout({ cartItems, quote: initialQuote, states, user,
         width: '100%', padding: '12px 16px', border: '1px solid var(--forme-border)', background: 'var(--forme-bg)',
         fontSize: '16px', color: 'var(--forme-text)', outline: 'none', borderRadius: '2px',
         fontFamily: "'DM Sans', sans-serif",
+    };
+
+    const selectArrow: React.CSSProperties = {
+        appearance: 'none',
+        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'right 12px center',
+        cursor: 'pointer',
     };
 
     const labelStyle: React.CSSProperties = {
@@ -184,7 +220,7 @@ export default function Checkout({ cartItems, quote: initialQuote, states, user,
 
                             <div>
                                 <label style={labelStyle}>Phone Number *</label>
-                                <input name="customer_phone" type="tel" value={form.customer_phone} onChange={handleChange} placeholder="+234..." style={{ ...inputStyle, borderColor: errors.customer_phone ? 'var(--forme-accent)' : 'var(--forme-border)' }} required />
+                                <input name="customer_phone" type="tel" value={form.customer_phone} onChange={handleChange} placeholder={PHONE_HINT[form.shipping_country] ?? '+234...'} style={{ ...inputStyle, borderColor: errors.customer_phone ? 'var(--forme-accent)' : 'var(--forme-border)' }} required />
                                 <p style={{ fontSize: '12px', color: 'var(--forme-muted)', marginTop: '4px' }}>The courier uses this to reach you.</p>
                                 {errors.customer_phone && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.customer_phone}</p>}
                             </div>
@@ -198,6 +234,16 @@ export default function Checkout({ cartItems, quote: initialQuote, states, user,
                         <div style={{ marginBottom: '40px' }}>
                             <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '24px', color: 'var(--forme-text)', marginBottom: '24px' }}>Shipping Address</p>
 
+                            {countries.length > 1 && (
+                                <div style={{ marginBottom: '16px' }}>
+                                    <label style={labelStyle} htmlFor="shipping_country">Country *</label>
+                                    <select id="shipping_country" name="shipping_country" value={form.shipping_country} onChange={handleCountry} style={{ ...inputStyle, ...selectArrow }} required>
+                                        {countries.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+                                    </select>
+                                    {errors.shipping_country && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.shipping_country}</p>}
+                                </div>
+                            )}
+
                             <div style={{ marginBottom: '16px' }}>
                                 <label style={labelStyle}>Street Address *</label>
                                 <input name="shipping_address" value={form.shipping_address} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.shipping_address ? 'var(--forme-accent)' : 'var(--forme-border)' }} required />
@@ -210,14 +256,29 @@ export default function Checkout({ cartItems, quote: initialQuote, states, user,
                                     <input name="shipping_city" value={form.shipping_city} onChange={handleChange} style={{ ...inputStyle, borderColor: errors.shipping_city ? 'var(--forme-accent)' : 'var(--forme-border)' }} required />
                                     {errors.shipping_city && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.shipping_city}</p>}
                                 </div>
-                                <div>
-                                    <label style={labelStyle}>State *</label>
-                                    <select name="shipping_state" value={form.shipping_state} onChange={handleChange} style={{ ...inputStyle, appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', cursor: 'pointer' }} required>
-                                        <option value="">Select State</option>
-                                        {states.map(s => <option key={s} value={s}>{s}</option>)}
-                                    </select>
-                                    {errors.shipping_state && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.shipping_state}</p>}
-                                </div>
+                                {abroad && country ? (
+                                    <div>
+                                        <label style={labelStyle} htmlFor="shipping_state">{country.region_label}{country.region_required ? ' *' : ' (Optional)'}</label>
+                                        <input id="shipping_state" name="shipping_state" value={form.shipping_state} onChange={handleChange} autoComplete="address-level1" style={{ ...inputStyle, borderColor: errors.shipping_state ? 'var(--forme-accent)' : 'var(--forme-border)' }} required={country.region_required} />
+                                        {errors.shipping_state && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.shipping_state}</p>}
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label style={labelStyle}>State *</label>
+                                        <select name="shipping_state" value={form.shipping_state} onChange={handleChange} style={{ ...inputStyle, ...selectArrow }} required>
+                                            <option value="">Select State</option>
+                                            {states.map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                        {errors.shipping_state && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.shipping_state}</p>}
+                                    </div>
+                                )}
+                                {abroad && country && (
+                                    <div>
+                                        <label style={labelStyle} htmlFor="shipping_postcode">{country.postcode_label} *</label>
+                                        <input id="shipping_postcode" name="shipping_postcode" value={form.shipping_postcode} onChange={handleChange} autoComplete="postal-code" style={{ ...inputStyle, textTransform: 'uppercase', borderColor: errors.shipping_postcode ? 'var(--forme-accent)' : 'var(--forme-border)' }} required />
+                                        {errors.shipping_postcode && <p style={{ color: 'var(--forme-accent)', fontSize: '12px', marginTop: '4px' }}>{errors.shipping_postcode}</p>}
+                                    </div>
+                                )}
                             </div>
 
                             <div>
@@ -343,8 +404,23 @@ export default function Checkout({ cartItems, quote: initialQuote, states, user,
                             )}
                             <div style={{ borderTop: '1px solid var(--forme-border)', paddingTop: '16px', display: 'flex', justifyContent: 'space-between' }}>
                                 <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: 'var(--forme-text)' }}>Total</span>
-                                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: 'var(--forme-accent)' }}>₦{Number(quote.total).toLocaleString()}</span>
+                                <span style={{ textAlign: 'right' }}>
+                                    <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '18px', color: 'var(--forme-accent)', display: 'block' }}>₦{Number(quote.total).toLocaleString()}</span>
+                                    {quote.is_international && quote.approx && !calculatingRate && (
+                                        <span style={{ fontSize: '12px', color: 'var(--forme-muted)', display: 'block', marginTop: '2px' }}>{formatApprox(quote.approx)}</span>
+                                    )}
+                                </span>
                             </div>
+                            {quote.is_international && (
+                                <div style={{ borderTop: '1px solid var(--forme-border)', marginTop: '16px', paddingTop: '14px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                                    <p style={{ fontSize: '12px', color: 'var(--forme-muted)', lineHeight: 1.6, margin: 0 }}>
+                                        You’re charged in naira (₦). Your bank converts it to your currency{quote.approx ? ', so the final amount may differ slightly from the estimate' : ''}.
+                                    </p>
+                                    <p style={{ fontSize: '12px', color: 'var(--forme-muted)', lineHeight: 1.6, margin: 0 }}>
+                                        Import duties or taxes may be collected by {quote.carrier} on delivery. These aren’t included in this total.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -59,8 +59,13 @@ class OrderResource extends Resource
             Forms\Components\Section::make('Shipping')->schema([
                 Forms\Components\TextInput::make('shipping_address')->disabled()->columnSpanFull(),
                 Forms\Components\TextInput::make('shipping_city')->disabled(),
-                Forms\Components\TextInput::make('shipping_state')->disabled(),
+                Forms\Components\TextInput::make('shipping_state')->label('State / region')->disabled(),
+                Forms\Components\TextInput::make('shipping_postcode')->label('Postcode')->disabled(),
                 Forms\Components\TextInput::make('shipping_country')->disabled(),
+                Forms\Components\TextInput::make('shipping_carrier')->label('Carrier')->disabled()
+                    ->visible(fn (?Order $record) => (bool) $record?->isInternational()),
+                Forms\Components\TextInput::make('tracking_number')->label('Tracking number')->disabled()
+                    ->visible(fn (?Order $record) => (bool) $record?->isInternational()),
             ])->columns(3),
 
             Forms\Components\Section::make('Totals')->schema([
@@ -136,9 +141,15 @@ class OrderResource extends Resource
                 ->colors(['warning' => 'pending', 'primary' => 'processing', 'info' => 'shipped', 'success' => 'delivered', 'danger' => 'cancelled']),
             Tables\Columns\BadgeColumn::make('payment_status')
                 ->colors(['danger' => 'unpaid', 'success' => 'paid', 'warning' => 'refunded']),
+            Tables\Columns\TextColumn::make('shipping_country')
+                ->label('Ship to')
+                ->badge()
+                ->color(fn (?string $state) => $state && $state !== 'Nigeria' ? 'warning' : 'gray'),
             Tables\Columns\TextColumn::make('routely_tracking_number')
-                ->label('Routely Tracking')
-                ->searchable()
+                ->label('Tracking')
+                ->state(fn (Order $record) => $record->tracking_number ?: $record->routely_tracking_number)
+                ->description(fn (Order $record) => $record->tracking_number ? $record->shipping_carrier : null)
+                ->searchable(['routely_tracking_number', 'tracking_number'])
                 ->copyable()
                 ->placeholder('Not dispatched'),
             Tables\Columns\TextColumn::make('total_amount')
@@ -166,7 +177,8 @@ class OrderResource extends Resource
                     ->label('Dispatch Routely')
                     ->icon('heroicon-o-truck')
                     ->color('success')
-                    ->visible(fn (Order $record) => empty($record->routely_tracking_number) && $record->payment_status === 'paid')
+                    // Routely only delivers inside Nigeria.
+                    ->visible(fn (Order $record) => empty($record->routely_tracking_number) && $record->payment_status === 'paid' && ! $record->isInternational())
                     ->requiresConfirmation()
                     ->modalHeading('Book Shipment with Routely')
                     ->modalDescription(fn (Order $record) => "Are you sure you want to book a courier to deliver Order #{$record->order_number} to {$record->shipping_address}, {$record->shipping_city}, {$record->shipping_state}?")
@@ -188,6 +200,40 @@ class OrderResource extends Resource
                                 ->danger()
                                 ->send();
                         }
+                    }),
+                // Overseas parcels are booked with the courier by hand; this records
+                // the tracking number and emails it to the customer.
+                Tables\Actions\Action::make('mark_shipped')
+                    ->label('Mark as shipped')
+                    ->icon('heroicon-o-paper-airplane')
+                    ->color('success')
+                    ->visible(fn (Order $record) => $record->isInternational() && $record->payment_status === 'paid' && empty($record->tracking_number))
+                    ->modalHeading(fn (Order $record) => "Order #{$record->order_number} shipped to {$record->shipping_country}")
+                    ->modalDescription('The customer gets an email with the tracking number.')
+                    ->form([
+                        Forms\Components\TextInput::make('shipping_carrier')
+                            ->label('Courier')
+                            ->default(fn (Order $record) => $record->shipping_carrier ?: config('store.international_carrier'))
+                            ->required()
+                            ->maxLength(100),
+                        Forms\Components\TextInput::make('tracking_number')
+                            ->label('Tracking number')
+                            ->required()
+                            ->maxLength(100),
+                    ])
+                    ->action(function (Order $record, array $data) {
+                        $record->update([
+                            'shipping_carrier' => trim($data['shipping_carrier']),
+                            'tracking_number' => trim($data['tracking_number']),
+                            'status' => 'shipped',
+                        ]);
+                        OrderMailService::sendOrderShippedNotification($record->fresh());
+
+                        Notification::make()
+                            ->title('Marked as shipped')
+                            ->body("The tracking number was emailed to {$record->customer_email}.")
+                            ->success()
+                            ->send();
                     }),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make(),

@@ -19,7 +19,54 @@ class StoreSetting extends Model
         'vat_enabled' => 'boolean',
         'vat_rate' => 'float',
         'vat_inclusive' => 'boolean',
+        'international_enabled' => 'boolean',
+        'international_rates' => 'array',
     ];
+
+    /**
+     * Overseas countries customers can choose at checkout, keyed by code, each
+     * with its config (config/store.php countries) plus the admin's fee and rate.
+     *
+     * @return array<string, array{code: string, name: string, currency: string, symbol: string, region_label: string, region_required: bool, postcode_label: string, fee: float, rate: ?float}>
+     */
+    public function internationalCountries(): array
+    {
+        if (! $this->international_enabled) {
+            return [];
+        }
+
+        $rates = $this->international_rates ?? [];
+        $countries = [];
+
+        foreach (config('store.countries') as $code => $country) {
+            $rate = $rates[$code] ?? [];
+
+            // A country is offered only when it's switched on and has a delivery fee.
+            if ($code === 'NG' || empty($rate['enabled']) || ! is_numeric($rate['fee'] ?? null) || (float) $rate['fee'] <= 0) {
+                continue;
+            }
+
+            $countries[$code] = $country + [
+                'code' => $code,
+                'fee' => (float) $rate['fee'],
+                'rate' => is_numeric($rate['rate'] ?? null) && (float) $rate['rate'] > 0 ? (float) $rate['rate'] : null,
+            ];
+        }
+
+        return $countries;
+    }
+
+    /** The overseas country with this name or code, if customers can order to it. */
+    public function internationalCountry(?string $nameOrCode): ?array
+    {
+        foreach ($this->internationalCountries() as $code => $country) {
+            if ($nameOrCode === $code || $nameOrCode === $country['name']) {
+                return $country;
+            }
+        }
+
+        return null;
+    }
 
     private const CACHE_KEY = 'store_settings';
 

@@ -23,6 +23,11 @@ interface Order {
     shipping_address?: string;
     shipping_city: string;
     shipping_state: string;
+    full_address?: string;
+    is_international?: boolean;
+    shipping_carrier?: string | null;
+    tracking_number?: string | null;
+    tracking_url?: string | null;
     routely_tracking_number?: string | null;
     routely_status?: string | null;
     items: OrderItem[];
@@ -122,10 +127,17 @@ export default function OrderConfirmation({ order }: { order: Order }) {
                             )}
                         </div>
 
-                        {order.routely_tracking_number ? (
+                        {order.tracking_number || order.routely_tracking_number ? (
                             <div style={{ background: 'var(--forme-surface-alt)', padding: '16px', borderRadius: '4px', marginBottom: '16px' }}>
-                                <p style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--forme-muted)', marginBottom: '4px' }}>Tracking ID</p>
-                                <p style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 600, color: 'var(--forme-accent)', letterSpacing: '1px', wordBreak: 'break-all' }}>{order.routely_tracking_number}</p>
+                                <p style={{ fontSize: '11px', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--forme-muted)', marginBottom: '4px' }}>
+                                    {order.tracking_number && order.shipping_carrier ? `${order.shipping_carrier} tracking` : 'Tracking ID'}
+                                </p>
+                                <p style={{ fontFamily: 'monospace', fontSize: '16px', fontWeight: 600, color: 'var(--forme-accent)', letterSpacing: '1px', wordBreak: 'break-all' }}>{order.tracking_number || order.routely_tracking_number}</p>
+                                {order.tracking_url && (
+                                    <a href={order.tracking_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', marginTop: '8px', fontSize: '13px', color: 'var(--forme-accent)', fontWeight: 600 }}>
+                                        Track on {order.shipping_carrier} ↗
+                                    </a>
+                                )}
                             </div>
                         ) : (
                             <p style={{ fontSize: '12px', color: 'var(--forme-muted)', marginBottom: '16px', fontStyle: 'italic' }}>
@@ -136,8 +148,13 @@ export default function OrderConfirmation({ order }: { order: Order }) {
                         <div style={{ borderTop: '1px solid var(--forme-border)', paddingTop: '16px' }}>
                             <p style={{ fontSize: '11px', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--forme-muted)', marginBottom: '6px' }}>Destination</p>
                             <p style={{ fontSize: '14px', color: 'var(--forme-text)' }}>
-                                {order.shipping_address ? `${order.shipping_address}, ` : ''}{order.shipping_city}, {order.shipping_state}
+                                {order.full_address ?? `${order.shipping_address ? `${order.shipping_address}, ` : ''}${order.shipping_city}, ${order.shipping_state}`}
                             </p>
+                            {order.is_international && (
+                                <p style={{ fontSize: '12px', color: 'var(--forme-muted)', marginTop: '6px' }}>
+                                    Import duties or taxes may be collected by the courier on delivery.
+                                </p>
+                            )}
                         </div>
                     </div>
                 )}

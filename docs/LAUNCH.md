@@ -95,7 +95,7 @@ App\Models\User::create(['name' => 'Jessica', 'email' => 'REAL_EMAIL', 'password
 
 - [ ] Webhook URL: `https://shopforme.net/webhooks/paystack`
 - [ ] Callback URL: `https://shopforme.net/checkout/callback`
-- [ ] Switch on international payments if foreign cards will be accepted.
+- [x] Switch on international payments (done 12 November; needed for UK / US / Canada orders, see below).
 
 Paystack has one live webhook URL per account. If the old forme.com.ng site uses the same account, changing it stops the old site confirming payments, so close the old checkout (or redirect forme.com.ng to shopforme.net) on the same day.
 
@@ -128,10 +128,18 @@ Use real small payments and refund them afterwards.
 
 - **Free-delivery orders:** check the address is really in Lagos before dispatch. Customers choose their own state, so the site can't verify it.
 - **Critical log entries:** `storage/logs/laravel.log` records `CRITICAL` entries when a payment doesn't match its order, when an item oversells, or when email isn't configured.
+- **Stock is held while a customer pays:** once someone goes to Paystack, their items are set aside for 20 minutes (`STOCK_HOLD_MINUTES`), so two people can't both buy the last piece. A payment that arrives after the hold lapses still goes through; if that oversells, it is logged as `CRITICAL`.
+
+## International delivery (UK, US, Canada)
+
+Built, and off until switched on. Customers pay by card in naira; checkout shows a rough £ / $ / C$ total, says import duties may be due on delivery, and adds no VAT (exports are zero-rated). Parcels go by DHL Express, booked by hand.
+
+- [x] Paystack: international payments switched on (12 November). Turn on American Express too if wanted.
+- [ ] Open a DHL Express business account and get real prices to each country for a typical parcel.
+- [ ] Admin > Store Settings > International Delivery: switch it on, then for each country set the delivery fee (₦) and the exchange rate (₦ per £ / $ / C$). Update the rates now and then; they only affect the estimate shown.
+- [ ] For each overseas order: book DHL, then use **Mark as shipped** in Admin > Orders and enter the tracking number. The customer gets it by email with a DHL tracking link.
 
 ## Not in this release
 
-- **International shipping:** waiting on a successful real Routely booking and answers on customs paperwork.
-- **Wishlist and a ₦/$ price switch.**
-- **Overselling protection:** stock is checked before payment but not held. Two people paying for the last item at the same moment would both succeed. This is logged for follow-up.
+- **Wishlist.**
 - **Search engine setup:** page descriptions, social previews and a sitemap.

@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\ProductVariant;
+use App\Models\StoreSetting;
 use App\Services\OrderPaymentService;
 use App\Services\OrderPricingService;
 use Illuminate\Http\JsonResponse;
@@ -61,6 +63,7 @@ class CheckoutController extends Controller
             ]),
             'quote' => $quote,
             'states' => config('store.nigeria_states'),
+            'countries' => $this->countryOptions(),
             'user' => $user,
             'savedCard' => $user && $user->paystack_auth_code ? [
                 'last_four' => $user->card_last_four,
@@ -69,15 +72,32 @@ class CheckoutController extends Controller
         ]);
     }
 
+    /**
+     * Countries for the checkout and cart pickers: Nigeria first, then any the
+     * store has switched on. Fees and rates stay on the server.
+     *
+     * @return list<array{code: string, name: string, region_label: string, region_required: bool, postcode_label: string}>
+     */
+    public static function countryOptions(): array
+    {
+        $nigeria = ['code' => 'NG'] + config('store.countries.NG');
+        $options = [];
+
+        foreach ([$nigeria, ...array_values(StoreSetting::current()->internationalCountries())] as $country) {
+            $options[] = collect($country)->only(['code', 'name', 'region_label', 'region_required', 'postcode_label'])->all();
+        }
+
+        return $options;
+    }
+
     public function initiate(Request $request, OrderPricingService $pricing, OrderPaymentService $payments)
     {
-        $validated = $request->validate([
+        $validated = $this->validateAddress($request, [
             'customer_name' => 'required|string|max:255',
             'customer_email' => 'required|email|max:255',
             'customer_phone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9][0-9\s\-()]{6,}$/'],
             'shipping_address' => 'required|string|max:500',
             'shipping_city' => 'required|string|max:120',
-            'shipping_state' => ['required', 'string', Rule::in(config('store.nigeria_states'))],
             'notes' => 'nullable|string|max:1000',
             'use_saved_card' => 'nullable|boolean',
             'save_card' => 'nullable|boolean',
@@ -127,18 +147,39 @@ class CheckoutController extends Controller
                 'address' => $validated['shipping_address'],
                 'city' => $validated['shipping_city'],
                 'state' => $validated['shipping_state'],
+                'country' => $validated['shipping_country'],
             ]);
 
             $user = auth()->user();
             $saveCard = $user && $request->boolean('save_card');
 
-            $order = $this->findMatchingUnpaidOrder($cart, $validated, $items, $quote);
-            $isNewOrder = ! $order;
+            $isNewOrder = false;
 
-            if ($order) {
-                $order->update(['save_card' => $saveCard, 'notes' => $validated['notes'] ?? null]);
-            } else {
-                $order = $this->createOrder($cart, $validated, $items, $quote, $saveCard);
+            // Checking stock and setting it aside happen together, with the
+            // variants locked, so two shoppers can't both claim the last piece.
+            $order = DB::transaction(function () use ($cart, $validated, $items, $quote, $saveCard, &$isNewOrder) {
+                $shortage = $this->stockShortage($cart, $items);
+
+                if ($shortage) {
+                    return $shortage;
+                }
+
+                $order = $this->findMatchingUnpaidOrder($cart, $validated, $items, $quote);
+                $isNewOrder = ! $order;
+
+                if ($order) {
+                    $order->update(['save_card' => $saveCard, 'notes' => $validated['notes'] ?? null]);
+                } else {
+                    $order = $this->createOrder($cart, $validated, $items, $quote, $saveCard);
+                }
+
+                $order->update(['stock_held_until' => now()->addMinutes(config('store.stock_hold_minutes'))]);
+
+                return $order;
+            });
+
+            if (is_string($order)) {
+                return back()->withErrors(['cart' => $order]);
             }
 
             session(['recent_order_id' => $order->id]);
@@ -167,7 +208,8 @@ class CheckoutController extends Controller
                         'amount' => $amountInKobo,
                         'currency' => 'NGN',
                         'reference' => $reference,
-                        'channels' => ['card', 'bank', 'bank_transfer', 'ussd', 'qr'],
+                        // Bank transfer, USSD and QR only work with Nigerian accounts.
+                        'channels' => $quote['is_international'] ? ['card'] : ['card', 'bank', 'bank_transfer', 'ussd', 'qr'],
                         'metadata' => $this->buildMetadata($order, $items),
                         'callback_url' => route('checkout.callback'),
                     ]);
@@ -228,16 +270,60 @@ class CheckoutController extends Controller
 
     public function calculateShippingRate(Request $request, OrderPricingService $pricing): JsonResponse
     {
+        $countries = array_keys(StoreSetting::current()->internationalCountries());
+        $abroad = in_array($request->input('country'), $countries, true);
+
         $validated = $request->validate([
             'address' => 'nullable|string|max:500',
             'city' => 'nullable|string|max:120',
-            'state' => ['required', 'string', Rule::in(config('store.nigeria_states'))],
+            'country' => ['nullable', 'string', Rule::in(['NG', ...$countries])],
+            // Overseas the fee is per country, so the region doesn't matter for the price.
+            'state' => $abroad ? ['nullable', 'string', 'max:120'] : ['required', 'string', Rule::in(config('store.nigeria_states'))],
         ]);
 
         $items = $this->existingCartItems();
         $subtotal = (float) $items->sum(fn ($i) => $i->variant->final_price * $i->quantity);
 
         return response()->json(['success' => true] + $pricing->quote($subtotal, $validated));
+    }
+
+    /**
+     * Validates the order details plus an address in Nigeria or in a country the
+     * store has switched on. Returns shipping_country as the country's name and
+     * shipping_country_code alongside it.
+     *
+     * @param  array<string, mixed>  $rules
+     * @param  array<string, string>  $messages
+     * @return array<string, mixed>
+     */
+    private function validateAddress(Request $request, array $rules, array $messages = []): array
+    {
+        $countries = StoreSetting::current()->internationalCountries();
+        $code = $request->input('shipping_country') ?: 'NG';
+        $abroad = $countries[$code] ?? null;
+
+        $rules['shipping_country'] = ['nullable', 'string', Rule::in(['NG', ...array_keys($countries)])];
+
+        if ($abroad) {
+            $rules['shipping_state'] = [$abroad['region_required'] ? 'required' : 'nullable', 'string', 'max:120'];
+            $rules['shipping_postcode'] = ['required', 'string', 'max:20', 'regex:/^[A-Za-z0-9][A-Za-z0-9 \-]{1,18}$/'];
+            $messages['shipping_state.required'] = "Please enter your {$abroad['region_label']}.";
+            $messages['shipping_postcode.required'] = "Please enter your {$abroad['postcode_label']}.";
+            $messages['shipping_postcode.regex'] = "Please enter a valid {$abroad['postcode_label']}.";
+        } else {
+            $rules['shipping_state'] = ['required', 'string', Rule::in(config('store.nigeria_states'))];
+            $rules['shipping_postcode'] = ['nullable', 'string', 'max:20'];
+        }
+
+        $messages['shipping_country.in'] = "Sorry, we don't deliver to that country yet.";
+
+        $validated = $request->validate($rules, $messages);
+        $validated['shipping_country_code'] = $abroad ? $code : 'NG';
+        $validated['shipping_country'] = $abroad ? $abroad['name'] : 'Nigeria';
+        $validated['shipping_state'] = (string) ($validated['shipping_state'] ?? '');
+        $validated['shipping_postcode'] = isset($validated['shipping_postcode']) ? strtoupper(trim($validated['shipping_postcode'])) : null;
+
+        return $validated;
     }
 
     public function confirmation(Request $request, string $orderNumber): Response
@@ -265,7 +351,14 @@ class CheckoutController extends Controller
                 'shipping_city' => $order->shipping_city,
                 'shipping_state' => $order->shipping_state,
                 'shipping_address' => $order->shipping_address,
+                'shipping_postcode' => $order->shipping_postcode,
+                'shipping_country' => $order->shipping_country,
+                'full_address' => $order->fullAddress(),
+                'is_international' => $order->isInternational(),
                 'shipping_fee' => $order->shipping_fee,
+                'shipping_carrier' => $order->shipping_carrier,
+                'tracking_number' => $order->tracking_number,
+                'tracking_url' => $order->trackingUrl(),
                 'routely_tracking_number' => $order->routely_tracking_number,
                 'routely_status' => $order->routely_status,
                 'items' => $order->items->map(fn ($i) => [
@@ -287,6 +380,47 @@ class CheckoutController extends Controller
      * @param  Collection<int, mixed>  $items
      * @param  array<string, mixed>  $quote
      */
+    /**
+     * Locks the bag's variants and checks each still has enough stock once
+     * other shoppers' unpaid holds are set aside. Must run inside a transaction.
+     *
+     * @param  Collection<int, mixed>  $items
+     * @return string|null Why the bag can't be paid for, or null when it can.
+     */
+    private function stockShortage(Cart $cart, Collection $items): ?string
+    {
+        $ids = $items->pluck('product_variant_id')->unique()->sort()->values();
+
+        // Locked in id order so two checkouts never wait on each other in a circle.
+        $stock = ProductVariant::whereIn('id', $ids)->orderBy('id')->lockForUpdate()->pluck('stock_quantity', 'id');
+
+        $held = OrderItem::query()
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereIn('order_items.product_variant_id', $ids)
+            ->where('orders.payment_status', 'unpaid')
+            ->where('orders.status', 'pending')
+            ->where('orders.stock_held_until', '>', now())
+            // This bag's own earlier attempt doesn't count against it.
+            ->where(fn ($q) => $q->whereNull('orders.cart_id')->orWhere('orders.cart_id', '!=', $cart->id))
+            ->groupBy('order_items.product_variant_id')
+            ->selectRaw('order_items.product_variant_id as variant_id, SUM(order_items.quantity) as quantity')
+            ->pluck('quantity', 'variant_id');
+
+        foreach ($items as $item) {
+            $available = (int) ($stock[$item->product_variant_id] ?? 0) - (int) ($held[$item->product_variant_id] ?? 0);
+
+            if ($item->quantity > $available) {
+                $name = $item->variant->product->name.($item->variant->size ? " ({$item->variant->size})" : '');
+
+                return $available <= 0
+                    ? "Someone else is paying for the last '{$name}' right now. If they don't finish, it will be available again in a few minutes."
+                    : "Only {$available} '{$name}' can be bought right now, because others are being paid for. Please update your bag.";
+            }
+        }
+
+        return null;
+    }
+
     private function findMatchingUnpaidOrder(Cart $cart, array $details, Collection $items, array $quote): ?Order
     {
         $order = Order::with('items')
@@ -299,6 +433,8 @@ class CheckoutController extends Controller
             ->where('shipping_address', $details['shipping_address'])
             ->where('shipping_city', $details['shipping_city'])
             ->where('shipping_state', $details['shipping_state'])
+            ->where('shipping_country', $details['shipping_country'])
+            ->where('shipping_postcode', $details['shipping_postcode'])
             ->latest('id')
             ->first();
 
@@ -328,7 +464,7 @@ class CheckoutController extends Controller
                 'payment_status' => 'unpaid',
                 'subtotal' => $quote['subtotal'],
                 'shipping_fee' => $quote['shipping_fee'],
-                'routely_fee' => $quote['courier_fee'],
+                'routely_fee' => $quote['is_international'] ? null : $quote['courier_fee'],
                 'free_shipping' => $quote['free_shipping'],
                 'vat_amount' => $quote['vat_amount'],
                 'vat_inclusive' => $quote['vat_inclusive'],
@@ -339,6 +475,9 @@ class CheckoutController extends Controller
                 'shipping_address' => $details['shipping_address'],
                 'shipping_city' => $details['shipping_city'],
                 'shipping_state' => $details['shipping_state'],
+                'shipping_postcode' => $details['shipping_postcode'],
+                'shipping_country' => $details['shipping_country'],
+                'shipping_carrier' => $quote['is_international'] ? $quote['carrier'] : null,
                 'notes' => $details['notes'] ?? null,
                 'save_card' => $saveCard,
             ]);
@@ -404,6 +543,7 @@ class CheckoutController extends Controller
         return [
             'order_id' => $order->id,
             'order_number' => $order->order_number,
+            'shipping_country' => $order->shipping_country,
             'custom_fields' => $items->map(fn ($item) => [
                 'display_name' => $item->variant->product->name,
                 'variable_name' => 'item_'.$item->variant->id,

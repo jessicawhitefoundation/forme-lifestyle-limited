@@ -13,23 +13,34 @@
 
     <!-- Tracking Card -->
     <div style="background-color: #FAF8F5; border: 1.5px solid #6F1D2F; border-radius: 4px; padding: 22px 24px; margin-bottom: 28px; text-align: center;">
+        {{-- Overseas orders are shipped by hand (DHL) with their own tracking number; Nigerian ones by Routely. --}}
         <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: #8c827a; margin-bottom: 6px;">
-            Routely Tracking Number
+            {{ $order->tracking_number ? $order->shipping_carrier.' Tracking Number' : 'Routely Tracking Number' }}
         </div>
         <div style="font-family: monospace; font-size: 20px; font-weight: 700; color: #6F1D2F; letter-spacing: 2px; margin-bottom: 8px;">
-            {{ $order->routely_tracking_number ?? 'In Transit' }}
+            {{ $order->tracking_number ?: ($order->routely_tracking_number ?? 'In Transit') }}
         </div>
         <p style="margin: 0; font-size: 13px; color: #555;">
-            Carrier: <strong>{{ $order->routely_carrier ?? 'Routely Logistics Partner' }}</strong>
+            Carrier: <strong>{{ $order->tracking_number ? $order->shipping_carrier : ($order->routely_carrier ?? 'Routely Logistics Partner') }}</strong>
         </p>
+        @if($order->trackingUrl())
+            <p style="margin: 10px 0 0 0; font-size: 13px;">
+                <a href="{{ $order->trackingUrl() }}" style="color: #6F1D2F; font-weight: 600;">Track on {{ $order->shipping_carrier }} →</a>
+            </p>
+        @endif
     </div>
 
     <!-- Delivery Address -->
     <div style="background-color: #FAF8F5; border-left: 3px solid #6F1D2F; padding: 14px 18px; border-radius: 2px; margin-bottom: 24px;">
         <strong style="color: #6F1D2F; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Delivering To:</strong>
         <p style="margin: 6px 0 0 0; font-size: 13px; color: #333; line-height: 1.5;">
-            {{ $order->shipping_address }}, {{ $order->shipping_city }}, {{ $order->shipping_state }}, {{ $order->shipping_country }}
+            {{ $order->fullAddress() }}
         </p>
+        @if($order->isInternational())
+            <p style="margin: 8px 0 0 0; font-size: 12px; color: #777; line-height: 1.5;">
+                Import duties or taxes may be collected by the courier on delivery.
+            </p>
+        @endif
     </div>
 
     <!-- Items in Package -->

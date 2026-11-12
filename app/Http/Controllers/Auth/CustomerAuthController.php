@@ -129,6 +129,8 @@ class CustomerAuthController extends Controller
                 'items_count' => $o->items->count(),
                 'routely_tracking_number' => $o->routely_tracking_number,
                 'routely_status' => $o->routely_status,
+                'tracking_number' => $o->tracking_number,
+                'shipping_carrier' => $o->shipping_carrier,
                 'created_at' => $o->created_at->format('M d, Y'),
             ]);
 

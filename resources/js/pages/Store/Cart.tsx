@@ -17,9 +17,10 @@ interface CartProps {
     count: number;
     states: string[];
     lagosAreas: string[];
+    countries?: { code: string; name: string }[];
 }
 
-export default function Cart({ cartItems: initialItems, states, lagosAreas }: CartProps) {
+export default function Cart({ cartItems: initialItems, states, lagosAreas, countries = [] }: CartProps) {
     const [items, setItems] = useState(initialItems);
 
     const total = items.reduce((sum, i) => sum + i.variant.final_price * i.quantity, 0);
@@ -137,7 +138,7 @@ export default function Cart({ cartItems: initialItems, states, lagosAreas }: Ca
                                 <span style={{ fontSize: '14px', color: 'var(--forme-text)' }}>₦{total.toLocaleString()}</span>
                             </div>
 
-                            <DeliveryEstimator states={states} lagosAreas={lagosAreas} subtotal={total} />
+                            <DeliveryEstimator states={states} lagosAreas={lagosAreas} countries={countries} subtotal={total} />
 
                             <Link href="/checkout" style={{ display: 'block', background: 'var(--forme-accent)', color: '#fff', textAlign: 'center', padding: '18px', textDecoration: 'none', fontSize: '12px', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '8px' }}>
                                 Proceed to Checkout

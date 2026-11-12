@@ -31,6 +31,31 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Countries the store can deliver to
+    |--------------------------------------------------------------------------
+    |
+    | Nigeria is always on and priced by Routely. The others are switched on,
+    | and given a flat delivery fee and exchange rate, in Store Settings.
+    |
+    */
+
+    'countries' => [
+        'NG' => ['name' => 'Nigeria', 'currency' => 'NGN', 'symbol' => '₦', 'region_label' => 'State', 'region_required' => true, 'postcode_label' => 'Postcode'],
+        'GB' => ['name' => 'United Kingdom', 'currency' => 'GBP', 'symbol' => '£', 'region_label' => 'County', 'region_required' => false, 'postcode_label' => 'Postcode'],
+        'US' => ['name' => 'United States', 'currency' => 'USD', 'symbol' => '$', 'region_label' => 'State', 'region_required' => true, 'postcode_label' => 'ZIP code'],
+        'CA' => ['name' => 'Canada', 'currency' => 'CAD', 'symbol' => 'C$', 'region_label' => 'Province', 'region_required' => true, 'postcode_label' => 'Postal code'],
+    ],
+
+    'international_carrier' => 'DHL Express',
+
+    /*
+    | How long items are set aside for a customer who has gone to pay. Others
+    | can't buy the last pieces in that time; unpaid holds then lapse on their own.
+    */
+    'stock_hold_minutes' => (int) env('STOCK_HOLD_MINUTES', 20),
+
+    /*
+    |--------------------------------------------------------------------------
     | Lagos areas offered by the delivery estimator
     |--------------------------------------------------------------------------
     */

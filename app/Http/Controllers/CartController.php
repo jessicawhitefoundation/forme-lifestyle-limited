@@ -52,6 +52,8 @@ class CartController extends Controller
             'count' => $cart->count,
             'states' => config('store.nigeria_states'),
             'lagosAreas' => config('store.lagos_areas'),
+            // Overseas countries for the delivery estimator (Nigeria is the state list).
+            'countries' => array_values(array_filter(CheckoutController::countryOptions(), fn ($c) => $c['code'] !== 'NG')),
         ];
 
         if ($request->has('json')) {

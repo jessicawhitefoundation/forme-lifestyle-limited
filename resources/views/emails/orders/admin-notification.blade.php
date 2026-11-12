@@ -40,7 +40,10 @@
     <div style="background-color: #FAF8F5; border-left: 3px solid #6F1D2F; padding: 14px 18px; border-radius: 2px; margin-bottom: 24px;">
         <strong style="color: #6F1D2F; font-size: 11px; text-transform: uppercase; letter-spacing: 1px;">Shipping Destination</strong>
         <p style="margin: 6px 0 0 0; font-size: 13px; color: #333; line-height: 1.5;">
-            {{ $order->shipping_address }}, {{ $order->shipping_city }}, {{ $order->shipping_state }}, {{ $order->shipping_country }}
+            {{ $order->fullAddress() }}
+            @if($order->isInternational())
+                <br><strong style="color: #B45309;">Overseas order: ship with {{ $order->shipping_carrier ?: config('store.international_carrier') }}, then use “Mark as shipped” in the admin.</strong>
+            @endif
             @if($order->notes)
                 <br><em>Customer Notes: {{ $order->notes }}</em>
             @endif

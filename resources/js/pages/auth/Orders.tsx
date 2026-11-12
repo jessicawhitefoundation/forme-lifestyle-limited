@@ -9,6 +9,8 @@ interface Order {
     total_amount: number;
     items_count: number;
     routely_tracking_number?: string | null;
+    tracking_number?: string | null;
+    shipping_carrier?: string | null;
     routely_status?: string | null;
     created_at: string;
 }
@@ -75,9 +77,9 @@ export default function Orders({ orders }: OrdersProps) {
                                             <span style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '20px', background: pc.bg, color: pc.color, letterSpacing: '0.5px', textTransform: 'capitalize' }}>
                                                 {order.payment_status}
                                             </span>
-                                            {order.routely_tracking_number && (
+                                            {(order.tracking_number || order.routely_tracking_number) && (
                                                 <span style={{ fontSize: '11px', padding: '4px 12px', borderRadius: '20px', background: '#f0fdf4', color: '#166534', border: '1px solid #bbf7d0', letterSpacing: '0.5px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                                                    🚚 Routely: {order.routely_tracking_number}
+                                                    🚚 {order.tracking_number ? `${order.shipping_carrier ?? 'Courier'}: ${order.tracking_number}` : `Routely: ${order.routely_tracking_number}`}
                                                 </span>
                                             )}
                                         </div>

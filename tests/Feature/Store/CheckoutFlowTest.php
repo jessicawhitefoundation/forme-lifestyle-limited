@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Store;
 
+use App\Filament\Resources\OrderResource\Pages\ListOrders;
 use App\Mail\NewOrderAdminMail;
 use App\Mail\NewOrderCustomerMail;
 use App\Mail\OrderShippedMail;
 use App\Models\Cart;
+use App\Models\CartItem;
 use App\Models\Category;
 use App\Models\Order;
 use App\Models\Product;
@@ -21,6 +23,7 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use Inertia\Testing\AssertableInertia as Assert;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 class CheckoutFlowTest extends TestCase
@@ -481,6 +484,260 @@ class CheckoutFlowTest extends TestCase
         app()->terminate();
 
         Mail::assertSent(OrderShippedMail::class, 1);
+    }
+
+    /** Delivers to the UK for ₦45,000 at ₦2,000 to the pound. */
+    private function enableUk(bool $enabled = true): void
+    {
+        StoreSetting::current();
+        StoreSetting::findOrFail(1)->update([
+            'international_enabled' => $enabled,
+            'international_rates' => [
+                'GB' => ['enabled' => true, 'fee' => 45000, 'rate' => 2000],
+                'US' => ['enabled' => false, 'fee' => 60000, 'rate' => 1500],
+            ],
+        ]);
+    }
+
+    /** @return array<string, mixed> */
+    private function ukAddress(array $overrides = []): array
+    {
+        return $overrides + [
+            'shipping_country' => 'GB',
+            'shipping_address' => '221B Baker Street',
+            'shipping_city' => 'London',
+            'shipping_state' => '',
+            'shipping_postcode' => 'nw1 6xe',
+            'customer_phone' => '+447700900123',
+        ];
+    }
+
+    public function test_overseas_delivery_is_off_until_the_store_switches_it_on(): void
+    {
+        $this->addToCart($this->makeVariant());
+
+        $this->get('/checkout')->assertInertia(fn (Assert $page) => $page->has('countries', 1)->where('countries.0.code', 'NG'));
+        $this->initiate($this->ukAddress())->assertSessionHasErrors('shipping_country');
+
+        $this->enableUk(enabled: false);
+        $this->initiate($this->ukAddress())->assertSessionHasErrors('shipping_country');
+
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_a_uk_quote_uses_the_flat_fee_without_asking_routely(): void
+    {
+        $this->enableUk();
+        $this->addToCart($this->makeVariant(50000));
+
+        $this->postJson('/checkout/shipping-rate', ['country' => 'GB'])
+            ->assertOk()
+            ->assertJson([
+                'is_international' => true,
+                'country' => 'United Kingdom',
+                'carrier' => 'DHL Express',
+                'shipping_fee' => 45000,
+                'free_shipping' => false,
+                'total' => 95000,
+                'approx' => ['currency' => 'GBP', 'symbol' => '£', 'total' => 47.5],
+            ]);
+
+        // A country the store hasn't switched on can't be quoted.
+        $this->postJson('/checkout/shipping-rate', ['country' => 'US'])->assertUnprocessable();
+
+        Http::assertNotSent(fn (HttpRequest $request) => str_contains($request->url(), '/shipments/fee'));
+    }
+
+    public function test_a_uk_customer_can_check_out_and_pays_by_card_in_naira(): void
+    {
+        $this->enableUk();
+        $this->addToCart($this->makeVariant(50000));
+
+        $this->initiate($this->ukAddress())->assertStatus(409);
+
+        $order = Order::sole();
+        $this->assertSame('United Kingdom', $order->shipping_country);
+        $this->assertSame('NW1 6XE', $order->shipping_postcode);
+        $this->assertSame('DHL Express', $order->shipping_carrier);
+        $this->assertSame(45000.0, (float) $order->shipping_fee);
+        $this->assertSame(95000.0, (float) $order->total_amount);
+        $this->assertNull($order->routely_fee);
+        $this->assertTrue($order->isInternational());
+        $this->assertSame('221B Baker Street, London, NW1 6XE, United Kingdom', $order->fullAddress());
+
+        Http::assertSent(fn (HttpRequest $request) => str_contains($request->url(), 'transaction/initialize')
+            && $request['amount'] === 9500000
+            && $request['currency'] === 'NGN'
+            && $request['channels'] === ['card']);
+        Http::assertNotSent(fn (HttpRequest $request) => str_contains($request->url(), '/shipments/fee'));
+
+        // Paying again with the same details reuses the order.
+        $this->initiate($this->ukAddress())->assertStatus(409);
+        $this->assertSame(1, Order::count());
+
+        // The checkout page offers the country (it opens on Nigeria, priced by Routely).
+        $this->get('/checkout')->assertInertia(fn (Assert $page) => $page->has('countries', 2)->where('countries.1.name', 'United Kingdom'));
+    }
+
+    public function test_overseas_orders_never_carry_vat(): void
+    {
+        $this->enableUk();
+        StoreSetting::findOrFail(1)->update(['vat_enabled' => true, 'vat_rate' => 7.5, 'vat_inclusive' => false]);
+        $this->addToCart($this->makeVariant(50000));
+
+        // Nigeria: 7.5% is added on top.
+        $this->postJson('/checkout/shipping-rate', ['state' => 'Lagos'])
+            ->assertJson(['vat_amount' => 3750, 'total' => 50000 + self::COURIER_FEE + 3750]);
+
+        // UK: an export, zero-rated.
+        $this->postJson('/checkout/shipping-rate', ['country' => 'GB'])
+            ->assertJson(['vat_amount' => 0, 'total' => 95000]);
+
+        $this->initiate($this->ukAddress())->assertStatus(409);
+        $this->assertSame(0.0, (float) Order::sole()->vat_amount);
+    }
+
+    public function test_the_us_and_canada_work_once_switched_on(): void
+    {
+        StoreSetting::current();
+        StoreSetting::findOrFail(1)->update([
+            'international_enabled' => true,
+            'international_rates' => [
+                'GB' => ['enabled' => true, 'fee' => 45000, 'rate' => 2100],
+                'US' => ['enabled' => true, 'fee' => 60000, 'rate' => 1600],
+                'CA' => ['enabled' => true, 'fee' => 65000, 'rate' => 1150],
+            ],
+        ]);
+        $this->addToCart($this->makeVariant(50000));
+
+        $this->get('/checkout')->assertInertia(fn (Assert $page) => $page
+            ->has('countries', 4)
+            ->where('countries.2.name', 'United States')
+            ->where('countries.2.postcode_label', 'ZIP code')
+            ->where('countries.3.name', 'Canada')
+            ->where('countries.3.region_label', 'Province'));
+
+        $this->postJson('/checkout/shipping-rate', ['country' => 'US'])
+            ->assertJson(['shipping_fee' => 60000, 'approx' => ['currency' => 'USD', 'symbol' => '$', 'total' => 68.75]]);
+        $this->postJson('/checkout/shipping-rate', ['country' => 'CA'])
+            ->assertJson(['shipping_fee' => 65000, 'approx' => ['currency' => 'CAD', 'symbol' => 'C$']]);
+
+        // The US and Canada need a state or province; the UK's county is optional.
+        $this->initiate($this->ukAddress(['shipping_country' => 'US', 'shipping_postcode' => '10001']))->assertSessionHasErrors('shipping_state');
+        $this->initiate($this->ukAddress(['shipping_country' => 'CA', 'shipping_state' => 'Ontario', 'shipping_city' => 'Toronto', 'shipping_postcode' => 'M5V 2T6']))->assertStatus(409);
+        $this->assertSame('Canada', Order::sole()->shipping_country);
+        $this->assertSame(115000.0, (float) Order::sole()->total_amount);
+    }
+
+    public function test_overseas_checkout_needs_a_postcode(): void
+    {
+        $this->enableUk();
+        $this->addToCart($this->makeVariant());
+
+        $this->initiate($this->ukAddress(['shipping_postcode' => '']))->assertSessionHasErrors('shipping_postcode');
+        $this->initiate($this->ukAddress(['shipping_postcode' => '<script>']))->assertSessionHasErrors('shipping_postcode');
+        $this->assertSame(0, Order::count());
+    }
+
+    public function test_nigerian_orders_are_unchanged_when_overseas_delivery_is_on(): void
+    {
+        $this->enableUk();
+        $this->addToCart($this->makeVariant(50000));
+
+        $this->initiate()->assertStatus(409);
+
+        $order = Order::sole();
+        $this->assertSame('Nigeria', $order->shipping_country);
+        $this->assertFalse($order->isInternational());
+        $this->assertSame((float) self::COURIER_FEE, (float) $order->shipping_fee);
+        Http::assertSent(fn (HttpRequest $request) => str_contains($request->url(), 'transaction/initialize')
+            && in_array('bank_transfer', $request['channels'], true));
+    }
+
+    public function test_marking_an_overseas_order_shipped_emails_the_dhl_tracking_number(): void
+    {
+        Mail::fake();
+        $this->enableUk();
+        $this->addToCart($this->makeVariant());
+        $this->initiate($this->ukAddress());
+        $order = Order::sole();
+        $order->update(['payment_status' => 'paid', 'status' => 'processing']);
+
+        $this->actingAs(User::factory()->create(['role' => 'admin']));
+        Livewire::test(ListOrders::class)
+            ->assertTableActionHidden('dispatch_routely', $order)
+            ->callTableAction('mark_shipped', $order, data: ['shipping_carrier' => 'DHL Express', 'tracking_number' => ' 1234567890 '])
+            ->assertHasNoTableActionErrors();
+        app()->terminate();
+
+        $order->refresh();
+        $this->assertSame('shipped', $order->status);
+        $this->assertSame('1234567890', $order->tracking_number);
+        Mail::assertSent(OrderShippedMail::class, function (OrderShippedMail $mail) {
+            $html = $mail->render();
+
+            return str_contains($html, '1234567890')
+                && str_contains($html, 'tracking-id=1234567890')
+                && str_contains($html, 'United Kingdom');
+        });
+    }
+
+    public function test_the_last_piece_is_held_for_the_shopper_who_is_paying(): void
+    {
+        $variant = $this->makeVariant(50000, 1);
+
+        // Shopper A goes to pay for the last one.
+        $this->addToCart($variant);
+        $this->initiate()->assertStatus(409);
+
+        // Shopper B, in another browser, can still bag it but can't pay for it.
+        $this->useBrowserSession('b');
+        $this->addToCart($variant);
+        $this->initiate(['customer_email' => 'bola@example.com'])
+            ->assertSessionHasErrors(['cart' => "Someone else is paying for the last '".$variant->product->name." (M)' right now. If they don't finish, it will be available again in a few minutes."]);
+        $this->assertSame(1, Order::count());
+
+        // Shopper A can go back to Paystack again without being blocked by their own hold.
+        $this->useBrowserSession('a');
+        $this->initiate()->assertStatus(409);
+
+        // A doesn't pay; once the hold lapses, B can buy it.
+        $this->travel(config('store.stock_hold_minutes') + 1)->minutes();
+        $this->useBrowserSession('b');
+        $this->initiate(['customer_email' => 'bola@example.com'])->assertStatus(409);
+        $this->assertSame(2, Order::count());
+    }
+
+    public function test_a_hold_only_sets_aside_what_was_bagged(): void
+    {
+        $variant = $this->makeVariant(50000, 3);
+
+        $this->addToCart($variant, 2);
+        $this->initiate()->assertStatus(409);
+
+        $this->useBrowserSession('b');
+        $this->addToCart($variant, 2);
+        $this->initiate(['customer_email' => 'bola@example.com'])->assertSessionHasErrors('cart');
+
+        // One is still free.
+        $this->patchJson('/cart/'.CartItem::latest('id')->value('id'), ['quantity' => 1])->assertOk();
+        $this->initiate(['customer_email' => 'bola@example.com'])->assertStatus(409);
+    }
+
+    public function test_paying_or_cancelling_releases_the_hold(): void
+    {
+        $variant = $this->makeVariant(50000, 2);
+        $this->addToCart($variant);
+        $this->initiate();
+        $order = Order::sole();
+
+        // Paid: the stock itself goes down instead.
+        app(OrderPaymentService::class)->markPaid($order, $this->chargeData($order));
+        $this->assertSame(1, $variant->fresh()->stock_quantity);
+
+        $this->useBrowserSession('b');
+        $this->addToCart($variant);
+        $this->initiate(['customer_email' => 'bola@example.com'])->assertStatus(409);
     }
 
     public function test_viewing_pages_does_not_create_a_cart_for_every_visitor(): void

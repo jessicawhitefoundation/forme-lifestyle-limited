@@ -14,7 +14,8 @@ class Order extends Model
         'order_number', 'user_id', 'cart_id', 'status', 'payment_status', 'payment_reference',
         'subtotal', 'shipping_fee', 'vat_amount', 'vat_inclusive', 'free_shipping', 'total_amount',
         'customer_name', 'customer_email', 'customer_phone',
-        'shipping_address', 'shipping_city', 'shipping_state', 'shipping_country',
+        'shipping_address', 'shipping_city', 'shipping_state', 'shipping_postcode', 'shipping_country',
+        'shipping_carrier', 'tracking_number', 'stock_held_until',
         'notes', 'save_card',
         'routely_shipment_id', 'routely_tracking_number', 'routely_status', 'routely_fee', 'routely_response',
     ];
@@ -75,5 +76,31 @@ class Order extends Model
     public function isPaid(): bool
     {
         return $this->payment_status === 'paid';
+    }
+
+    /** Going outside Nigeria, so shipped by hand (DHL) rather than Routely. */
+    public function isInternational(): bool
+    {
+        return filled($this->shipping_country) && $this->shipping_country !== 'Nigeria';
+    }
+
+    /** The courier's public tracking page, when the courier is one we know. */
+    public function trackingUrl(): ?string
+    {
+        if (! $this->tracking_number) {
+            return null;
+        }
+
+        return str_contains(strtolower((string) $this->shipping_carrier), 'dhl')
+            ? 'https://www.dhl.com/global-en/home/tracking/tracking-express.html?submit=1&tracking-id='.rawurlencode($this->tracking_number)
+            : null;
+    }
+
+    /** "12 Baker St, London, NW1 6XE, United Kingdom" — the parts that are filled in. */
+    public function fullAddress(): string
+    {
+        return collect([$this->shipping_address, $this->shipping_city, $this->shipping_state, $this->shipping_postcode, $this->shipping_country])
+            ->filter(fn ($part) => filled($part))
+            ->implode(', ');
     }
 }
